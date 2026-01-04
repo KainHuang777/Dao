@@ -58,6 +58,7 @@
         <button id="testAutoGrow">測試自動增長</button>
         <button id="testLifespanReset">測試壽元已盡重置</button>
         <button id="testMaidSystem">測試侍女自動合成</button>
+        <button id="testTrainingTime">測試修煉時間顯示</button>
     </div>
     <div id="output"></div>
 
@@ -197,30 +198,47 @@
 
             try {
                 // 臨時模擬壽元狀態，防止測試過程中觸發重置邏輯
-                PlayerManager.isLifespanExhausted = () => false;
+                // 直接修改實例方法，確保 ResourceManager 引用到的實例也能生效
+                PlayerManager.isLifespanExhausted = () => {
+                    // console.log('Mock isLifespanExhausted called -> false');
+                    return false;
+                };
 
-                // 強制設定為時代1、等級1，確保測試環境一致且靈力產出為正
+                // 強制設定為時代1、等級1
                 PlayerManager.state.eraId = 1;
                 PlayerManager.state.level = 1;
 
+                // 檢查必要狀態
+                log(`ResourceManager Loaded: ${resourceManager.isLoaded}`, 'info');
                 const lingli = resourceManager.getResource('lingli');
-                // 測試前強制歸零，確保產出計算準確
+                if (!lingli) {
+                    log('✗ 找不到靈力資源', 'error');
+                    return;
+                }
+
+                // 強制解鎖並歸零
+                lingli.unlocked = true;
                 lingli.value = 0;
-                const before = 0;
+
+                log(`靈力狀態: Unlocked=${lingli.unlocked}, Value=${lingli.value}`, 'info');
+                log(`PlayerManager: Era=${PlayerManager.getEraId()}, Level=${PlayerManager.getLevel()}`, 'info');
+                log(`Lifespan Exhausted Check: ${PlayerManager.isLifespanExhausted()}`, 'info');
+
+                const before = lingli.value;
                 const baseRate = lingli.rate;
 
-                // 計算靈力消耗（與 Resources.js 中的公式保持一致）
                 const currentEra = PlayerManager.getEraId();
                 const currentLevel = PlayerManager.getLevel();
                 const lingliConsumption = (currentEra - 1) * 10 + currentLevel - 2;
                 const netRate = baseRate - lingliConsumption;
 
-                log(`測試前靈力: ${before.toFixed(2)} (已臨時模擬壽元正常進行測試)`, 'info');
+                log(`測試前靈力: ${before.toFixed(2)}`, 'info');
                 log(`靈力基礎產率: ${baseRate}/秒`, 'info');
-                log(`靈力消耗: ${lingliConsumption}/秒`, 'info');
-                log(`靈力淨產率: ${netRate}/秒`, 'info');
+                log(`靈力消耗: ${lingliConsumption}/秒 (Era${currentEra} Lv${currentLevel})`, 'info');
+                log(`靈力淨產率: ${netRate.toFixed(2)}/秒`, 'info');
 
                 // 模擬 5 秒更新
+                log('執行 update(5)...', 'info');
                 resourceManager.update(5);
 
                 const after = lingli.value;
@@ -231,7 +249,7 @@
                 log(`實際增加: ${actual.toFixed(2)}`, 'info');
                 log(`預期增加: ${expected.toFixed(2)}`, 'info');
 
-                if (Math.abs(actual - expected) < 0.01) {
+                if (Math.abs(actual - expected) < 0.01 && actual > 0) {
                     log('✓ 自動增長功能正常', 'success');
                 } else {
                     log('✗ 自動增長功能異常', 'error');
@@ -239,6 +257,7 @@
                 }
             } catch (e) {
                 log(`✗ 測試過程中出錯: ${e.message}`, 'error');
+                console.error(e);
             } finally {
                 // 恢復原始狀態與方法
                 PlayerManager.state = originalState;
@@ -371,6 +390,58 @@
             // 清理狀態
             maid.level = 0;
             buildingManager.maidAutoTargets[targetRes] = false;
+        });
+
+        // 測試修煉時間顯示
+        document.getElementById('testTrainingTime').addEventListener('click', async () => {
+            log('\n=== 測試修煉時間顯示 ===', 'info');
+            const { default: EraManager } = await import('./src/utils/EraManager.js');
+            const { default: LanguageManager } = await import('./src/utils/LanguageManager.js');
+
+            if (!EraManager.isLoaded) await EraManager.init();
+            await LanguageManager.getInstance().init();
+
+            // Force zh-CN to ensure text matching
+            await LanguageManager.getInstance().loadLanguage('zh-CN');
+
+            const mockEraId = 1;
+            const mockLevel = 1;
+            const requiredTime = EraManager.getLevelUpRequiredTime(mockEraId, mockLevel); // Seconds
+
+            log(`等級 1 所需總時間: ${requiredTime} 秒`, 'info');
+
+            // Case 1: 0 經驗
+            let trainingTime = 0;
+            let result = EraManager.checkLevelUpRequirements(mockEraId, mockLevel, trainingTime, [], {});
+            log(`修練時間 0秒 -> 提示: ${result.reason}`, 'info');
+
+            // 檢查是否顯示為剩餘時間 (總時間)
+            // 0 經驗時，剩餘時間 = 總時間
+            const totalInSi = (requiredTime / 60).toFixed(2);
+            if (result.reason.includes(totalInSi)) {
+                log(`✓ (0經驗)數值正確: ${totalInSi}`, 'success');
+            } else {
+                log(`✗ (0經驗)數值錯誤`, 'error');
+            }
+
+            // Case 2: 已修練一半時間
+            trainingTime = requiredTime / 2;
+            result = EraManager.checkLevelUpRequirements(mockEraId, mockLevel, trainingTime, [], {});
+            log(`修練時間 ${trainingTime}秒 -> 提示: ${result.reason}`, 'info');
+
+            const remainingInSi = ((requiredTime - trainingTime) / 60).toFixed(2);
+            if (result.reason.includes(remainingInSi)) {
+                log(`✓ (50%經驗)數值正確: ${remainingInSi} (顯示剩餘而非總需)`, 'success');
+            } else {
+                log(`✗ (50%經驗)數值錯誤. 預期包含: ${remainingInSi}`, 'error');
+            }
+
+            // Case 3: 檢查是否有 "還需" 字樣
+            if (result.reason.includes('还需') || result.reason.includes('還需')) {
+                log('✓ 包含 "还需/還需" 字樣', 'success');
+            } else {
+                log('✗ 缺少 "还需" 字樣', 'error');
+            }
         });
 
         // 自動初始化

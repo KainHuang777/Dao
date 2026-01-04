@@ -123,7 +123,7 @@
     "境界底蘊不足: {details}": "Insufficient realm foundation: {details}",
     "缺少前置功法: {skills}": "Missing prerequisite skills: {skills}",
     "滿足昇階條件": "Ready to ascend",
-    "修練時間不足 (需要 {years} 年)": "Inadequate training time ({years} years required)",
+    "修練時間不足 (需要 {years} 祀)": "Inadequate training time ({years} si required)",
     "滿足升級條件": "Ready to level up",
     "資源不足": "Insufficient resources",
     "🛖 茅屋": "Hut",

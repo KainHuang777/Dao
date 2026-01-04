@@ -22,6 +22,7 @@ class PlayerManager {
             talents: {},        // 已購天賦 { id: level }
             isReincarnating: false, // 是否正在輪迴狀態 (壽元已盡)
             consumedPills: {},   // 已服用的丹藥 { pillId: count }
+            activeBuffs: [],     // 當前生效的 buff { type, multiplier, endTime }
             hints: {
                 rule1Triggered: false, // 壽元 1/3 提示
                 lastRule2Year: -1      // 壽元過半後的週期性提示年份
@@ -57,6 +58,7 @@ class PlayerManager {
     }
 
     _saveState(state) {
+        console.log(`[_saveState] Saving startTimestamp: ${state.startTimestamp}, totalStartTimestamp: ${state.totalStartTimestamp}`);
         localStorage.setItem(this.storageKey, JSON.stringify(state));
     }
 
@@ -64,6 +66,7 @@ class PlayerManager {
     getLevel() { return this.state.level; }
     getStartTimestamp() { return this.state.startTimestamp; }
     setStartTimestamp(val) {
+        console.log(`[setStartTimestamp] ${this.state.startTimestamp} → ${val}`);
         this.state.startTimestamp = val;
         this._saveState(this.state);
     }
@@ -178,25 +181,60 @@ class PlayerManager {
         // 扣除丹藥
         resource.value -= 1;
 
-        // 記錄服用次數
-        this.state.consumedPills[pillId] = currentCount + 1;
+        // 特殊處理：蘊靈丹 (lingliBoost)
+        if (pillConfig.effect === 'lingliBoost') {
+            // 添加 buff
+            const endTime = Date.now() + pillConfig.duration;
+            this.state.activeBuffs.push({
+                type: 'lingliBoost',
+                multiplier: 1 + pillConfig.bonus, // 2.0 (100% 加成)
+                endTime: endTime
+            });
+
+            // 增加修煉時間（同時影響當前境界和總修煉時間）
+            const beforeStart = this.state.startTimestamp;
+            const beforeTotal = this.state.totalStartTimestamp;
+
+            this.state.startTimestamp -= pillConfig.trainingBonus;  // 當前境界剩餘時間減少
+            this.state.totalStartTimestamp -= pillConfig.trainingBonus;  // 總修煉時間增加
+
+            console.log(`%c[蘊靈丹] startTimestamp: ${beforeStart} → ${this.state.startTimestamp} (減少 ${pillConfig.trainingBonus}ms)`, 'color: #4caf50; font-weight: bold');
+            console.log(`%c[蘊靈丹] totalStartTimestamp: ${beforeTotal} → ${this.state.totalStartTimestamp}`, 'color: #4caf50; font-weight: bold');
+
+            // 立即驗證是否保存成功
+            setTimeout(() => {
+                const saved = JSON.parse(localStorage.getItem(this.storageKey));
+                console.log(`%c[驗證] localStorage 中的 startTimestamp: ${saved.startTimestamp}`, 'color: #2196f3; font-weight: bold');
+                if (saved.startTimestamp !== this.state.startTimestamp) {
+                    console.error(`%c[錯誤] startTimestamp 不一致！內存: ${this.state.startTimestamp}, 存檔: ${saved.startTimestamp}`, 'color: #f44336; font-weight: bold');
+                }
+            }, 100);
+
+            if (window.game && window.game.uiManager) {
+                const msg = `服用<b>${LanguageManager.getInstance().t(pillConfig.name)}</b>，靈力產出2倍持續1祀，修煉時間+1祀`;
+                window.game.uiManager.addLog(msg);
+            }
+        } else {
+            // 一般丹藥：記錄服用次數
+            this.state.consumedPills[pillId] = currentCount + 1;
+
+            if (window.game && window.game.uiManager) {
+                const effect = this.getPillEffectDescription(pillConfig);
+                const msg = LanguageManager.getInstance().t('服用<b>{0}</b>（{1}/{2}）{3}', {
+                    '0': LanguageManager.getInstance().t(pillConfig.name),
+                    '1': currentCount + 1,
+                    '2': pillConfig.maxCount,
+                    '3': effect
+                });
+                window.game.uiManager.addLog(msg);
+            }
+        }
+
         this._saveState(this.state);
 
         // 重新計算資源產出率（因為加成改變了）
         if (window.game && window.game.buildingManager) {
             window.game.buildingManager.recalculateRates();
-        }
-
-        if (window.game && window.game.uiManager) {
-            const effect = this.getPillEffectDescription(pillConfig);
-            // "服用<b>{0}</b>（{1}/{2}）{3}"
-            const msg = LanguageManager.getInstance().t('服用<b>{0}</b>（{1}/{2}）{3}', {
-                '0': LanguageManager.getInstance().t(pillConfig.name),
-                '1': currentCount + 1,
-                '2': pillConfig.maxCount,
-                '3': effect
-            });
-            window.game.uiManager.addLog(msg);
         }
 
         return true;
@@ -215,8 +253,10 @@ class PlayerManager {
             },
             spirit_nurt_pill: {
                 name: '蘊靈丹',
-                effect: 'lingliProduction',
-                bonus: 0.003,  // 每顆 +0.3%
+                effect: 'lingliBoost',  // 特殊效果：靈力產出2倍持續1年
+                bonus: 1.0,   // 2倍 = 100% 加成
+                duration: 1000,  // 持續時間：1年 = 1秒 = 1000毫秒
+                trainingBonus: 1000,  // 增加修煉時間 1年 = 1000毫秒
                 maxCount: 20
             },
             golden_core_pill: {
@@ -299,6 +339,37 @@ class PlayerManager {
             }
         });
         return totalBonus;
+    }
+
+    /**
+     * 清理過期的 buff
+     */
+    cleanExpiredBuffs() {
+        const now = Date.now();
+        const before = this.state.activeBuffs.length;
+        this.state.activeBuffs = this.state.activeBuffs.filter(buff => buff.endTime > now);
+
+        if (before !== this.state.activeBuffs.length) {
+            this._saveState(this.state);
+            // buff 過期，重新計算產出率
+            if (window.game && window.game.buildingManager) {
+                window.game.buildingManager.recalculateRates();
+            }
+        }
+    }
+
+    /**
+     * 獲取靈力 buff 加成倍數
+     * @returns {number} 倍數 (1.0 = 無加成, 2.0 = 2倍)
+     */
+    getLingliBuffMultiplier() {
+        this.cleanExpiredBuffs();
+        const lingliBuffs = this.state.activeBuffs.filter(b => b.type === 'lingliBoost');
+        if (lingliBuffs.length > 0) {
+            // 取最大倍數（如果有多個 buff）
+            return Math.max(...lingliBuffs.map(b => b.multiplier));
+        }
+        return 1.0;
     }
 
     /**
@@ -559,7 +630,9 @@ class PlayerManager {
         }
 
         const elapsedMs = effectiveNow - this.state.startTimestamp;
-        return Math.floor(Math.max(0, elapsedMs) / 1000);
+        const trainingTimeSeconds = Math.floor(Math.max(0, elapsedMs) / 1000);
+
+        return trainingTimeSeconds;
     }
 
     /**
@@ -792,4 +865,11 @@ class PlayerManager {
     }
 }
 
-export default new PlayerManager();
+const playerManagerInstance = new PlayerManager();
+
+// 暴露到 window 以便調試
+if (typeof window !== 'undefined') {
+    window.PlayerManager = playerManagerInstance;
+}
+
+export default playerManagerInstance;

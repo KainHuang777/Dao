@@ -291,6 +291,12 @@ export default class CraftingPanel {
      */
     getPillEffectText(pillConfig) {
         const lang = LanguageManager.getInstance();
+
+        // 特殊處理：蘊靈丹
+        if (pillConfig.effect === 'lingliBoost') {
+            return `${lang.t('靈力產出')}2${lang.t('倍')}${lang.t('持續')}1祀，${lang.t('增加修煉時間')}1祀`;
+        }
+
         const effectNames = {
             trainingSpeed: lang.t('修煉速度'),
             lingliProduction: lang.t('靈力產出'),
@@ -314,9 +320,17 @@ export default class CraftingPanel {
         if (canUse) {
             btn.removeAttribute('disabled');
             btn.classList.remove('disabled');
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+            btn.style.borderColor = '';
+            btn.style.color = '';
         } else {
             btn.setAttribute('disabled', 'true');
             btn.classList.add('disabled');
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+            btn.style.borderColor = '#666';
+            btn.style.color = '#999';
         }
     }
 }

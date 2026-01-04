@@ -445,14 +445,21 @@ export default class BuildingManager {
         // 5. Apply Pill Bonuses (丹藥加成)
         const pillAllProductionBonus = PlayerManager.getPillBonus('allProduction');
         const pillLingliBonus = PlayerManager.getPillBonus('lingliProduction');
+        const lingliBuffMultiplier = PlayerManager.getLingliBuffMultiplier(); // 蘊靈丹 buff
 
         for (const [key, res] of Object.entries(resources)) {
             // 所有資源產出加成（化神丹、破境丹、仙丹、大道聖丹）
-            res.rate *= (1 + pillAllProductionBonus);
+            if (pillAllProductionBonus > 0) {
+                res.rate *= (1 + pillAllProductionBonus);
+            }
 
-            // 靈力專屬加成（蘊靈丹）
+            // 靈力產出加成（蘊靈丹永久加成 + buff 倍數）
             if (key === 'lingli') {
-                res.rate *= (1 + pillLingliBonus);
+                if (pillLingliBonus > 0) {
+                    res.rate *= (1 + pillLingliBonus);
+                }
+                // 應用蘊靈丹 buff（2倍效果）
+                res.rate *= lingliBuffMultiplier;
             }
         }
 

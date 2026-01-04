@@ -1,5 +1,6 @@
 import CSVLoader from '../utils/CSVLoader.js';
 import PlayerManager from '../utils/PlayerManager.js';
+import LanguageManager from '../utils/LanguageManager.js';
 
 export default class ResourceManager {
     constructor() {
@@ -81,10 +82,13 @@ export default class ResourceManager {
         // 扣除靈力消耗
         const lingliRes = this.resources['lingli'];
         if (lingliRes && lingliRes.unlocked) {
+            // Note: lingliConsumption can be negative (e.g. -1), meaning it adds to lingli.
             const consumption = lingliConsumption * deltaTime;
             lingliRes.value -= consumption;
             // 靈力不能為負數
             if (lingliRes.value < 0) lingliRes.value = 0;
+            // 靈力也不能超過上限
+            if (lingliRes.value > lingliRes.max) lingliRes.value = lingliRes.max;
         }
 
         for (const [key, res] of Object.entries(this.resources)) {
@@ -225,7 +229,7 @@ export default class ResourceManager {
             if (count <= 0) return false;
         }
 
-        // 2. 檢查產物空間 (Output Storage)
+        // 2. 檢查產物空間 (Output Storage) - 暫時不考慮爆擊，先用基礎數量檢查
         if (res.value + count > res.max) {
             count = Math.floor(res.max - res.value); // 確保是整數
             if (count <= 0) return false;
@@ -236,8 +240,36 @@ export default class ResourceManager {
             this.resources[ingredientKey].value -= amount * count;
         }
 
-        // 4. 增加產物 (Add product)
-        res.value += count;
+        // 4. 爆擊系統：計算最終產出數量
+        let finalCount = count;
+        let criticalMultiplier = 1;
+        const random = Math.random();
+
+        if (random < 0.05) {
+            // 5% 機率 3倍
+            criticalMultiplier = 3;
+        } else if (random < 0.15) {
+            // 10% 機率 2倍 (0.05 + 0.10 = 0.15)
+            criticalMultiplier = 2;
+        }
+
+        finalCount = count * criticalMultiplier;
+
+        // 檢查爆擊後是否超過容量上限
+        if (res.value + finalCount > res.max) {
+            finalCount = Math.floor(res.max - res.value);
+        }
+
+        // 5. 增加產物 (Add product)
+        res.value += finalCount;
+
+        // 6. 如果發生爆擊，記錄到日誌
+        if (criticalMultiplier > 1 && window.game && window.game.uiManager) {
+            const resName = LanguageManager.getInstance().t(res.name);
+            const critMsg = `<span style="color:#ffd700">⚡【合成爆擊 ×${criticalMultiplier}】</span> ${resName} ×${count} → <span style="color:#4caf50">×${finalCount}</span>`;
+            window.game.uiManager.addLog(critMsg);
+        }
+
         return true;
     }
 

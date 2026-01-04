@@ -257,12 +257,13 @@ class EraManager {
 
         // 檢查修練時間
         if (trainingTime < requiredTime) {
+            const remainingTime = requiredTime - trainingTime;
             return {
                 canLevelUp: false,
                 missingSkills: [],
                 missingResources: {},
                 requiredTime,
-                reason: LanguageManager.getInstance().t('修練時間不足 (需要 {years} 年)', { years: (requiredTime / 60).toFixed(2) })
+                reason: LanguageManager.getInstance().t('修練時間不足 (需要 {years} 祀)', { years: (remainingTime / 60).toFixed(2) })
             };
         }
 
@@ -349,9 +350,12 @@ class EraManager {
             return 0;
         }
         const requirements = era.levelUpRequirements;
-        return requirements.baseTime * Math.pow(requirements.timeMultiplier, currentLevel);
+        // 使用 currentLevel - 1，因為第1級(index 0)對應 baseTime
+        const power = Math.max(0, currentLevel - 1);
+        return requirements.baseTime * Math.pow(requirements.timeMultiplier, power);
     }
 }
+
 
 // 導出單例
 export default new EraManager();
