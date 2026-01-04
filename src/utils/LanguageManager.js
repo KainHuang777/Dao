@@ -102,20 +102,18 @@ export default class LanguageManager {
             }
         }
 
-        // Fallback: Return key if translation is missing
-        if (!translated) {
-            return key;
-        }
+        // Fallback: Use key if translation is missing
+        let result = translated || key;
 
         // Parameter interpolation (e.g. "Hello {name}")
         // Simple replacement for {param}
         if (params) {
-            return translated.replace(/{(\w+)}/g, (match, paramKey) => {
+            return result.replace(/{(\w+)}/g, (match, paramKey) => {
                 return params[paramKey] !== undefined ? params[paramKey] : match;
             });
         }
 
-        return translated;
+        return result;
     }
 
     getCurrentLang() {
