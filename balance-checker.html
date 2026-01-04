@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數值模型檢核工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ffd700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-size: 2.5em;
+        }
+
+        .tool-section {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .tool-section h2 {
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .input-group label {
+            color: #a0d8ff;
+            font-weight: bold;
+            min-width: 120px;
+        }
+
+        .input-group input,
+        .input-group select {
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            font-size: 1em;
+            min-width: 150px;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result-container {
+            margin-top: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        th {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        td {
+            text-align: center;
+        }
+
+        tr:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .highlight {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .warning {
+            color: #ff9800;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .summary-box {
+            background: rgba(255, 215, 0, 0.1);
+            border-left: 4px solid #ffd700;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+
+        .summary-box h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: #a0d8ff;
+        }
+
+        .summary-value {
+            color: #4caf50;
+            font-weight: bold;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #a0d8ff;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+        }
+
+        .info-text {
+            color: #a0d8ff;
+            font-size: 0.9em;
+            margin-top: 10px;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="start.html" class="back-link">← 返回導航</a>
+
+        <h1>🔍 數值模型檢核工具</h1>
+
+        <!-- 緩存清除提示 -->
+        <div
+            style="background: rgba(255, 152, 0, 0.2); border-left: 4px solid #ff9800; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+            <strong>💡 提示：</strong>如果看到數據異常或不更新，請按 <code>Ctrl+Shift+R</code> (Windows) 或 <code>Cmd+Shift+R</code> (Mac)
+            強制刷新頁面清除緩存。
+        </div>
+
+        <!-- 時期進度模擬 -->
+        <div class="tool-section">
+            <h2>📊 A. 時期進度模擬（第1-12時期）</h2>
+            <p class="info-text">模擬從練氣期到金仙的完整修煉歷程，計算每個時期所需的時間和累計時間</p>
+            <div class="input-group">
+                <button id="simulateEras">開始模擬</button>
+            </div>
+            <div id="eraResults" class="result-container"></div>
+        </div>
+
+        <!-- 資源上限計算 -->
+        <div class="tool-section">
+            <h2>💎 B. 資源上限計算器</h2>
+            <p class="info-text">根據道心、道證和目標時期，計算可達到的最大資源上限（不含合成資源）</p>
+            <div class="input-group">
+                <label>道心值：</label>
+                <input type="number" id="daoHeart" value="0" min="0" step="1">
+
+                <label>道證值：</label>
+                <input type="number" id="daoProof" value="0" min="0" step="1">
+
+                <label>目標時期：</label>
+                <select id="targetEra">
+                    <option value="1">1 - 練氣期</option>
+                    <option value="2">2 - 築基期</option>
+                    <option value="3">3 - 金丹期</option>
+                    <option value="4">4 - 元嬰期</option>
+                    <option value="5">5 - 化神期</option>
+                    <option value="6">6 - 煉虛期</option>
+                    <option value="7">7 - 合體期</option>
+                    <option value="8">8 - 大乘期</option>
+                    <option value="9">9 - 渡劫期</option>
+                    <option value="10">10 - 地仙</option>
+                    <option value="11">11 - 天仙</option>
+                    <option value="12">12 - 金仙</option>
+                </select>
+
+                <button id="calculateResources">計算資源上限</button>
+            </div>
+            <div id="resourceResults" class="result-container"></div>
+        </div>
+
+        <!-- 建議的額外檢核項目 -->
+        <div class="tool-section">
+            <h2>🎯 C. 建築投資回報分析</h2>
+            <p class="info-text">分析不同建築的投資回報率，幫助優化建造順序</p>
+            <div class="input-group">
+                <button id="analyzeBuildingROI">分析建築 ROI</button>
+            </div>
+            <div id="buildingResults" class="result-container"></div>
+        </div>
+
+        <div class="tool-section">
+            <h2>⚡ D. 功法效益分析</h2>
+            <p class="info-text">計算各功法的技能點投資效益，優化學習順序</p>
+            <div class="input-group">
+                <button id="analyzeSkills">分析功法效益</button>
+            </div>
+            <div id="skillResults" class="result-container"></div>
+        </div>
+
+        <div class="tool-section">
+            <h2>⏱️ E. 功法學習時間計算</h2>
+            <p class="info-text">計算在給定藏書閣等級下，獲得足夠技能點學習各功法需要的時間</p>
+            <div class="input-group">
+                <label>藏書閣等級：</label>
+                <input type="number" id="libraryLevel" value="10" min="0" max="100">
+                <label>藏經閣等級：</label>
+                <input type="number" id="scriptureLevel" value="0" min="0" max="100">
+            </div>
+            <div class="input-group">
+                <button id="calculateSkillTime">計算學習時間</button>
+            </div>
+            <div id="skillTimeResults" class="result-container"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 導入必要的模組
+        let EraManager, ResourceManager, BuildingManager, SkillManager;
+        let Buildings;
+
+        async function init() {
+            try {
+                const eraModule = await import('./src/utils/EraManager.js');
+                EraManager = eraModule.default;
+                await EraManager.init();
+
+                const resModule = await import('./src/data/Resources.js');
+                ResourceManager = resModule.default;
+
+                const buildingModule = await import('./src/data/Buildings.js');
+                await buildingModule.loadBuildings();
+                Buildings = buildingModule.Buildings;
+
+                const skillModule = await import('./src/utils/SkillManager.js');
+                SkillManager = skillModule.default;
+                await SkillManager.init();
+
+                console.log('✓ 所有模組載入完成');
+            } catch (e) {
+                console.error('模組載入失敗:', e);
+                alert('模組載入失敗，請確認伺服器正在運行');
+            }
+        }
+
+        // A. 時期進度模擬
+        document.getElementById('simulateEras').addEventListener('click', () => {
+            if (!EraManager) {
+                alert('時期數據尚未載入');
+                return;
+            }
+
+            const eras = EraManager.getAllEras();
+            console.log('載入的時期數據:', eras); // 調試用
+
+            let html = '<table>';
+            html += '<tr><th>時期</th><th>名稱</th><th>最大等級</th><th>該時期壽元(年)</th><th>累計壽元(年)</th><th>該時期真實時間</th><th>累計真實時間</th><th>等級升級時間</th></tr>';
+
+            let totalYears = 0;
+            let totalMinutes = 0;
+            const daoHeart = parseInt(document.getElementById('daoHeart').value) || 0;
+            const daoProof = parseInt(document.getElementById('daoProof').value) || 0;
+            const speedBonus = daoHeart * 0.001 + daoProof * 0.01;
+
+            eras.forEach(era => {
+                const eraLifespanMax = calculateLifespanUpTo(era.eraId, eras);
+                const previousLifespanMax = era.eraId > 1 ? calculateLifespanUpTo(era.eraId - 1, eras) : 0;
+                const thisEraYears = eraLifespanMax - previousLifespanMax;
+
+                totalYears = eraLifespanMax;
+                totalMinutes = totalYears; // 1年 = 1分鐘
+
+                // 計算等級升級時間
+                const baseTime = era.levelUpRequirements?.baseTime || 60;
+                const timeMult = era.levelUpRequirements?.timeMultiplier || 1.2;
+                let levelUpTime = 0; // 秒
+                for (let lv = 1; lv <= era.maxLevel; lv++) {
+                    levelUpTime += baseTime * Math.pow(timeMult, lv - 1);
+                }
+
+                // 應用速度加成
+                levelUpTime /= (1 + speedBonus);
+
+                // 計算佔比
+                const timeInMinutes = levelUpTime / 60;
+                const ratio = (timeInMinutes / thisEraYears * 100).toFixed(1);
+                let ratioClass = 'highlight';
+                if (parseFloat(ratio) > 100) ratioClass = 'error';
+                else if (parseFloat(ratio) > 80) ratioClass = 'warning';
+
+                html += `<tr>
+                    <td>${era.eraId}</td>
+                    <td><strong>${era.eraName}</strong></td>
+                    <td>${era.maxLevel}</td>
+                    <td class="highlight">${thisEraYears.toFixed(0)}</td>
+                    <td>${totalYears.toFixed(0)}</td>
+                    <td class="highlight">${formatTime(thisEraYears)}</td>
+                    <td>${formatTime(totalMinutes)}</td>
+                    <td class="${ratioClass}">${formatTime(timeInMinutes)} (${ratio}%)</td>
+                </tr>`;
+            });
+
+            html += '</table>';
+
+            // 添加總結
+            html += `<div class="summary-box">
+                <h3>📈 總體統計</h3>
+                <div class="summary-item">
+                    <span class="summary-label">修煉至金仙所需總壽元：</span>
+                    <span class="summary-value">${totalYears.toFixed(0)} 年</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">真實世界所需時間：</span>
+                    <span class="summary-value">${formatTime(totalMinutes)}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">當前模擬加成 (道心+道證)：</span>
+                    <span class="summary-value">+${(speedBonus * 100).toFixed(1)}% 修煉速度</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">平均每時期壽元：</span>
+                    <span class="summary-value">${(totalYears / 12).toFixed(0)} 年</span>
+                </div>
+            </div>`;
+
+            document.getElementById('eraResults').innerHTML = html;
+        });
+
+        // 計算到某時期的累計壽元
+        function calculateLifespanUpTo(eraId, eras) {
+            if (!eras) eras = EraManager.getAllEras();
+            let total = 0;
+            for (let i = 1; i <= eraId; i++) {
+                const era = eras.find(e => e.eraId === i);
+                if (era && era.lifespan) {
+                    total += era.lifespan;
+                } else {
+                    total += (i === 1 ? 80 : i * 100);
+                }
+            }
+            return total;
+        }
+
+        // 格式化時間
+        function formatTime(minutes) {
+            if (minutes < 60) {
+                return `${minutes.toFixed(1)} 分鐘`;
+            } else if (minutes < 1440) {
+                const hours = minutes / 60;
+                return `${hours.toFixed(1)} 小時`;
+            } else {
+                const days = minutes / 1440;
+                return `${days.toFixed(1)} 天`;
+            }
+        }
+
+        // B. 資源上限計算
+        document.getElementById('calculateResources').addEventListener('click', async () => {
+            const daoHeart = parseInt(document.getElementById('daoHeart').value) || 0;
+            const daoProof = parseInt(document.getElementById('daoProof').value) || 0;
+            const targetEra = parseInt(document.getElementById('targetEra').value);
+
+            if (!EraManager || !Buildings || !SkillManager) {
+                alert('數據尚未載入');
+                return;
+            }
+
+            // 計算加成
+            const daoHeartBonus = daoHeart * 0.001; // 0.1% per point
+            const daoProofBonus = daoProof * 0.01;  // 1% per point
+
+            // 載入資源數據
+            const resourceManager = new ResourceManager();
+            await resourceManager.init();
+
+            const baseResources = resourceManager.getBaseData();
+            const era = EraManager.getEraById(targetEra);
+
+            // 調試輸出
+            console.log('=== 資源上限計算器調試 ===');
+            console.log('目標時期:', targetEra, era?.eraName);
+
+            // 計算該時期可達到的最大資源上限
+            const maxCapacity = {};
+            const basicResources = ['lingli', 'money', 'wood', 'stone', 'herb', 'skill_point'];
+
+            // 1. 初始化基礎上限
+            basicResources.forEach(key => {
+                const res = baseResources[key];
+                if (res && res.type === 'basic') {
+                    maxCapacity[key] = {
+                        name: res.name,
+                        base: res.max,
+                        fromBuildings: 0,
+                        fromSkills: 0,
+                        beforeBonus: 0,
+                        final: 0
+                    };
+                }
+            });
+
+            // 2. 計算建築提供的上限加成
+            Object.entries(Buildings).forEach(([id, building]) => {
+                if (building.era <= targetEra && building.effects) {
+                    const maxLevel = building.maxLevel;
+                    Object.entries(building.effects).forEach(([effectKey, effectValue]) => {
+                        if (effectKey.endsWith('_max')) {
+                            const resourceKey = effectKey.replace('_max', '');
+                            if (maxCapacity[resourceKey]) {
+                                const totalBonus = effectValue * maxLevel;
+                                maxCapacity[resourceKey].fromBuildings += totalBonus;
+                            }
+                        }
+                    });
+                }
+            });
+
+            // 3. 計算功法提供的上限加成
+            const allSkills = SkillManager.getSkills();
+            Object.entries(allSkills).forEach(([id, skill]) => {
+                if (skill.requirements.era <= targetEra && skill.effects) {
+                    const effectType = skill.effects.type;
+                    const effectAmount = skill.effects.amount;
+
+                    if (effectType === 'all_max') {
+                        basicResources.forEach(key => {
+                            if (maxCapacity[key]) {
+                                maxCapacity[key].fromSkills += effectAmount;
+                            }
+                        });
+                    } else if (effectType.endsWith('_max')) {
+                        const resourceKey = effectType.replace('_max', '');
+                        if (maxCapacity[resourceKey]) {
+                            maxCapacity[resourceKey].fromSkills += effectAmount;
+                        }
+                    }
+                }
+            });
+
+            // 4. 應用道心道證加成
+            basicResources.forEach(key => {
+                if (maxCapacity[key]) {
+                    const beforeBonus = maxCapacity[key].base +
+                        maxCapacity[key].fromBuildings +
+                        maxCapacity[key].fromSkills;
+                    maxCapacity[key].beforeBonus = beforeBonus;
+                    const withDaoHeart = beforeBonus * (1 + daoHeartBonus);
+                    const final = withDaoHeart * (1 + daoProofBonus);
+                    maxCapacity[key].final = Math.floor(final);
+                }
+            });
+
+            // 5. 獲取時期要求
+            let eraCapacityRequirements = {};
+            if (era && era.upgradeRequirements && era.upgradeRequirements.capacity) {
+                eraCapacityRequirements = era.upgradeRequirements.capacity;
+            }
+
+            // 6. 生成表格
+            let html = '<table>';
+            html += '<tr><th>資源名稱</th><th>基礎上限</th><th>建築加成</th><th>功法加成</th><th>小計</th><th>道心道證</th><th>最終上限</th><th>時期要求</th><th>達標</th></tr>';
+
+            basicResources.forEach(key => {
+                const cap = maxCapacity[key];
+                if (cap) {
+                    const eraRequirement = eraCapacityRequirements[key] || 0;
+                    let meetsRequirement = '';
+                    let requirementClass = '';
+                    if (eraRequirement > 0) {
+                        if (cap.final >= eraRequirement) {
+                            meetsRequirement = '✓';
+                            requirementClass = 'highlight';
+                        } else {
+                            meetsRequirement = '✗';
+                            requirementClass = 'error';
+                        }
+                    } else {
+                        meetsRequirement = '-';
+                    }
+
+                    const bonusPercent = (((1 + daoHeartBonus) * (1 + daoProofBonus) - 1) * 100).toFixed(1);
+
+                    html += `<tr>
+                        <td><strong>${cap.name}</strong></td>
+                        <td>${formatNumber(cap.base)}</td>
+                        <td class="${cap.fromBuildings > 0 ? 'highlight' : ''}">${cap.fromBuildings > 0 ? '+' + formatNumber(cap.fromBuildings) : '-'}</td>
+                        <td class="${cap.fromSkills > 0 ? 'highlight' : ''}">${cap.fromSkills > 0 ? '+' + formatNumber(cap.fromSkills) : '-'}</td>
+                        <td>${formatNumber(cap.beforeBonus)}</td>
+                        <td>+${bonusPercent}%</td>
+                        <td class="highlight"><strong>${formatNumber(cap.final)}</strong></td>
+                        <td>${eraRequirement > 0 ? formatNumber(eraRequirement) : '-'}</td>
+                        <td class="${requirementClass}">${meetsRequirement}</td>
+                    </tr>`;
+                }
+            });
+
+            html += '</table>';
+
+            // 計算滿足時期要求所需的最小道心/道證
+            let requiredDaoHeart = 0;
+            let requiredDaoProof = 0;
+            let hasRequirements = false;
+
+            // 找出最嚴格的資源要求
+            let maxRequiredRatio = 0;
+            basicResources.forEach(key => {
+                const cap = maxCapacity[key];
+                const requirement = eraCapacityRequirements[key] || 0;
+                if (requirement > 0 && cap) {
+                    hasRequirements = true;
+                    // 計算需要的倍率：要求值 / 小計值
+                    const requiredRatio = requirement / cap.beforeBonus;
+                    if (requiredRatio > maxRequiredRatio) {
+                        maxRequiredRatio = requiredRatio;
+                    }
+                }
+            });
+
+            // 計算所需的道心/道證組合
+            if (hasRequirements && maxRequiredRatio > 1) {
+                // 需要的總加成倍率
+                const neededMultiplier = maxRequiredRatio;
+
+                // 假設只用道證（1% per point）
+                requiredDaoProof = Math.ceil((neededMultiplier - 1) * 100);
+
+                // 假設只用道心（0.1% per point）
+                requiredDaoHeart = Math.ceil((neededMultiplier - 1) * 1000);
+            }
+
+            // 添加總結
+            html += `<div class="summary-box">
+                <h3>💡 分析結果</h3>
+                <div class="summary-item">
+                    <span class="summary-label">目標時期：</span>
+                    <span class="summary-value">${era ? era.eraName : '未知'} (第${targetEra}時期)</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">計算方式：</span>
+                    <span class="summary-value">基礎上限 + 所有可用建築(滿級) + 所有可用功法</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">當前道心：</span>
+                    <span class="summary-value">${daoHeart} (加成 +${(daoHeartBonus * 100).toFixed(1)}%)</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">當前道證：</span>
+                    <span class="summary-value">${daoProof} (加成 +${(daoProofBonus * 100).toFixed(1)}%)</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">綜合加成：</span>
+                    <span class="summary-value">+${(((1 + daoHeartBonus) * (1 + daoProofBonus) - 1) * 100).toFixed(1)}%</span>
+                </div>
+            </div>`;
+
+            // 添加升階建議
+            if (hasRequirements) {
+                const allMet = basicResources.every(key => {
+                    const cap = maxCapacity[key];
+                    const requirement = eraCapacityRequirements[key] || 0;
+                    return requirement === 0 || cap.final >= requirement;
+                });
+
+                html += `<div class="summary-box" style="background: ${allMet ? 'rgba(76, 175, 80, 0.1)' : 'rgba(255, 152, 0, 0.1)'}; border-left-color: ${allMet ? '#4caf50' : '#ff9800'};">
+                    <h3>${allMet ? '✅' : '⚠️'} 升階條件分析</h3>`;
+
+                if (allMet) {
+                    html += `<p style="color: #4caf50; margin: 10px 0;">
+                        當前配置已滿足所有升階條件！可以順利突破至下一時期。
+                    </p>`;
+                } else {
+                    html += `<p style="color: #ff9800; margin: 10px 0;">
+                        當前配置尚未滿足升階條件。以下是建議的道心/道證需求：
+                    </p>
+                    <div class="summary-item">
+                        <span class="summary-label">方案A（僅用道心）：</span>
+                        <span class="summary-value" style="color: #a0d8ff;">至少需要 ${requiredDaoHeart} 道心</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">方案B（僅用道證）：</span>
+                        <span class="summary-value" style="color: #a0d8ff;">至少需要 ${requiredDaoProof} 道證</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">方案C（混合使用）：</span>
+                        <span class="summary-value" style="color: #a0d8ff;">例如 ${Math.ceil(requiredDaoHeart / 2)} 道心 + ${Math.ceil(requiredDaoProof / 2)} 道證</span>
+                    </div>
+                    <p style="color: #a0d8ff; margin: 10px 0; font-size: 0.9em; font-style: italic;">
+                        💡 提示：道證效率更高（1%/點 vs 0.1%/點），建議優先提升道證。
+                    </p>`;
+                }
+
+                html += `</div>`;
+            }
+
+            document.getElementById('resourceResults').innerHTML = html;
+        });
+
+        // C. 建築投資回報分析
+        document.getElementById('analyzeBuildingROI').addEventListener('click', () => {
+            if (!Buildings) {
+                alert('建築數據尚未載入');
+                return;
+            }
+
+            let html = '<table>';
+            html += '<tr><th>建築名稱</th><th>初始成本</th><th>產出類型</th><th>基礎產率</th><th>權重</th><th>Lv.1 產率</th><th>ROI 評級</th></tr>';
+
+            const buildingData = [];
+
+            Object.entries(Buildings).forEach(([id, building]) => {
+                if (building.effects) {
+                    const totalCost = Object.values(building.baseCost).reduce((sum, val) => sum + val, 0);
+                    const effectKey = Object.keys(building.effects)[0];
+                    const effectValue = building.effects[effectKey];
+                    const weight = building.effectWeight || 0;
+                    const level1Output = effectValue * Math.pow(1 + weight, 2);
+
+                    // 計算 ROI（簡化版：產出/成本）
+                    const roi = level1Output / (totalCost / 100);
+
+                    buildingData.push({
+                        name: building.name,
+                        cost: totalCost,
+                        effectType: effectKey,
+                        baseRate: effectValue,
+                        weight: weight,
+                        level1Rate: level1Output,
+                        roi: roi
+                    });
+                }
+            });
+
+            // 按 ROI 排序
+            buildingData.sort((a, b) => b.roi - a.roi);
+
+            buildingData.forEach(b => {
+                let roiClass = 'highlight';
+                let roiText = '優秀';
+                if (b.roi < 0.5) {
+                    roiClass = 'error';
+                    roiText = '較低';
+                } else if (b.roi < 1) {
+                    roiClass = 'warning';
+                    roiText = '中等';
+                }
+
+                html += `<tr>
+                    <td><strong>${b.name}</strong></td>
+                    <td>${formatNumber(b.cost)}</td>
+                    <td>${b.effectType}</td>
+                    <td>${b.baseRate.toFixed(3)}</td>
+                    <td>${b.weight.toFixed(1)}</td>
+                    <td class="highlight">${b.level1Rate.toFixed(3)}/秒</td>
+                    <td class="${roiClass}">${roiText} (${b.roi.toFixed(2)})</td>
+                </tr>`;
+            });
+
+            html += '</table>';
+
+            html += `<div class="summary-box">
+                <h3>📊 建議</h3>
+                <p style="color: #a0d8ff; line-height: 1.8;">
+                    • ROI 評級基於「Lv.1 產出率 / 初始成本」計算<br>
+                    • 優先建造 ROI 評級為「優秀」的建築可快速提升資源產出<br>
+                    • 權重較高的建築在後期升級時收益更大<br>
+                    • 建議平衡產出類建築與上限類建築的投資
+                </p>
+            </div>`;
+
+            document.getElementById('buildingResults').innerHTML = html;
+        });
+
+        // D. 功法效益分析
+        document.getElementById('analyzeSkills').addEventListener('click', () => {
+            if (!SkillManager) {
+                alert('功法數據尚未載入');
+                return;
+            }
+
+            const skills = SkillManager.getSkills();
+
+            let html = '<table>';
+            html += '<tr><th>功法名稱</th><th>消耗技能點</th><th>效果類型</th><th>效果數值</th><th>性價比</th><th>推薦度</th></tr>';
+
+            const skillData = [];
+
+            Object.entries(skills).forEach(([id, skill]) => {
+                if (skill.cost && skill.effects) {
+                    const cost = skill.cost.amount;
+                    const effectType = skill.effects.type;
+                    const effectAmount = skill.effects.amount;
+
+                    // 計算性價比（效果/成本）
+                    let valuePerCost = 0;
+                    if (effectType.includes('max')) {
+                        valuePerCost = effectAmount / cost;
+                    } else if (effectType.includes('multiplier')) {
+                        valuePerCost = (effectAmount - 1) * 100 / cost;
+                    } else if (effectType.includes('rate')) {
+                        valuePerCost = effectAmount / cost;
+                    }
+
+                    skillData.push({
+                        name: skill.name,
+                        cost: cost,
+                        effectType: effectType,
+                        effectAmount: effectAmount,
+                        valuePerCost: valuePerCost
+                    });
+                }
+            });
+
+            // 按性價比排序
+            skillData.sort((a, b) => b.valuePerCost - a.valuePerCost);
+
+            skillData.forEach(s => {
+                let recommendClass = 'highlight';
+                let recommendText = '強烈推薦';
+                if (s.valuePerCost < 5) {
+                    recommendClass = 'error';
+                    recommendText = '謹慎考慮';
+                } else if (s.valuePerCost < 20) {
+                    recommendClass = 'warning';
+                    recommendText = '適度推薦';
+                }
+
+                html += `<tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.cost}</td>
+                    <td>${s.effectType}</td>
+                    <td>${formatNumber(s.effectAmount)}</td>
+                    <td class="highlight">${s.valuePerCost.toFixed(2)}</td>
+                    <td class="${recommendClass}">${recommendText}</td>
+                </tr>`;
+            });
+
+            html += '</table>';
+
+            html += `<div class="summary-box">
+                <h3>💡 學習建議</h3>
+                <p style="color: #a0d8ff; line-height: 1.8;">
+                    • 性價比 = 效果數值 / 技能點消耗<br>
+                    • 優先學習性價比高的功法可最大化技能點效益<br>
+                    • 上限類功法（max）在資源緊張時優先級較高<br>
+                    • 倍率類功法（multiplier）在後期收益更顯著<br>
+                    • 建議根據當前瓶頸選擇對應的功法類型
+                </p>
+            </div>`;
+
+            document.getElementById('skillResults').innerHTML = html;
+        });
+
+        // E. 功法學習時間計算
+        document.getElementById('calculateSkillTime').addEventListener('click', () => {
+            if (!SkillManager || !Buildings) {
+                alert('數據尚未載入');
+                return;
+            }
+
+            const libraryLevel = parseInt(document.getElementById('libraryLevel').value) || 0;
+            const scriptureLevel = parseInt(document.getElementById('scriptureLevel').value) || 0;
+
+            // 計算技能點產出速率
+            // 藏書閣：改為線性增長 3 點/秒/級
+            const libraryDef = Buildings['library'];
+            const scriptureDef = Buildings['scripture_hall'];
+
+            let skillPointRate = 0;
+
+            if (libraryLevel > 0 && libraryDef) {
+                // 線性增長：3 點/秒/級（不再使用二次方）
+                const amountPerLevel = libraryDef.effects['skill_point'] || 3;
+                skillPointRate += amountPerLevel * libraryLevel;
+            }
+
+            // 藏經閣提供技能點上限，不提供產出
+            const baseMax = 1200; // 基礎上限 1200
+            const scriptureCap = scriptureDef?.effects?.['skill_point'] || 600; // 藏經閣每級 +600
+            const maxSkillPoints = baseMax + (scriptureLevel * scriptureCap);
+
+            const skills = SkillManager.getSkills();
+            const skillData = [];
+
+            Object.entries(skills).forEach(([id, skill]) => {
+                if (skill.cost && skill.cost.type === 'skill_point') {
+                    const requiredPoints = skill.cost.amount;
+
+                    // 計算獲得所需技能點需要的時間
+                    let timeInSeconds = 0;
+                    if (skillPointRate > 0) {
+                        timeInSeconds = requiredPoints / skillPointRate;
+                    } else {
+                        timeInSeconds = Infinity;
+                    }
+
+                    // 轉換為易讀格式
+                    let timeText = '';
+                    if (timeInSeconds === Infinity) {
+                        timeText = '無法獲得（無產出）';
+                    } else if (timeInSeconds < 60) {
+                        timeText = `${timeInSeconds.toFixed(1)} 秒`;
+                    } else if (timeInSeconds < 3600) {
+                        timeText = `${(timeInSeconds / 60).toFixed(1)} 分鐘`;
+                    } else if (timeInSeconds < 86400) {
+                        timeText = `${(timeInSeconds / 3600).toFixed(1)} 小時`;
+                    } else {
+                        timeText = `${(timeInSeconds / 86400).toFixed(1)} 天`;
+                    }
+
+                    skillData.push({
+                        id: id,
+                        name: skill.name,
+                        cost: requiredPoints,
+                        era: skill.requirements?.era || 1,
+                        timeInSeconds: timeInSeconds,
+                        timeText: timeText,
+                        canAfford: requiredPoints <= maxSkillPoints
+                    });
+                }
+            });
+
+            // 按時間排序
+            skillData.sort((a, b) => a.timeInSeconds - b.timeInSeconds);
+
+            let html = '<table>';
+            html += '<tr><th>功法名稱</th><th>時期</th><th>技能點消耗</th><th>獲得時間</th><th>上限檢查</th></tr>';
+
+            skillData.forEach(s => {
+                const canAffordClass = s.canAfford ? '' : 'error';
+                const canAffordText = s.canAfford ? '✓' : `✗ 需要上限 ${s.cost}`;
+
+                html += `<tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${s.era}</td>
+                    <td>${s.cost}</td>
+                    <td class="highlight">${s.timeText}</td>
+                    <td class="${canAffordClass}">${canAffordText}</td>
+                </tr>`;
+            });
+
+            html += '</table>';
+
+            // 添加總結
+            const skillPointsPerHour = skillPointRate * 3600;
+            const skillPointsPerDay = skillPointRate * 86400;
+
+            html += `<div class="summary-box">
+                <h3>💡 技能點產出分析</h3>
+                <div class="summary-item">
+                    <span class="summary-label">藏書閣等級：</span>
+                    <span class="summary-value">Lv. ${libraryLevel}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">藏經閣等級：</span>
+                    <span class="summary-value">Lv. ${scriptureLevel}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">技能點產出速率：</span>
+                    <span class="summary-value">${skillPointRate.toFixed(4)} 點/秒</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">每小時產出：</span>
+                    <span class="summary-value">${skillPointsPerHour.toFixed(2)} 點</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">每天產出：</span>
+                    <span class="summary-value">${skillPointsPerDay.toFixed(2)} 點</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">技能點上限：</span>
+                    <span class="summary-value">${maxSkillPoints} 點</span>
+                </div>
+            </div>`;
+
+            html += `<div class="summary-box" style="background: rgba(255, 152, 0, 0.1); border-left-color: #ff9800;">
+                <h3>⚠️ 使用說明</h3>
+                <p style="color: #a0d8ff; line-height: 1.8;">
+                    • 獲得時間 = 技能點消耗 / 產出速率<br>
+                    • 藏書閣提供技能點產出（二次方增長）<br>
+                    • 藏經閣提供技能點上限（每級 +10）<br>
+                    • 上限不足時無法儲存足夠的技能點<br>
+                    • 建議優先升級藏書閣提升產出速率<br>
+                    • 當需要學習高成本功法時再升級藏經閣
+                </p>
+            </div>`;
+
+            document.getElementById('skillTimeResults').innerHTML = html;
+        });
+
+        // 格式化數字
+        function formatNumber(num) {
+            if (num >= 1000000000) {
+                return (num / 1000000000).toFixed(2) + 'B';
+            } else if (num >= 1000000) {
+                return (num / 1000000).toFixed(2) + 'M';
+            } else if (num >= 10000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toFixed(0);
+        }
+
+        // 初始化
+        init();
+    </script>
+</body>
+
+</html>

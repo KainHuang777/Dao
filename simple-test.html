@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡單測試</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #000;
+            color: #0f0;
+        }
+
+        .error {
+            color: #f00;
+        }
+
+        .success {
+            color: #0f0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>模組載入測試</h1>
+    <div id="output"></div>
+
+    <script type="module">
+        const output = document.getElementById('output');
+
+        function log(msg, isError = false) {
+            const div = document.createElement('div');
+            div.className = isError ? 'error' : 'success';
+            div.textContent = msg;
+            output.appendChild(div);
+        }
+
+        async function testModules() {
+            try {
+                // 新增：載入必要的加載器與管理器
+                const { loadBuildings } = await import('./src/data/Buildings.js');
+                const { default: EraManager } = await import('./src/utils/EraManager.js');
+                const { default: SkillManager } = await import('./src/utils/SkillManager.js');
+
+                log('1. 測試 ResourceManager...');
+                const { default: ResourceManager } = await import('./src/data/Resources.js');
+                log('✓ ResourceManager 載入成功');
+
+                const rm = new ResourceManager();
+                await rm.init(); // 必須初始化以載入 CSV
+                log('✓ ResourceManager 實例化與初始化成功');
+
+                const lingli = rm.getResource('lingli');
+                log(`✓ 靈力初始值: ${lingli.value}, 產率: ${lingli.rate}, 類型: ${lingli.type}`);
+
+                log('\n2. 測試手動採集...');
+                const before = lingli.value;
+                const result = rm.manualGather('lingli');
+                const after = lingli.value;
+                log(`採集前: ${before}`);
+                log(`採集後: ${after}`);
+                log(`增加: ${after - before}`);
+                log(result ? '✓ 手動採集成功' : '✗ 手動採集失敗', !result);
+
+                log('\n3. 測試自動增長...');
+
+                // 導入 PlayerManager 以計算靈力消耗
+                const { default: PlayerManager } = await import('./src/utils/PlayerManager.js');
+
+                // 強制設定為時代1、等級1，確保測試環境一致
+                const originalEra = PlayerManager.getEraId();
+                const originalLevel = PlayerManager.getLevel();
+                PlayerManager.state.eraId = 1;
+                PlayerManager.state.level = 1;
+
+                const before2 = lingli.value;
+                const baseRate = lingli.rate;
+
+                // 計算靈力消耗（與 Resources.js 中的公式保持一致）
+                const currentEra = PlayerManager.getEraId();
+                const currentLevel = PlayerManager.getLevel();
+                const lingliConsumption = (currentEra - 1) * 10 + currentLevel - 2;
+                const netRate = baseRate - lingliConsumption;
+
+                rm.update(1); // 模擬 1 秒
+                const after2 = lingli.value;
+                log(`1秒前: ${before2}`);
+                log(`1秒後: ${after2}`);
+                log(`增加: ${after2 - before2}`);
+                log(`基礎產率: ${baseRate}/秒`);
+                log(`靈力消耗: ${lingliConsumption}/秒`);
+                log(`淨產率: ${netRate}/秒`);
+
+                if (Math.abs((after2 - before2) - netRate) < 0.01) {
+                    log('✓ 自動增長正常');
+                } else {
+                    log('✗ 自動增長異常', true);
+                }
+
+                // 恢復狀態
+                PlayerManager.state.eraId = originalEra;
+                PlayerManager.state.level = originalLevel;
+
+                log('\n4. 測試 BuildingManager...');
+                const { default: BuildingManager } = await import('./src/utils/BuildingManager.js');
+                log('✓ BuildingManager 載入成功');
+
+                // 需要先載入 CSV 資料
+                await EraManager.init();
+                await SkillManager.init();
+                await loadBuildings();
+
+                const bm = new BuildingManager(rm);
+                bm.init(); // 必須初始化
+                log('✓ BuildingManager 實例化與初始化成功');
+
+                const hut = bm.getBuilding('hut');
+                if (hut) {
+                    log(`✓ 茅屋等級: ${hut.level}`);
+                } else {
+                    log('✗ 找不到茅屋數據', true);
+                }
+
+                log('\n5. 測試 GameLoop...');
+                const { default: GameLoop } = await import('./src/utils/gameLoop.js');
+                log('✓ GameLoop 載入成功');
+
+                log('\n6. 測試 SaveSystem...');
+                // SaveSystem 可能需要真正的 game 實體，這裡簡單測試 import
+                const { default: SaveSystem } = await import('./src/utils/saveSystem.js');
+                log('✓ SaveSystem 載入成功');
+
+                log('\n7. 測試 UIManager...');
+                const { default: UIManager } = await import('./src/views/MainView.js');
+                log('✓ UIManager 載入成功');
+
+                log('\n========== 所有模組測試通過 ==========');
+
+            } catch (e) {
+                log(`✗ 錯誤: ${e.message}`, true);
+                log(`堆疊: ${e.stack}`, true);
+            }
+        }
+
+        testModules();
+    </script>
+</body>
+
+</html>

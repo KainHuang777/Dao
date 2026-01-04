@@ -1,0 +1,795 @@
+// src/utils/PlayerManager.js
+/**
+ * PlayerManager 負責管理玩家的時代、等級、修練開始時間以及重置功能。
+ * 資料會儲存在 localStorage 中,以便在重新載入頁面時保留進度。
+ */
+import EraManager from './EraManager.js';
+import SkillManager from './SkillManager.js';
+import LanguageManager from './LanguageManager.js';
+
+class PlayerManager {
+    constructor() {
+        this.storageKey = 'playerState';
+        this.defaultState = {
+            eraId: 1,          // 初始為 練氣 (eraId 1)
+            level: 1,          // 等級 1
+            startTimestamp: Date.now(), // 當前境界修練開始時間(毫秒)
+            totalStartTimestamp: Date.now(), // 總修練開始時間(毫秒)
+            learnedSkills: {}, // 已學習的技能 { id: level }
+            rebirthCount: 0,   // 輪迴次數
+            daoHeart: 0,       // 道心 (換取天賦)
+            daoProof: 0,       // 道證值 (成就位格)
+            talents: {},        // 已購天賦 { id: level }
+            isReincarnating: false, // 是否正在輪迴狀態 (壽元已盡)
+            consumedPills: {},   // 已服用的丹藥 { pillId: count }
+            hints: {
+                rule1Triggered: false, // 壽元 1/3 提示
+                lastRule2Year: -1      // 壽元過半後的週期性提示年份
+            }
+        };
+        this.state = this._loadState();
+    }
+
+    _loadState() {
+        const raw = localStorage.getItem(this.storageKey);
+        if (raw) {
+            try {
+                const parsed = JSON.parse(raw);
+                if (parsed.eraId && parsed.level) {
+                    // 相容性處理：將舊版的 learnedSkills 陣列轉換為物件
+                    if (Array.isArray(parsed.learnedSkills)) {
+                        const skillObj = {};
+                        parsed.learnedSkills.forEach(id => {
+                            skillObj[id] = 1;
+                        });
+                        parsed.learnedSkills = skillObj;
+                    }
+                    // 使用預設值補全缺失欄位 (Migrate old saves)
+                    return { ...this.defaultState, ...parsed };
+                }
+            } catch (e) {
+                console.warn('PlayerManager: 無法解析 playerState,將使用預設值');
+            }
+        }
+        // 若不存在或解析失敗,使用預設值
+        this._saveState(this.defaultState);
+        return { ...this.defaultState };
+    }
+
+    _saveState(state) {
+        localStorage.setItem(this.storageKey, JSON.stringify(state));
+    }
+
+    getEraId() { return Number(this.state.eraId); }
+    getLevel() { return this.state.level; }
+    getStartTimestamp() { return this.state.startTimestamp; }
+    setStartTimestamp(val) {
+        this.state.startTimestamp = val;
+        this._saveState(this.state);
+    }
+    getTotalStartTimestamp() { return this.state.totalStartTimestamp; }
+    getLearnedSkills() { return { ...this.state.learnedSkills }; }
+    getSkillLevel(skillId) { return this.state.learnedSkills[skillId] || 0; }
+
+    setIsReincarnating(val) {
+        this.state.isReincarnating = val;
+        this._saveState(this.state);
+    }
+
+    getHints() {
+        return this.state.hints || { rule1Triggered: false, lastRule2Year: -1 };
+    }
+
+    updateHints(newHints) {
+        this.state.hints = { ...this.getHints(), ...newHints };
+        this._saveState(this.state);
+    }
+
+    /**
+     * 獲取當前壽元 (遊戲齡：一分鐘 = 一年)
+     */
+    /**
+     * 獲取天賦加成
+     */
+    getTalentBonus(talentId) {
+        if (!this.state || !this.state.talents) return 0;
+        const level = this.state.talents[talentId] || 0;
+        if (level === 0) return 0;
+
+        const talentRates = {
+            innate_dao_body: 0.1,   // 資源產出 +10%
+            innate_dao_fetus: 0.15, // 修煉時間減少 15%
+            five_elements_root: 0.1, // 消耗減少 10%
+            dragon_aura: 0.1,       // 基礎資源上限 +10%
+            gold_touch: 0.2,        // 金錢產出 +20%
+            nature_friend: 0.2,     // 藥草與靈木產出 +20%
+            sword_heart: 0.15,      // 全資源產出 +15% (劍意加持)
+            three_flowers: 0.25,    // 靈力上限 +25%
+            lifespan_master: 0.1,   // 壽元上限 +10%
+            world_child: 0.1        // 建築效果 +10%
+        };
+
+        return talentRates[talentId] * level;
+    }
+
+    /**
+     * 獲取道心加成 (0.1% per point)
+     */
+    getDaoHeartBonus() {
+        return (this.state.daoHeart || 0) * 0.001;
+    }
+
+    /**
+     * 獲取道證加成 (1% per point)
+     */
+    getDaoProofBonus() {
+        return (this.state.daoProof || 0) * 0.01;
+    }
+
+    /**
+     * 購買天賦
+     */
+    buyTalent(talentId, cost) {
+        if (this.state.daoHeart >= cost) {
+            this.state.daoHeart -= cost;
+            this.state.talents[talentId] = (this.state.talents[talentId] || 0) + 1;
+            this._saveState(this.state);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 服用丹藥
+     * @param {string} pillId - 丹藥資源ID
+     * @returns {boolean} 是否成功服用
+     */
+    consumePill(pillId) {
+        const pillConfig = this.getPillConfig(pillId);
+        if (!pillConfig) {
+            console.warn('未知的丹藥:', pillId);
+            return false;
+        }
+
+        const currentCount = this.state.consumedPills[pillId] || 0;
+        if (currentCount >= pillConfig.maxCount) {
+            if (window.game && window.game.uiManager) {
+                const msg = LanguageManager.getInstance().t('{0}已達服用上限（{1}次）', {
+                    '0': LanguageManager.getInstance().t(pillConfig.name),
+                    '1': pillConfig.maxCount
+                });
+                window.game.uiManager.addLog(msg);
+            }
+            return false;
+        }
+
+        // 檢查是否有足夠的丹藥
+        const resource = window.game.resourceManager.getResource(pillId);
+        if (!resource || resource.value < 1) {
+            if (window.game && window.game.uiManager) {
+                const msg = LanguageManager.getInstance().t('{0}數量不足', {
+                    '0': LanguageManager.getInstance().t(pillConfig.name)
+                });
+                window.game.uiManager.addLog(msg);
+            }
+            return false;
+        }
+
+        // 扣除丹藥
+        resource.value -= 1;
+
+        // 記錄服用次數
+        this.state.consumedPills[pillId] = currentCount + 1;
+        this._saveState(this.state);
+
+        // 重新計算資源產出率（因為加成改變了）
+        if (window.game && window.game.buildingManager) {
+            window.game.buildingManager.recalculateRates();
+        }
+
+        if (window.game && window.game.uiManager) {
+            const effect = this.getPillEffectDescription(pillConfig);
+            // "服用<b>{0}</b>（{1}/{2}）{3}"
+            const msg = LanguageManager.getInstance().t('服用<b>{0}</b>（{1}/{2}）{3}', {
+                '0': LanguageManager.getInstance().t(pillConfig.name),
+                '1': currentCount + 1,
+                '2': pillConfig.maxCount,
+                '3': effect
+            });
+            window.game.uiManager.addLog(msg);
+        }
+
+        return true;
+    }
+
+    /**
+     * 獲取丹藥配置
+     */
+    getPillConfig(pillId) {
+        const configs = {
+            foundation_pill: {
+                name: '築基丹',
+                effect: 'tribulationSuccess',
+                bonus: 0.02,   // 每顆 +2% 渡劫成功率
+                maxCount: 20
+            },
+            spirit_nurt_pill: {
+                name: '蘊靈丹',
+                effect: 'lingliProduction',
+                bonus: 0.003,  // 每顆 +0.3%
+                maxCount: 20
+            },
+            golden_core_pill: {
+                name: '金丹',
+                effect: 'tribulationSuccess',
+                bonus: 0.03,   // 每顆 +3% 渡劫成功率
+                maxCount: 15
+            },
+            trans_pill: {
+                name: '化神丹',
+                effect: 'allProduction',
+                bonus: 0.01,   // 每顆 +1%
+                maxCount: 12
+            },
+            tribulation_pill: {
+                name: '渡劫丹',
+                effect: 'tribulationSuccess',
+                bonus: 0.05,   // 每顆 +5% 渡劫成功率
+                maxCount: 10
+            },
+            breakthrough_pill: {
+                name: '破境丹',
+                effect: 'tribulationSuccess',
+                bonus: 0.08,   // 每顆 +8% 渡劫成功率
+                maxCount: 8
+            },
+            immortal_pill: {
+                name: '仙丹',
+                effect: 'allProduction',
+                bonus: 0.03,   // 每顆 +3%
+                maxCount: 6
+            },
+            nine_turn_pill: {
+                name: '九轉金丹',
+                effect: 'trainingSpeed',
+                bonus: 0.05,   // 每顆 +5%
+                maxCount: 5
+            },
+            dao_saint_pill: {
+                name: '大道聖丹',
+                effect: 'allProduction',
+                bonus: 0.1,    // 每顆 +10%
+                maxCount: 3
+            }
+        };
+        return configs[pillId];
+    }
+
+    /**
+     * 獲取丹藥效果描述
+     */
+    getPillEffectDescription(config) {
+        const lang = LanguageManager.getInstance();
+        const effects = {
+            trainingSpeed: lang.t('修煉速度'),
+            lingliProduction: lang.t('靈力產出'),
+            allProduction: lang.t('所有資源產出'),
+            tribulationSuccess: lang.t('渡劫成功率')
+        };
+        const effectName = effects[config.effect] || lang.t('未知效果');
+        const bonusText = config.effect === 'tribulationSuccess'
+            ? `+${(config.bonus * 100).toFixed(0)}%`
+            : `+${(config.bonus * 100).toFixed(1)}%`;
+
+        // "，{0}{1}" -> e.g. "，修煉速度+5.0%"
+        return lang.t('，{0}{1}', { '0': effectName, '1': bonusText });
+    }
+
+    /**
+     * 獲取丹藥加成
+     * @param {string} effectType - 效果類型
+     * @returns {number} 加成值
+     */
+    getPillBonus(effectType) {
+        let totalBonus = 0;
+        Object.entries(this.state.consumedPills || {}).forEach(([pillId, count]) => {
+            const config = this.getPillConfig(pillId);
+            if (config && config.effect === effectType) {
+                totalBonus += config.bonus * count;
+            }
+        });
+        return totalBonus;
+    }
+
+    /**
+     * 獲取已服用丹藥的數量
+     */
+    getConsumedPillCount(pillId) {
+        return this.state.consumedPills[pillId] || 0;
+    }
+
+    /**
+     * 獲取三元九運 (靈力潮汐) 狀態
+     * 每 20 年 (20分鐘) 更換一運，180年一循環
+     */
+    getSpiritSurge() {
+        const totalYears = this.getLifespan();
+        const cycle = Math.floor((totalYears % 180) / 20); // 0-8
+
+        const cycles = [
+            { name: '一運：坎水運', bonus: 0.10 },
+            { name: '二運：坤土運', bonus: -0.05 },
+            { name: '三運：震木運', bonus: 0.20 },
+            { name: '四運：巽木運', bonus: 0.15 },
+            { name: '五運：中土運', bonus: -0.10 },
+            { name: '六運：乾金運', bonus: 0.05 },
+            { name: '七運：兌金運', bonus: 0.25 },
+            { name: '八運：艮土運', bonus: -0.08 },
+            { name: '九運：離火運', bonus: 0.30 }
+        ];
+
+        return cycles[cycle] || cycles[0];
+    }
+
+    getLifespan() {
+        const elapsedMs = Date.now() - this.state.totalStartTimestamp;
+        // 1 分鐘 (60000ms) = 1 年
+        const current = elapsedMs / 60000;
+        const max = this.getMaxLifespan();
+        return Math.min(current, max);
+    }
+
+    /**
+     * 獲取壽元上限
+     * 第一個時期 80，之後每個時期增加 時期ID * 100
+     */
+    getMaxLifespan() {
+        const currentEraId = this.state.eraId;
+        let totalLifespan = 0;
+
+        // 累加從 Era 1 到當前 Era 的所有壽元分配
+        for (let i = 1; i <= currentEraId; i++) {
+            const era = EraManager.getEraById(i);
+            if (era && era.lifespan) {
+                totalLifespan += era.lifespan;
+            } else {
+                // 如果找不到資料，使用舊版補償邏輯
+                totalLifespan += (i === 1 ? 80 : i * 100);
+            }
+        }
+
+        // 天賦加成 (lifespan_master: +10% per level)
+        const talentBonus = this.getTalentBonus('lifespan_master');
+        totalLifespan *= (1 + talentBonus);
+
+        return Math.floor(totalLifespan);
+    }
+
+    /**
+     * 獲取渡劫成功率
+     * @returns {number} 成功率 (0-1)
+     */
+    getTribulationSuccessRate() {
+        const baseRate = 0.5; // 基礎 50%
+        const pillBonus = this.getPillBonus('tribulationSuccess');
+        return Math.min(1, baseRate + pillBonus); // 最高 100%
+    }
+
+    /**
+     * 嘗試渡劫（金丹期及以後的升階）
+     * @param {Object} currentResources - 當前資源
+     * @returns {Object} { success: boolean, newLevel: number, message: string, detailedInfo: object }
+     */
+    attemptTribulation(currentResources = {}) {
+        const successRate = this.getTribulationSuccessRate();
+        const random = Math.random();
+        const success = random < successRate;
+
+        // 獲取當前境界信息
+        const currentEra = EraManager.getEraById(this.state.eraId);
+        const currentEraName = currentEra ? currentEra.eraName : `時期${this.state.eraId}`;
+        const currentLevel = this.state.level;
+
+        // 獲取丹藥服用狀態
+        const pillStatus = this.getPillStatusText();
+
+        if (success) {
+            // 成功：正常升階
+            const nextEra = EraManager.getEraById(this.state.eraId + 1);
+            const nextEraName = nextEra ? nextEra.eraName : `時期${this.state.eraId + 1}`;
+
+            return {
+                success: true,
+                newLevel: 1,
+                newEra: this.state.eraId + 1,
+                message: `渡劫成功！成功率: ${(successRate * 100).toFixed(1)}%`,
+                detailedInfo: {
+                    currentEraName,
+                    currentLevel,
+                    nextEraName,
+                    successRate: (successRate * 100).toFixed(1),
+                    pillStatus
+                }
+            };
+        } else {
+            // 失敗：等級降低 1-3 級
+            const levelDrop = Math.floor(Math.random() * 3) + 1; // 1-3
+            const newLevel = Math.max(1, this.state.level - levelDrop);
+            return {
+                success: false,
+                newLevel: newLevel,
+                newEra: this.state.eraId,
+                levelDrop: levelDrop,
+                message: `渡劫失敗！等級降低 ${levelDrop} 級（成功率: ${(successRate * 100).toFixed(1)}%）`,
+                detailedInfo: {
+                    currentEraName,
+                    currentLevel,
+                    newLevel,
+                    successRate: (successRate * 100).toFixed(1),
+                    pillStatus
+                }
+            };
+        }
+    }
+
+    /**
+     * 獲取丹藥服用狀態文字
+     * @returns {string}
+     */
+    getPillStatusText() {
+        const pillTypes = ['tribulation_pill', 'trans_pill', 'foundation_pill', 'qi_pill'];
+        const statusParts = [];
+
+        for (const pillKey of pillTypes) {
+            const config = this.getPillConfig(pillKey);
+            if (config && config.effect === 'tribulationSuccess') {
+                const consumed = this.getConsumedPillCount(pillKey);
+                if (consumed > 0) {
+                    statusParts.push(`${LanguageManager.getInstance().t(config.name)} ${consumed}/${config.maxCount}`);
+                }
+            }
+        }
+
+        return statusParts.length > 0 ? statusParts.join(', ') : LanguageManager.getInstance().t('未服用丹藥');
+    }
+
+    /**
+     * 檢查是否壽元已盡
+     */
+    isLifespanExhausted() {
+        return this.getLifespan() >= this.getMaxLifespan();
+    }
+
+    /**
+     * 執行輪迴證道
+     */
+    reincarnate(buildingsTotal) {
+        // 計算獲得的道心與道證 (根據建築總數)
+        const newDaoHeart = Math.floor(buildingsTotal / 10);
+        const newDaoProof = Math.floor(buildingsTotal / 50);
+
+        this.state.rebirthCount += 1;
+        this.state.daoHeart += newDaoHeart;
+        this.state.daoProof += newDaoProof;
+
+        // 重置除了輪迴相關資料以外的所有進度
+        const talentBackup = { ...this.state.talents };
+        const countBackup = this.state.rebirthCount;
+        const heartBackup = this.state.daoHeart;
+        const proofBackup = this.state.daoProof;
+
+        this.state = {
+            ...this.defaultState,
+            learnedSkills: {}, // 輪迴後清空功法
+            rebirthCount: countBackup,
+            daoHeart: heartBackup,
+            daoProof: proofBackup,
+            talents: talentBackup,
+            totalStartTimestamp: Date.now(),
+            startTimestamp: Date.now()
+        };
+
+        // 重置建築與資源
+        window.game.buildingManager.reset();
+        window.game.resourceManager.reset();
+
+        this._saveState(this.state);
+
+        // 立即保存遊戲狀態，確保建築等級被正確保存
+        if (window.game.saveSystem) {
+            window.game.saveSystem.saveToStorage();
+        }
+
+        return { daoHeart: newDaoHeart, daoProof: newDaoProof };
+    }
+
+    /**
+     * 大道輪迴（需要太虛輪迴境）
+     * 比普通輪迴獲得更多道證
+     */
+    advancedReincarnate(totalBuildingLevel) {
+        // 計算道心與道證（大道輪迴道證更多）
+        const newDaoHeart = Math.floor(totalBuildingLevel / 10);
+        const newDaoProof = Math.floor(totalBuildingLevel / 30); // 普通輪迴是 /50
+
+        this.state.daoHeart += newDaoHeart;
+        this.state.daoProof += newDaoProof;
+        this.state.rebirthCount += 1;
+
+        // 重置除了輪迴相關資料以外的所有進度
+        const talentBackup = { ...this.state.talents };
+        const countBackup = this.state.rebirthCount;
+        const heartBackup = this.state.daoHeart;
+        const proofBackup = this.state.daoProof;
+
+        this.state = {
+            ...this.defaultState,
+            learnedSkills: {}, // 輪迴後清空功法
+            rebirthCount: countBackup,
+            daoHeart: heartBackup,
+            daoProof: proofBackup,
+            talents: talentBackup,
+            totalStartTimestamp: Date.now(),
+            startTimestamp: Date.now()
+        };
+
+        // 重置建築與資源
+        window.game.buildingManager.reset();
+        window.game.resourceManager.reset();
+
+        this._saveState(this.state);
+
+        // 立即保存遊戲狀態
+        if (window.game.saveSystem) {
+            window.game.saveSystem.saveToStorage();
+        }
+
+        return { daoHeart: newDaoHeart, daoProof: newDaoProof };
+    }
+
+    getTrainingTime() {
+        const maxLifespanMs = this.getMaxLifespan() * 60000;
+        const totalElapsedMs = Date.now() - this.state.totalStartTimestamp;
+
+        let effectiveNow;
+        if (totalElapsedMs >= maxLifespanMs) {
+            effectiveNow = this.state.totalStartTimestamp + maxLifespanMs;
+        } else {
+            effectiveNow = Date.now();
+        }
+
+        const elapsedMs = effectiveNow - this.state.startTimestamp;
+        return Math.floor(Math.max(0, elapsedMs) / 1000);
+    }
+
+    /**
+     * 學習技能
+     * @param {string} skillId - 技能 ID
+     */
+    learnSkill(skillId) {
+        const currentLevel = this.getSkillLevel(skillId);
+        const skill = SkillManager.getSkill(skillId);
+
+        if (skill && currentLevel < skill.maxLevel) {
+            const cost = skill.cost;
+            const res = window.game.resourceManager.getResource(cost.type);
+            const costReduction = this.getTalentBonus('five_elements_root');
+
+            // 隨等級增加的消耗計算 (可選：目前維持基礎消耗，或在此增加公式)
+            const finalCost = Math.floor(cost.amount * (1 - costReduction));
+
+            if (res && res.value >= finalCost) {
+                res.value -= finalCost;
+                this.state.learnedSkills[skillId] = currentLevel + 1;
+                this._saveState(this.state);
+
+                const actionName = currentLevel === 0 ? LanguageManager.getInstance().t('領悟') : LanguageManager.getInstance().t('提升');
+                if (window.game && window.game.uiManager) {
+                    const msg = LanguageManager.getInstance().t('{0}功法 <b>{1}</b> (Lv.{2})', {
+                        '0': actionName,
+                        '1': LanguageManager.getInstance().t(skill.name),
+                        '2': this.state.learnedSkills[skillId]
+                    });
+                    window.game.uiManager.addLog(msg);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 判斷是否可以升階(使用 EraManager 的條件檢查)
+     * @param {Object} currentResources - 當前資源狀態
+     * @returns {Object} { canUpgrade: boolean, reason: string }
+     */
+    canUpgrade(currentResources = {}) {
+        if (this.isLifespanExhausted()) {
+            return { canUpgrade: false, reason: '壽元已盡，無法突破' };
+        }
+        return EraManager.checkUpgradeRequirements(
+            this.state.eraId,
+            this.state.level,
+            this.state.learnedSkills,
+            currentResources
+        );
+    }
+
+    /**
+     * 執行升階,等級重置為 1,時代 +1
+     * @param {Object} currentResources - 當前資源狀態
+     * @returns {boolean} 是否成功升階
+     */
+    upgrade(currentResources = {}) {
+        const check = this.canUpgrade(currentResources);
+        if (!check.canUpgrade) {
+            console.warn('無法升階:', check.reason);
+            return false;
+        }
+
+        // 金丹期（Era 3）及以後需要渡劫
+        if (this.state.eraId >= 3) {
+            const result = this.attemptTribulation(currentResources);
+
+            if (result.success) {
+                // 渡劫成功
+                this.state.eraId = result.newEra;
+                this.state.level = result.newLevel;
+                this.state.startTimestamp = Date.now();
+                this._saveState(this.state);
+
+                if (window.game && window.game.uiManager) {
+                    const info = result.detailedInfo;
+                    const lang = LanguageManager.getInstance();
+                    // SUCCESS LOG
+                    const msgSuccess = lang.t(
+                        '<b style="color:#4caf50">{0}</b> 在<b>{1}</b>第<b>{2}</b>級，使用<b style="color:#ffd700">{3}%</b>成功率進行渡劫成功！進入<b style="color:#00bcd4">{4}</b>。<span style="color:#aaa">（{5}）</span>',
+                        {
+                            '0': lang.t('渡劫成功！'),
+                            '1': lang.t(info.currentEraName),
+                            '2': info.currentLevel,
+                            '3': info.successRate,
+                            '4': lang.t(info.nextEraName),
+                            '5': info.pillStatus // pillars Status already localized parts of it
+                        }
+                    );
+                    window.game.uiManager.addLog(msgSuccess);
+                }
+                return true;
+            } else {
+                // 渡劫失敗
+                this.state.level = result.newLevel;
+                this._saveState(this.state);
+
+                if (window.game && window.game.uiManager) {
+                    const info = result.detailedInfo;
+                    const lang = LanguageManager.getInstance();
+                    // FAIL LOG
+                    const msgFail = lang.t(
+                        '<b style="color:#f44336">{0}</b> 在<b>{1}</b>第<b>{2}</b>級，使用<b style="color:#ffd700">{3}%</b>成功率進行渡劫失敗！等級降低為<b style="color:#ff9800">{4}</b>級。<span style="color:#aaa">（{5}）</span>',
+                        {
+                            '0': lang.t('渡劫失敗！'),
+                            '1': lang.t(info.currentEraName),
+                            '2': info.currentLevel,
+                            '3': info.successRate,
+                            '4': info.newLevel,
+                            '5': info.pillStatus
+                        }
+                    );
+                    window.game.uiManager.addLog(msgFail);
+                }
+                return false;
+            }
+        } else {
+            // 練氣期和築基期：正常升階
+            this.state.eraId += 1;
+            this.state.level = 1;
+            this.state.startTimestamp = Date.now();
+            this._saveState(this.state);
+
+            if (window.game && window.game.uiManager) {
+                const newEra = EraManager.getEraById(this.state.eraId);
+                const eraName = newEra ? LanguageManager.getInstance().t(newEra.eraName) : this.state.eraId;
+                const msg = LanguageManager.getInstance().t('境界突破！晉升至 <b>{0}</b>', { '0': eraName });
+                window.game.uiManager.addLog(msg);
+            }
+            return true;
+        }
+    }
+
+    /**
+     * 檢查是否可以提升等級(使用 EraManager 的條件檢查)
+     * @param {Object} currentResources - 當前資源 { resourceId: amount }
+     * @returns {Object} { canLevelUp: boolean, reason: string, ... }
+     */
+    canLevelUp(currentResources = {}) {
+        if (this.isLifespanExhausted()) {
+            return { canLevelUp: false, reason: '壽元已盡，無法修煉' };
+        }
+        const trainingTime = this.getTrainingTime();
+
+        // 基礎天賦加成
+        const talentTimeBonus = this.getTalentBonus('innate_dao_fetus');
+
+        // 輪迴加成：每點道心提高 0.1% 修煉速度，每點道證提高 1%
+        // 注意：這裡是提高「速度」，公式為 Speed = 1 + Bonus, requiredTime = BaseTime / Speed
+        const daoHeartBonus = this.getDaoHeartBonus();
+        const daoProofBonus = this.getDaoProofBonus();
+
+        // 丹藥加成（築基丹、金丹、九轉金丹）
+        const pillTrainingBonus = this.getPillBonus('trainingSpeed');
+
+        const totalSpeedBonus = talentTimeBonus + daoHeartBonus + daoProofBonus + pillTrainingBonus;
+
+        const costReduction = this.getTalentBonus('five_elements_root');
+
+        return EraManager.checkLevelUpRequirements(
+            this.state.eraId,
+            this.state.level,
+            trainingTime,
+            this.state.learnedSkills,
+            currentResources,
+            { timeBonus: totalSpeedBonus, costReduction }
+        );
+    }
+
+    /**
+     * 提升等級
+     * @param {Object} currentResources - 當前資源(用於檢查)
+     * @returns {boolean} 是否成功升級
+     */
+    increaseLevel(currentResources = {}) {
+        const check = this.canLevelUp(currentResources);
+        if (!check.canLevelUp) {
+            console.warn('無法升級:', check.reason);
+            return false;
+        }
+
+        if (this.state.level < 10) {
+            this.state.level += 1;
+            this._saveState(this.state);
+            if (window.game && window.game.uiManager) {
+                const msg = LanguageManager.getInstance().t('突破成功！當前等級提升至 <b>{0}</b>', { '0': this.state.level });
+                window.game.uiManager.addLog(msg);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 重置所有進度
+     */
+    reset() {
+        const newState = {
+            ...this.defaultState,
+            startTimestamp: Date.now(),
+            totalStartTimestamp: Date.now(),
+            learnedSkills: {},
+            talents: {},
+            rebirthCount: 0,
+            daoHeart: 0,
+            daoProof: 0
+        };
+        this.state = newState;
+        this._saveState(this.state);
+
+        // 重置建築與資源
+        if (window.game) {
+            if (window.game.buildingManager) window.game.buildingManager.reset();
+            if (window.game.resourceManager) window.game.resourceManager.reset();
+
+            // 清除 SaveSystem 的存檔
+            if (window.game.saveSystem) {
+                localStorage.removeItem(window.game.saveSystem.storageKey);
+            } else {
+                localStorage.removeItem('cultivation_game_save');
+            }
+        }
+
+        // 清除 PlayerManager 存檔
+        localStorage.removeItem(this.storageKey);
+    }
+}
+
+export default new PlayerManager();

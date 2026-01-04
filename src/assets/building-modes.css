@@ -1,0 +1,130 @@
+/* 長描述模式樣式 - 緊湊版 */
+.building-list.detailed {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.building-list.detailed .building-item {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 12px;
+    min-height: auto;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #444;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.building-list.detailed .building-item:hover {
+    background: rgba(255, 215, 0, 0.05);
+    border-bottom-color: var(--gold-color);
+}
+
+.building-list.detailed .building-item.upgrade-available {
+    border-left: 3px solid #4caf50;
+    padding-left: 9px;
+}
+
+.building-list.detailed .building-item.upgrade-available:hover {
+    background: rgba(76, 175, 80, 0.08);
+}
+
+.building-list.detailed .b-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.building-list.detailed .b-title-line {
+    display: block;
+    text-align: left;
+    margin-bottom: 4px;
+}
+
+.building-list.detailed .b-name {
+    font-size: 1em !important;
+    font-weight: bold;
+    color: var(--gold-color);
+}
+
+.building-list.detailed .b-level {
+    font-size: 0.8em;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.building-list.detailed .b-effect {
+    font-size: 0.85em;
+    color: #4caf50;
+    line-height: 1.4;
+    padding-left: 0;
+}
+
+.building-list.detailed .cost-tip {
+    font-size: 0.8em;
+    color: #aaa;
+    line-height: 1.4;
+}
+
+.building-list.detailed .b-desc {
+    font-size: 0.75em;
+    color: #888;
+    font-style: italic;
+    line-height: 1.3;
+    margin-top: 2px;
+}
+
+.building-list.detailed .b-action {
+    display: none;
+}
+
+.building-list.detailed .upgrade-btn {
+    display: none;
+}
+
+/* 長描述模式響應式 */
+@media (max-width: 1200px) {
+    .building-list.detailed {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 緊湊模式樣式調整 */
+.building-grid.compact {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+.building-grid.compact .building-item {
+    cursor: pointer;
+}
+
+.building-grid.compact .b-effects {
+    font-size: 0.85em;
+    color: #4caf50;
+    margin-top: 5px;
+    line-height: 1.3;
+    text-align: left;
+}
+
+.building-grid.compact .upgrade-available {
+    border-color: #4caf50;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+}
+
+@media (max-width: 1200px) {
+    .building-grid.compact {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .building-grid.compact {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

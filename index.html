@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修仙問道 - 放置網頁遊戲</title>
+    <link rel="stylesheet" href="./src/assets/style.css">
+    <link rel="stylesheet" href="./src/assets/building-modes.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- 頂部/左側 資源區 -->
+        <aside id="resource-panel" class="panel">
+            <div id="resources-header">
+                <h2>資源</h2>
+                <button id="toggle-resources" class="toggle-btn" style="display: none;">
+                    <span class="toggle-icon">▼</span>
+                </button>
+            </div>
+            <div id="player-info" class="player-info"></div>
+            <div id="resources-container" class="grid-container">
+                <!-- 資源將由 JS 動態生成 -->
+            </div>
+        </aside>
+
+        <!-- 中央 主要內容區 -->
+        <main id="main-content" class="panel">
+            <header class="main-header">
+                <h1>修仙問道</h1>
+                <div class="game-controls">
+                    <button id="save-btn" class="btn">保存進度</button>
+                    <button id="load-btn" class="btn">讀取進度</button>
+                </div>
+            </header>
+
+            <!-- 分頁導航 -->
+            <nav id="tab-nav">
+                <button class="tab-btn active" data-tab="buildings">洞府建築</button>
+                <button class="tab-btn" data-tab="crafting">煉製合成</button>
+                <button class="tab-btn" data-tab="skills">功法修煉</button>
+                <button class="tab-btn" data-tab="talents">輪迴天賦</button>
+                <button class="tab-btn" data-tab="debug"
+                    style="background: rgba(255, 152, 0, 0.2); border: 1px solid #ff9800;">Debug</button>
+            </nav>
+
+            <!-- 分頁內容 -->
+            <div id="tab-content">
+                <div id="view-buildings" class="tab-view active">
+                    <p>正在載入建築...</p>
+                </div>
+                <div id="view-crafting" class="tab-view hidden">
+                    <p>正在載入合成...</p>
+                </div>
+                <div id="view-skills" class="tab-view hidden">
+                    <p>正在載入功法...</p>
+                </div>
+                <div id="view-talents" class="tab-view hidden">
+                    <p>正在載入天賦...</p>
+                </div>
+                <div id="view-debug" class="tab-view hidden">
+                    <p>正在載入 Debug 工具...</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- 右側 日誌區 -->
+        <aside id="right-panel" class="panel">
+            <div id="log-header">
+                <h3>修仙日誌</h3>
+            </div>
+            <div id="log-list-container">
+                <ul id="log-list">
+                </ul>
+            </div>
+        </aside>
+        <footer id="version-info"
+            style="position:fixed; bottom:10px; right:10px; font-size:12px; color:rgba(255,255,255,0.5); pointer-events:none;">
+            Build: 2026-01-04 21:40:00
+        </footer>
+    </div>
+
+    <!-- 存檔彈窗模態框 -->
+    <div id="save-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 id="modal-title">存檔</h3>
+            <textarea id="save-data-area" rows="10" readonly></textarea>
+            <p>請複製以上代碼保存，或貼上代碼讀取。</p>
+            <button id="confirm-load-btn" class="btn hidden">確認讀取</button>
+            <button id="copy-btn" class="btn">複製代碼</button>
+        </div>
+    </div>
+
+    <script type="module" src="./src/main.js?v=202512280155"></script>
+</body>
+
+</html>

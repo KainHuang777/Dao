@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>技能點系統測試</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1d;
+            color: #e0e0e0;
+        }
+
+        #output {
+            white-space: pre-wrap;
+            background: #000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .success {
+            color: #4caf50;
+        }
+
+        .error {
+            color: #f44336;
+        }
+
+        .info {
+            color: #2196f3;
+        }
+
+        .warning {
+            color: #ff9800;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>技能點系統測試</h1>
+    <div>
+        <button id="testSkillPoint">測試技能點系統</button>
+        <button id="testLibrary">測試藏書閣解鎖</button>
+        <button id="testSkillLearn">測試功法學習</button>
+    </div>
+    <div id="output"></div>
+
+    <script type="module">
+        const output = document.getElementById('output');
+
+        function log(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const span = document.createElement('span');
+            span.className = type;
+            span.textContent = `[${time}] ${msg}\n`;
+            output.appendChild(span);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        let resourceManager = null;
+        let buildingManager = null;
+
+        // 初始化
+        async function init() {
+            try {
+                log('載入模組與 CSV 資料...', 'info');
+                const { default: ResourceManager } = await import('./src/data/Resources.js');
+                const { default: BuildingManager } = await import('./src/utils/BuildingManager.js');
+                const { loadBuildings } = await import('./src/data/Buildings.js');
+                const { default: EraManager } = await import('./src/utils/EraManager.js');
+                const { default: SkillManager } = await import('./src/utils/SkillManager.js');
+                const { default: PlayerManager } = await import('./src/utils/PlayerManager.js');
+
+                // 重置 PlayerManager 確保測試環境乾淨
+                PlayerManager.reset();
+
+                // 1. 資源初始化
+                resourceManager = new ResourceManager();
+                await resourceManager.init();
+
+                // 2. 時代與功法初始化
+                await EraManager.init();
+                await SkillManager.init();
+
+                // 3. 建築資料初始化
+                await loadBuildings();
+                buildingManager = new BuildingManager(resourceManager);
+                buildingManager.init();
+
+                log('✓ 模組載入成功', 'success');
+
+            } catch (e) {
+                log(`✗ 初始化失敗: ${e.message}`, 'error');
+                log(e.stack, 'error');
+            }
+        }
+
+        // 測試技能點資源
+        document.getElementById('testSkillPoint').addEventListener('click', () => {
+            if (!resourceManager) {
+                log('✗ 資源管理器未初始化', 'error');
+                return;
+            }
+
+            log('\n=== 測試技能點資源 ===', 'info');
+
+            const skillPoint = resourceManager.getResource('skill_point');
+
+            if (skillPoint) {
+                log(`✓ 技能點資源已載入`, 'success');
+                log(`  名稱: ${skillPoint.name}`, 'info');
+                log(`  類型: ${skillPoint.type}`, 'info');
+                log(`  初始上限: ${skillPoint.max}`, 'info');
+                log(`  初始產率: ${skillPoint.rate}/秒`, 'info');
+                log(`  解鎖狀態: ${skillPoint.unlocked ? '已解鎖' : '未解鎖'}`, skillPoint.unlocked ? 'success' : 'warning');
+                log(`  前置時期: ${skillPoint.prereqEra || '無'}`, 'info');
+            } else {
+                log('✗ 技能點資源未找到', 'error');
+            }
+        });
+
+        // 測試藏書閣解鎖機制
+        document.getElementById('testLibrary').addEventListener('click', async () => {
+            if (!resourceManager || !buildingManager) {
+                log('✗ 管理器未初始化', 'error');
+                return;
+            }
+
+            log('\n=== 測試藏書閣解鎖機制 ===', 'info');
+
+            // 導入 PlayerManager 並升級到築基期
+            const { default: PlayerManager } = await import('./src/utils/PlayerManager.js');
+
+            log('模擬升級到築基期...', 'info');
+            PlayerManager.state.eraId = 2;
+            PlayerManager.state.level = 1;
+
+            // 給予足夠的資源建造藏書閣
+            resourceManager.getResource('money').value = 10000;
+            resourceManager.getResource('wood').value = 5000;
+            resourceManager.getResource('stone').value = 5000;
+
+            log('資源已準備完成', 'success');
+
+            const skillPointBefore = resourceManager.getResource('skill_point');
+            log(`建造前技能點解鎖狀態: ${skillPointBefore.unlocked ? '已解鎖' : '未解鎖'}`, 'info');
+
+            // 建造藏書閣
+            const library = buildingManager.getBuilding('library');
+            log(`藏書閣當前等級: ${library.level}`, 'info');
+
+            const canBuild = buildingManager.canUpgrade('library');
+            log(`是否可建造: ${canBuild ? '是' : '否'}`, canBuild ? 'success' : 'error');
+
+            if (canBuild) {
+                buildingManager.upgrade('library');
+                log('✓ 藏書閣建造成功！', 'success');
+
+                const skillPointAfter = resourceManager.getResource('skill_point');
+                log(`建造後技能點解鎖狀態: ${skillPointAfter.unlocked ? '已解鎖' : '未解鎖'}`,
+                    skillPointAfter.unlocked ? 'success' : 'error');
+                log(`技能點產率: ${skillPointAfter.rate.toFixed(4)}/秒`, 'info');
+            }
+        });
+
+        // 測試功法學習
+        document.getElementById('testSkillLearn').addEventListener('click', async () => {
+            if (!resourceManager) {
+                log('✗ 資源管理器未初始化', 'error');
+                return;
+            }
+
+            log('\n=== 測試功法學習（技能點消耗）===', 'info');
+
+            const { default: SkillManager } = await import('./src/utils/SkillManager.js');
+
+            // 檢查基礎冥想功法
+            const skill = SkillManager.getSkill('basic_meditation');
+
+            if (skill) {
+                log(`✓ 功法已載入: ${skill.name}`, 'success');
+                log(`  消耗類型: ${skill.cost.type}`, 'info');
+                log(`  消耗數量: ${skill.cost.amount}`, 'info');
+
+                if (skill.cost.type === 'skill_point') {
+                    log('✓ 功法消耗已改為技能點', 'success');
+                } else {
+                    log('✗ 功法消耗類型錯誤', 'error');
+                }
+            } else {
+                log('✗ 功法未找到', 'error');
+            }
+
+            // 檢查所有功法
+            const allSkills = SkillManager.getAllSkills();
+            let allUseSkillPoint = true;
+
+            log('\n檢查所有功法消耗類型...', 'info');
+            for (const [id, sk] of Object.entries(allSkills)) {
+                if (sk.cost && sk.cost.type !== 'skill_point') {
+                    log(`✗ ${sk.name} 仍使用 ${sk.cost.type}`, 'error');
+                    allUseSkillPoint = false;
+                }
+            }
+
+            if (allUseSkillPoint) {
+                log('✓ 所有功法均使用技能點消耗', 'success');
+            }
+        });
+
+        // 自動初始化
+        init();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手動採集調試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1d;
+            color: #e0e0e0;
+        }
+
+        .resource-box {
+            background: #2d2d30;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .resource-name {
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 10px 20px;
+            background: #4caf50;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+
+        .resource-name:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        .resource-name:active {
+            transform: scale(0.95);
+        }
+
+        .resource-value {
+            font-size: 24px;
+            font-family: monospace;
+            color: #4caf50;
+        }
+
+        #log {
+            background: #000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+        }
+
+        .success {
+            color: #4caf50;
+        }
+
+        .error {
+            color: #f44336;
+        }
+
+        .info {
+            color: #2196f3;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>手動採集功能調試</h1>
+    <p>點擊資源名稱進行手動採集</p>
+
+    <div id="resources"></div>
+    <div id="log"></div>
+
+    <script type="module">
+        const resourcesDiv = document.getElementById('resources');
+        const logDiv = document.getElementById('log');
+
+        function log(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${time}] ${msg}`;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+        }
+
+        let resourceManager = null;
+
+        async function init() {
+            try {
+                log('載入 ResourceManager...', 'info');
+                const { default: ResourceManager } = await import('./src/data/Resources.js');
+                resourceManager = new ResourceManager();
+                log('✓ ResourceManager 載入成功', 'success');
+
+                // 顯示所有基礎資源
+                const resources = resourceManager.getAllResources();
+
+                for (const [key, res] of Object.entries(resources)) {
+                    if (res.type === 'basic' && res.unlocked) {
+                        const box = document.createElement('div');
+                        box.className = 'resource-box';
+
+                        const nameSpan = document.createElement('div');
+                        nameSpan.className = 'resource-name';
+                        nameSpan.textContent = `${res.name} (點擊採集)`;
+                        nameSpan.dataset.key = key;
+
+                        const valueSpan = document.createElement('div');
+                        valueSpan.className = 'resource-value';
+                        valueSpan.id = `value-${key}`;
+                        valueSpan.textContent = Math.floor(res.value);
+
+                        // 點擊事件
+                        nameSpan.addEventListener('click', () => {
+                            const before = resourceManager.getResource(key).value;
+                            log(`嘗試採集 ${res.name}...`, 'info');
+                            log(`  採集前值: ${before}`, 'info');
+                            log(`  資源類型: ${res.type}`, 'info');
+                            log(`  是否解鎖: ${res.unlocked}`, 'info');
+                            log(`  採集量配置: ${resourceManager.manualGatherAmount[key]}`, 'info');
+
+                            const result = resourceManager.manualGather(key);
+                            const after = resourceManager.getResource(key).value;
+
+                            log(`  採集結果: ${result ? '成功' : '失敗'}`, result ? 'success' : 'error');
+                            log(`  採集後值: ${after}`, 'info');
+                            log(`  實際增加: ${after - before}`, after > before ? 'success' : 'error');
+
+                            if (result) {
+                                log(`✓ ${res.name} 採集成功！+${after - before}`, 'success');
+                                updateDisplay();
+                            } else {
+                                log(`✗ ${res.name} 採集失敗`, 'error');
+                            }
+                        });
+
+                        box.appendChild(nameSpan);
+                        box.appendChild(valueSpan);
+                        resourcesDiv.appendChild(box);
+                    }
+                }
+
+                log(`✓ 顯示了 ${resourcesDiv.children.length} 個基礎資源`, 'success');
+
+                // 啟動自動更新顯示
+                setInterval(updateDisplay, 100);
+
+                // 啟動自動增長
+                setInterval(() => {
+                    resourceManager.update(0.1); // 每 100ms 更新一次
+                }, 100);
+
+                log('✓ 自動增長已啟動', 'success');
+
+            } catch (e) {
+                log(`✗ 初始化失敗: ${e.message}`, 'error');
+                log(e.stack, 'error');
+            }
+        }
+
+        function updateDisplay() {
+            if (!resourceManager) return;
+
+            const resources = resourceManager.getAllResources();
+            for (const [key, res] of Object.entries(resources)) {
+                const valueEl = document.getElementById(`value-${key}`);
+                if (valueEl) {
+                    valueEl.textContent = Math.floor(res.value);
+                }
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

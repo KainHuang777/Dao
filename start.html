@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>遊戲測試導航</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: #ffd700;
+        }
+
+        .card p {
+            margin: 10px 0;
+        }
+
+        .card a {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #4caf50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        .card a:hover {
+            background: #45a049;
+        }
+
+        .warning {
+            background: rgba(255, 152, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ff9800;
+        }
+
+        .success {
+            background: rgba(76, 175, 80, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #4caf50;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🎮 修仙遊戲測試導航</h1>
+
+        <div class="success" id="status">
+            <strong>✓ 伺服器狀態：</strong><span id="serverStatus">檢查中...</span>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ 重要提示：</strong>
+            <ul>
+                <li>必須通過 <code>http://localhost:8000</code> 訪問</li>
+                <li>不要直接雙擊打開 HTML 文件</li>
+                <li>如果看到 CORS 錯誤，請確認伺服器正在運行</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>1. 核心功能測試</h2>
+            <p>測試資源系統、手動採集、自動增長等核心功能</p>
+            <p><strong>推薦先測試此頁面</strong></p>
+            <a href="core-test.html">開始測試 →</a>
+        </div>
+
+        <div class="card">
+            <h2>2. 模組載入測試</h2>
+            <p>檢查所有 JavaScript 模組是否能正確載入</p>
+            <a href="simple-test.html">開始測試 →</a>
+        </div>
+
+        <div class="card">
+            <h2>3. 主遊戲</h2>
+            <p>完整的遊戲界面，包含所有功能</p>
+            <a href="index.html">進入遊戲 →</a>
+        </div>
+
+        <div class="card">
+            <h2>4. 數值模型檢核</h2>
+            <p>模擬時期進度、資源上限、壽元計算等數值平衡</p>
+            <a href="balance-checker.html">開始檢核 →</a>
+        </div>
+
+        <div class="card">
+            <h2>5. 單元測試</h2>
+            <p>獨立測試各個功能模組</p>
+            <a href="test.html">運行測試 →</a>
+        </div>
+    </div>
+
+    <script>
+        // 檢查伺服器狀態
+        const statusEl = document.getElementById('serverStatus');
+        const statusDiv = document.getElementById('status');
+
+        if (window.location.protocol === 'file:') {
+            statusEl.textContent = '錯誤 - 請通過 http://localhost:8000 訪問';
+            statusDiv.className = 'warning';
+            statusDiv.innerHTML = '<strong>✗ 錯誤：</strong>你正在使用 file:// 協議訪問。<br>請在瀏覽器地址欄輸入：<code>http://localhost:8000</code>';
+        } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            statusEl.textContent = '正常運行';
+            statusDiv.className = 'success';
+        } else {
+            statusEl.textContent = '未知';
+        }
+    </script>
+    <div style="text-align:center; font-size:12px; color:rgba(255,255,255,0.5); margin-top:20px;">
+        最後更新時間：2026-01-04 21:40:00
+    </div>
+</body>
+
+</html>

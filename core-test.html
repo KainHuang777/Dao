@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>核心功能測試</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1d;
+            color: #e0e0e0;
+        }
+
+        #output {
+            white-space: pre-wrap;
+            background: #000;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .success {
+            color: #4caf50;
+        }
+
+        .error {
+            color: #f44336;
+        }
+
+        .info {
+            color: #2196f3;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>遊戲核心功能測試</h1>
+    <div>
+        <button id="testResources">測試資源系統</button>
+        <button id="testBuildings">測試建築系統</button>
+        <button id="testManualGather">測試手動採集</button>
+        <button id="testAutoGrow">測試自動增長</button>
+        <button id="testLifespanReset">測試壽元已盡重置</button>
+        <button id="testMaidSystem">測試侍女自動合成</button>
+    </div>
+    <div id="output"></div>
+
+    <script type="module">
+        const output = document.getElementById('output');
+
+        function log(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const span = document.createElement('span');
+            span.className = type;
+            span.textContent = `[${time}] ${msg}\n`;
+            output.appendChild(span);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        let resourceManager = null;
+        let buildingManager = null;
+
+        // 初始化
+        async function init() {
+            try {
+                log('載入模組與 CSV 資料...', 'info');
+                const { default: ResourceManager } = await import('./src/data/Resources.js');
+                const { default: BuildingManager } = await import('./src/utils/BuildingManager.js');
+                const { loadBuildings } = await import('./src/data/Buildings.js');
+                const { default: EraManager } = await import('./src/utils/EraManager.js');
+                const { default: SkillManager } = await import('./src/utils/SkillManager.js');
+
+                // 1. 資源初始化
+                resourceManager = new ResourceManager();
+                await resourceManager.init();
+
+                // 2. 時代與功法初始化
+                await EraManager.init();
+                await SkillManager.init();
+
+                // 3. 建築資料初始化
+                await loadBuildings();
+                buildingManager = new BuildingManager(resourceManager);
+                buildingManager.init();
+
+                log('✓ 模組載入成功', 'success');
+
+                const lingli = resourceManager.getResource('lingli');
+                const money = resourceManager.getResource('money');
+
+                if (lingli && money) {
+                    log(`靈力產率: ${lingli.rate}/秒`, 'info');
+                    log(`金錢產率: ${money.rate}/秒`, 'info');
+                } else {
+                    log('✗ 無法讀取基礎資源數據', 'error');
+                }
+
+            } catch (e) {
+                log(`✗ 初始化失敗: ${e.message}`, 'error');
+                log(e.stack, 'error');
+            }
+        }
+
+        // 測試資源系統
+        document.getElementById('testResources').addEventListener('click', () => {
+            if (!resourceManager) {
+                log('✗ 資源管理器未初始化', 'error');
+                return;
+            }
+
+            log('\n=== 測試資源系統 ===', 'info');
+            const resources = resourceManager.getUnlockedResources();
+
+            for (const [key, res] of Object.entries(resources)) {
+                log(`${res.name}: 值=${res.value.toFixed(2)}, 最大=${res.max}, 產率=${res.rate}/秒, 類型=${res.type}`, 'info');
+            }
+
+            log('✓ 資源系統測試完成', 'success');
+        });
+
+        // 測試建築系統
+        document.getElementById('testBuildings').addEventListener('click', () => {
+            if (!buildingManager) {
+                log('✗ 建築管理器未初始化', 'error');
+                return;
+            }
+
+            log('\n=== 測試建築系統 ===', 'info');
+            const buildings = buildingManager.exportData().buildings;
+
+            for (const [key, building] of Object.entries(buildings)) {
+                log(`${key}: 等級=${building.level}`, 'info');
+            }
+
+            log('✓ 建築系統測試完成', 'success');
+        });
+
+        // 測試手動採集
+        document.getElementById('testManualGather').addEventListener('click', () => {
+            if (!resourceManager) {
+                log('✗ 資源管理器未初始化', 'error');
+                return;
+            }
+
+            log('\n=== 測試手動採集 ===', 'info');
+
+            const lingli = resourceManager.getResource('lingli');
+            const before = lingli.value;
+
+            log(`採集前靈力: ${before.toFixed(2)}`, 'info');
+
+            const result = resourceManager.manualGather('lingli');
+            const after = lingli.value;
+
+            log(`採集結果: ${result ? '成功' : '失敗'}`, result ? 'success' : 'error');
+            log(`採集後靈力: ${after.toFixed(2)}`, 'info');
+            log(`增加量: ${(after - before).toFixed(2)}`, after > before ? 'success' : 'error');
+
+            if (after > before) {
+                log('✓ 手動採集功能正常', 'success');
+            } else {
+                log('✗ 手動採集功能異常', 'error');
+            }
+        });
+
+        // 測試自動增長 (優化安全性：不再重置正式數據)
+        document.getElementById('testAutoGrow').addEventListener('click', async () => {
+            if (!resourceManager) {
+                log('✗ 資源管理器未初始化', 'error');
+                return;
+            }
+
+            log('\n=== 測試自動增長 ===', 'info');
+
+            // 導入 PlayerManager
+            const { default: PlayerManager } = await import('./src/utils/PlayerManager.js');
+
+            // 備份原始狀態
+            const originalState = JSON.parse(JSON.stringify(PlayerManager.state));
+            const originalIsExhausted = PlayerManager.isLifespanExhausted;
+
+            try {
+                // 臨時模擬壽元狀態，防止測試過程中觸發重置邏輯
+                PlayerManager.isLifespanExhausted = () => false;
+
+                // 強制設定為時代1、等級1，確保測試環境一致且靈力產出為正
+                PlayerManager.state.eraId = 1;
+                PlayerManager.state.level = 1;
+
+                const lingli = resourceManager.getResource('lingli');
+                // 測試前強制歸零，確保產出計算準確
+                lingli.value = 0;
+                const before = 0;
+                const baseRate = lingli.rate;
+
+                // 計算靈力消耗（與 Resources.js 中的公式保持一致）
+                const currentEra = PlayerManager.getEraId();
+                const currentLevel = PlayerManager.getLevel();
+                const lingliConsumption = (currentEra - 1) * 10 + currentLevel - 2;
+                const netRate = baseRate - lingliConsumption;
+
+                log(`測試前靈力: ${before.toFixed(2)} (已臨時模擬壽元正常進行測試)`, 'info');
+                log(`靈力基礎產率: ${baseRate}/秒`, 'info');
+                log(`靈力消耗: ${lingliConsumption}/秒`, 'info');
+                log(`靈力淨產率: ${netRate}/秒`, 'info');
+
+                // 模擬 5 秒更新
+                resourceManager.update(5);
+
+                const after = lingli.value;
+                const expected = netRate * 5;
+                const actual = after - before;
+
+                log(`5秒後靈力: ${after.toFixed(2)}`, 'info');
+                log(`實際增加: ${actual.toFixed(2)}`, 'info');
+                log(`預期增加: ${expected.toFixed(2)}`, 'info');
+
+                if (Math.abs(actual - expected) < 0.01) {
+                    log('✓ 自動增長功能正常', 'success');
+                } else {
+                    log('✗ 自動增長功能異常', 'error');
+                    log(`差異: ${Math.abs(actual - expected).toFixed(4)}`, 'error');
+                }
+            } catch (e) {
+                log(`✗ 測試過程中出錯: ${e.message}`, 'error');
+            } finally {
+                // 恢復原始狀態與方法
+                PlayerManager.state = originalState;
+                PlayerManager.isLifespanExhausted = originalIsExhausted;
+                log('✓ 已恢復 PlayerManager 原始狀態', 'info');
+            }
+        });
+
+        // 測試壽元已盡重置
+        document.getElementById('testLifespanReset').addEventListener('click', async () => {
+            if (!resourceManager) {
+                log('✗ 資源管理器未初始化', 'error');
+                return;
+            }
+
+            log('\n=== 測試壽元已盡重置 ===', 'info');
+            log('注意：此測試會模擬壽元已盡，並檢查時期進度是否重置', 'info');
+
+            const { default: PlayerManager } = await import('./src/utils/PlayerManager.js');
+
+            // 保存原始狀態與方法
+            const originalState = JSON.parse(JSON.stringify(PlayerManager.state));
+            const originalSave = PlayerManager._saveState;
+
+            try {
+                // 攔截儲存，防止影響正式數據
+                PlayerManager._saveState = () => { /* 測試中不儲存 */ };
+
+                // 模擬壽元已盡 (將 totalStartTimestamp 設為很久以前)
+                const maxLifespanYears = PlayerManager.getMaxLifespan();
+                const farPast = Date.now() - (maxLifespanYears + 1) * 60000;
+
+                PlayerManager.state.totalStartTimestamp = farPast;
+                PlayerManager.state.isReincarnating = false;
+                const oldStartTimestamp = PlayerManager.state.startTimestamp;
+
+                log(`模擬已過年歲: ${(Date.now() - farPast) / 60000} 年`, 'info');
+                log(`壽元上限: ${maxLifespanYears} 年`, 'info');
+                log(`是否已盡: ${PlayerManager.isLifespanExhausted()}`, 'info');
+                log(`當前時期開始時間: ${oldStartTimestamp}`, 'info');
+
+                // 觸發資源更新
+                log('更新資源系統...', 'info');
+                resourceManager.update(1);
+
+                // 檢查結果
+                const newStartTimestamp = PlayerManager.state.startTimestamp;
+                const isReinc = PlayerManager.state.isReincarnating;
+
+                log(`重置後時期開始時間: ${newStartTimestamp}`, 'info');
+                log(`輪迴狀態標記: ${isReinc}`, 'info');
+
+                if (newStartTimestamp > oldStartTimestamp && isReinc === true) {
+                    log('✓ 壽元已盡重置功能正常', 'success');
+                } else {
+                    log('✗ 壽元已盡重置功能異常', 'error');
+                }
+
+            } catch (e) {
+                log(`✗ 測試失敗: ${e.message}`, 'error');
+            } finally {
+                // 恢復原始狀態
+                PlayerManager.state = originalState;
+                PlayerManager._saveState = originalSave;
+                log('✓ 已恢復 PlayerManager 原始狀態', 'info');
+            }
+        });
+
+        // 測試侍女自動合成
+        document.getElementById('testMaidSystem').addEventListener('click', async () => {
+            if (!buildingManager || !resourceManager) {
+                log('✗ 管理器未初始化', 'error');
+                return;
+            }
+
+            log('\n=== 測試侍女自動合成 ===', 'info');
+
+            // 1. 設置侍女建築
+            const maid = buildingManager.getBuilding('maid');
+            if (maid) {
+                maid.level = 1;
+                log('✓ 已將侍女等級設為 1', 'success');
+            } else {
+                log('✗ 找不到侍女建築', 'error');
+                return;
+            }
+
+            // 2. 設置資源與合成目標
+            const targetRes = 'stone_mid'; // 中品靈石
+            const recipe = { 'stone_low': 5, 'lingli': 10 }; // 假設配方
+
+            // 確保有足夠材料
+            const stoneLow = resourceManager.getResource('stone_low');
+            const lingli = resourceManager.getResource('lingli');
+            const stoneMid = resourceManager.getResource('stone_mid');
+
+            stoneLow.value = 100;
+            lingli.value = 1000;
+            stoneMid.value = 0;
+
+            log(`初始材料: 下品靈石=${stoneLow.value}, 靈力=${lingli.value}`, 'info');
+            log(`目標產物: 中品靈石=${stoneMid.value}`, 'info');
+
+            // 確保目標資源已解鎖 (craft 方法會檢查 unlocked)
+            if (!stoneMid.unlocked) {
+                resourceManager.unlockResource(targetRes);
+                log(`✓ 已手動解鎖 ${targetRes}`, 'info');
+            }
+
+            // 3. 啟用自動合成
+            buildingManager.maidAutoTargets[targetRes] = true;
+            log(`✓ 已啟用 ${targetRes} 的自動合成`, 'success');
+
+            // 4. 執行自動合成邏輯
+            log('執行 runMaidWork()...', 'info');
+            buildingManager.runMaidWork();
+
+            // 5. 驗證結果
+            // 由於 runMaidWork 每次只合成一個，所以產物應該增加 1
+            const success = stoneMid.value === 1;
+            log(`合成後: 下品靈石=${stoneLow.value}, 靈力=${lingli.value}`, 'info');
+            log(`產物數量: ${stoneMid.value}`, success ? 'success' : 'error');
+
+            if (success) {
+                log('✓ 侍女自動合成功能正常', 'success');
+            } else {
+                log('✗ 侍女自動合成失敗', 'error');
+            }
+
+            // 清理狀態
+            maid.level = 0;
+            buildingManager.maidAutoTargets[targetRes] = false;
+        });
+
+        // 自動初始化
+        init();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試頁面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1d;
+            color: #e0e0e0;
+        }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2d2d30;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 8px 16px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        #output {
+            margin-top: 10px;
+            padding: 10px;
+            background: #1a1a1d;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>遊戲功能測試</h1>
+
+    <div class="test-section">
+        <h2>測試 1: 資源自動增長</h2>
+        <button id="testAutoGrow">開始測試</button>
+        <div id="output1"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>測試 2: 手動採集</h2>
+        <button id="testManualGather">測試手動採集</button>
+        <div id="output2"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>測試 3: 檢查遊戲狀態</h2>
+        <button id="checkGame">檢查遊戲</button>
+        <div id="output3"></div>
+    </div>
+
+    <script type="module">
+        import ResourceManager from './src/data/Resources.js';
+
+        const output1 = document.getElementById('output1');
+        const output2 = document.getElementById('output2');
+        const output3 = document.getElementById('output3');
+
+        // 測試 1: 資源自動增長
+        document.getElementById('testAutoGrow').addEventListener('click', () => {
+            const rm = new ResourceManager();
+            output1.innerHTML = '<p>初始靈力: ' + rm.getResource('lingli').value + '</p>';
+            output1.innerHTML += '<p>靈力產率: ' + rm.getResource('lingli').rate + '/秒</p>';
+
+            // 模擬 5 秒
+            rm.update(5);
+            output1.innerHTML += '<p>5秒後靈力: ' + rm.getResource('lingli').value + '</p>';
+            output1.innerHTML += '<p>預期值: ' + (0.2 * 5) + '</p>';
+        });
+
+        // 測試 2: 手動採集
+        document.getElementById('testManualGather').addEventListener('click', () => {
+            const rm = new ResourceManager();
+            const before = rm.getResource('lingli').value;
+            output2.innerHTML = '<p>採集前靈力: ' + before + '</p>';
+
+            const result = rm.manualGather('lingli');
+            const after = rm.getResource('lingli').value;
+
+            output2.innerHTML += '<p>採集結果: ' + (result ? '成功' : '失敗') + '</p>';
+            output2.innerHTML += '<p>採集後靈力: ' + after + '</p>';
+            output2.innerHTML += '<p>增加量: ' + (after - before) + '</p>';
+        });
+
+        // 測試 3: 檢查遊戲
+        document.getElementById('checkGame').addEventListener('click', () => {
+            if (window.game) {
+                output3.innerHTML = '<p>✓ 遊戲實例存在</p>';
+                const lingli = window.game.resourceManager.getResource('lingli');
+                output3.innerHTML += '<p>靈力值: ' + lingli.value + '</p>';
+                output3.innerHTML += '<p>靈力產率: ' + lingli.rate + '/秒</p>';
+                output3.innerHTML += '<p>靈力類型: ' + lingli.type + '</p>';
+                output3.innerHTML += '<p>是否解鎖: ' + lingli.unlocked + '</p>';
+            } else {
+                output3.innerHTML = '<p>✗ 遊戲實例不存在</p>';
+            }
+        });
+    </script>
+</body>
+
+</html>

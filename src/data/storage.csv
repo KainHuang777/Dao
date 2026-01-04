@@ -1,0 +1,12 @@
+id,name,description,costFactor,maxLevel,era,prereqBuilding,prereqTech,basicCost1_type,basicCost1_amount,basicCost2_type,basicCost2_amount,basicCost3_type,basicCost3_amount,basicCost4_type,basicCost4_amount,advCost1_type,advCost1_amount,advCost2_type,advCost2_amount,effect1_type,effect1_amount,effect2_type,effect2_amount,advEffect1_type,advEffect1_amount,advEffect2_type,advEffect2_amount,advEffect3_type,advEffect3_amount
+storage_lingli,🏺 聚靈陣,匯聚周遭靈氣，提升靈力儲存上限。,1.3,50,1,0,0,money,50,wood,20,0,0,0,0,0,0,0,0,lingli_max,100,0,0,0,0,0,0,0,0
+storage_money,💰 錢莊,凡間錢莊的分支，用來存放更多的金錢。,1.3,50,1,0,0,money,100,wood,50,0,0,0,0,0,0,0,0,money_max,500,0,0,0,0,0,0,0,0
+storage_wood,🪵 木料場,整理散落的靈木，增加存放空間。,1.3,50,1,0,0,money,30,wood,10,0,0,0,0,0,0,0,0,wood_max,200,0,0,0,0,0,0,0,0
+storage_stone,📦 靈石倉庫,特殊的加固倉庫，用於封存靈石防止靈氣散失。,1.3,50,1,0,0,money,40,stone_low,10,0,0,0,0,0,0,0,0,stone_low_max,200,0,0,0,0,0,0,0,0
+storage_herb,🏥 百草閣,保持藥草活性的閣樓，提升藥草上限。,1.3,50,1,0,0,money,60,wood,30,0,0,0,0,0,0,0,0,spirit_grass_low_max,100,0,0,0,0,0,0,0,0
+storage_lingli_mid,🎐 中級聚靈陣,更強大的聚靈效果。,1.4,50,2,storage_lingli,0,money,500,stone_low,50,0,0,0,0,0,0,0,0,lingli_max,1000,0,0,0,0,0,0,0,0
+storage_stone_mid,🏛️ 中級靈石庫,更大的靈石存放空間。,1.4,50,2,storage_stone,0,money,400,stone_low,50,0,0,0,0,0,0,0,0,stone_low_max,1000,0,0,0,0,0,0,0,0
+storage_money_mid,🏦 中級錢莊,存放更多金錢。,1.4,50,2,storage_money,0,money,500,wood,100,0,0,0,0,0,0,0,0,money_max,5000,0,0,0,0,0,0,0,0
+storage_wood_mid,🏗️ 中級木料場,更專業的木材存放區。,1.4,50,2,storage_wood,0,money,300,wood,100,0,0,0,0,0,0,0,0,wood_max,2000,0,0,0,0,0,0,0,0
+storage_herb_mid,🏨 中級百草閣,存放更多靈草。,1.4,50,2,storage_herb,0,money,400,wood,150,0,0,0,0,0,0,0,0,spirit_grass_low_max,1000,0,0,0,0,0,0,0,0
+

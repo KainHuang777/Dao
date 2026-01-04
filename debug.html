@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>調試控制台</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            background: #000;
+            color: #0f0;
+        }
+
+        #console {
+            white-space: pre-wrap;
+            font-size: 12px;
+        }
+
+        .error {
+            color: #f00;
+        }
+
+        .warn {
+            color: #ff0;
+        }
+
+        .info {
+            color: #0ff;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>遊戲調試控制台</h1>
+    <div id="console"></div>
+
+    <script type="module">
+        const consoleDiv = document.getElementById('console');
+
+        function log(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = type;
+            line.textContent = `[${time}] ${msg}`;
+            consoleDiv.appendChild(line);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        // 攔截控制台輸出
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function (...args) {
+            log(args.join(' '), 'info');
+            originalLog.apply(console, args);
+        };
+
+        console.error = function (...args) {
+            log(args.join(' '), 'error');
+            originalError.apply(console, args);
+        };
+
+        console.warn = function (...args) {
+            log(args.join(' '), 'warn');
+            originalWarn.apply(console, args);
+        };
+
+        // 載入遊戲
+        log('開始載入遊戲...');
+
+        try {
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = './src/main.js';
+            script.onload = () => {
+                log('main.js 載入成功');
+
+                setTimeout(() => {
+                    if (window.game) {
+                        log('✓ 遊戲實例已創建');
+                        log('檢查資源管理器...');
+
+                        const rm = window.game.resourceManager;
+                        const lingli = rm.getResource('lingli');
+
+                        log(`靈力初始值: ${lingli.value}`);
+                        log(`靈力產率: ${lingli.rate}/秒`);
+                        log(`靈力類型: ${lingli.type}`);
+                        log(`靈力解鎖: ${lingli.unlocked}`);
+
+                        // 測試手動採集
+                        log('\n測試手動採集...');
+                        const before = lingli.value;
+                        const result = rm.manualGather('lingli');
+                        const after = lingli.value;
+                        log(`採集前: ${before}`);
+                        log(`採集結果: ${result ? '成功' : '失敗'}`);
+                        log(`採集後: ${after}`);
+                        log(`增加: ${after - before}`);
+
+                        // 監控資源變化
+                        log('\n開始監控資源變化...');
+                        let lastValue = lingli.value;
+                        setInterval(() => {
+                            const current = lingli.value;
+                            if (current !== lastValue) {
+                                log(`靈力變化: ${lastValue.toFixed(2)} → ${current.toFixed(2)} (Δ${(current - lastValue).toFixed(2)})`);
+                                lastValue = current;
+                            }
+                        }, 1000);
+
+                    } else {
+                        log('✗ 遊戲實例未創建', 'error');
+                    }
+                }, 1000);
+            };
+            script.onerror = (e) => {
+                log('main.js 載入失敗: ' + e, 'error');
+            };
+            document.body.appendChild(script);
+        } catch (e) {
+            log('錯誤: ' + e.message, 'error');
+        }
+    </script>
+</body>
+
+</html>
