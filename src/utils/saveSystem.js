@@ -1,4 +1,6 @@
 
+import PlayerManager from './PlayerManager.js';
+
 export default class SaveSystem {
     constructor(gameInstance) {
         this.game = gameInstance;
@@ -7,21 +9,39 @@ export default class SaveSystem {
 
     // 獲取當前遊戲數據物件
     getGameData() {
+        if (!this.game || !this.game.resourceManager || !this.game.buildingManager) {
+            console.error('SaveSystem: Managers not initialized in game instance');
+            return null;
+        }
+
         return {
             timestamp: Date.now(),
+            player: PlayerManager ? PlayerManager.exportData() : null,
             resources: this.game.resourceManager.exportData(),
             buildings: this.game.buildingManager.exportData()
-            // future: skills
         };
     }
 
     // 生成 Base64 存檔代碼
     generateSaveCode() {
-        const data = this.getGameData();
-        const jsonString = JSON.stringify(data);
-        // UTF-8 to Base64 (handle chinese characters)
+        console.log('SaveSystem: Starting generateSaveCode');
         try {
-            return btoa(unescape(encodeURIComponent(jsonString)));
+            const data = this.getGameData();
+            if (!data) return '';
+
+            console.log('SaveSystem: Game data exported');
+            const jsonString = JSON.stringify(data);
+
+            // UTF-8 to Base64 (Modern way)
+            const utf8Bytes = new TextEncoder().encode(jsonString);
+            let binary = '';
+            const bytes = new Uint8Array(utf8Bytes);
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            const base64 = btoa(binary);
+            console.log('SaveSystem: Base64 generated, length:', base64.length);
+            return base64;
         } catch (e) {
             console.error('Save encoding error', e);
             return '';
@@ -31,7 +51,12 @@ export default class SaveSystem {
     // 解析存檔代碼
     parseSaveCode(code) {
         try {
-            const jsonString = decodeURIComponent(escape(atob(code)));
+            const binary = atob(code);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            const jsonString = new TextDecoder().decode(bytes);
             return JSON.parse(jsonString);
         } catch (e) {
             console.error('Save decoding error', e);

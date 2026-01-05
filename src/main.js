@@ -45,6 +45,10 @@ class Game {
         // 嘗試讀取存檔
         const savedData = this.saveSystem.loadFromStorage();
         if (savedData) {
+            if (savedData.player) {
+                const { default: PlayerManager } = await import('./utils/PlayerManager.js');
+                PlayerManager.loadData(savedData.player);
+            }
             this.resourceManager.loadData(savedData.resources);
             if (savedData.buildings) {
                 this.buildingManager.loadData(savedData.buildings);

@@ -263,17 +263,31 @@ export default class DebugPanel {
     }
 
     maxLevel() {
+        const eraId = PlayerManager.getEraId();
+        const era = EraManager.getEraById(eraId);
+        const maxLevel = era?.maxLevel || 10;
         const currentLevel = PlayerManager.getLevel();
-        const maxLevel = 10;
 
         if (currentLevel >= maxLevel) {
             alert('當前等級已經是滿級了！');
             return;
         }
 
-        // 直接設置等級為 10
+        // 直接設置等級為滿級
         PlayerManager.state.level = maxLevel;
+
+        // 額外：將修煉時間也設為「滿」，即將開始時間往前推
+        // 這樣就不會顯示「還需 X 祀」
+        const requiredTime = EraManager.getLevelUpRequiredTime(eraId, maxLevel - 1); // 這裡理論上應該是累計時間
+        // 簡單起見，直接推 10 小時，絕對夠了
+        PlayerManager.state.startTimestamp = Date.now() - (36000 * 1000);
+
         PlayerManager._saveState(PlayerManager.state);
+
+        // 重要：保存到統一存檔
+        if (window.game && window.game.saveSystem) {
+            window.game.saveSystem.saveToStorage();
+        }
 
         alert(`等級已提升至 Lv.${maxLevel}！`);
 

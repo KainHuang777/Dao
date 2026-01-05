@@ -10,6 +10,7 @@ import TabSystem from '../components/TabSystem.js';
 import PlayerManager from '../utils/PlayerManager.js';
 import EraManager from '../utils/EraManager.js';
 import LanguageManager from '../utils/LanguageManager.js';
+import { ReleaseNotes } from '../data/ReleaseNotes.js';
 
 export default class UIManager {
     constructor(game) {
@@ -33,6 +34,12 @@ export default class UIManager {
         this.confirmLoadBtn = document.getElementById('confirm-load-btn');
         this.saveDataArea = document.getElementById('save-data-area');
         this.modalTitle = document.getElementById('modal-title');
+
+        // Version modal elements
+        this.versionBtn = document.getElementById('version-btn');
+        this.versionModal = document.getElementById('version-modal');
+        this.closeVersionModalBtn = document.getElementById('close-version-modal');
+        this.versionContent = document.getElementById('version-content');
     }
 
     async init() {
@@ -187,9 +194,14 @@ export default class UIManager {
                 if (!code) return;
                 const data = this.game.saveSystem.parseSaveCode(code);
                 if (data) {
+                    if (data.player) PlayerManager.loadData(data.player);
                     this.game.resourceManager.loadData(data.resources);
+                    if (data.buildings) this.game.buildingManager.loadData(data.buildings);
+
                     this.saveModal.classList.add('hidden');
                     alert('讀取成功！');
+                    // 重新加載介面
+                    window.location.reload();
                 } else {
                     alert('存檔代碼無效！');
                 }
@@ -199,7 +211,44 @@ export default class UIManager {
             if (e.target === this.saveModal) {
                 this.saveModal.classList.add('hidden');
             }
+            if (e.target === this.versionModal) {
+                this.versionModal.classList.add('hidden');
+            }
         });
+
+        if (this.versionBtn) {
+            this.versionBtn.addEventListener('click', () => this.openVersionModal());
+        }
+        if (this.closeVersionModalBtn) {
+            this.closeVersionModalBtn.addEventListener('click', () => this.versionModal.classList.add('hidden'));
+        }
+    }
+
+    openVersionModal() {
+        if (!this.versionModal || !this.versionContent) return;
+        this.versionModal.classList.remove('hidden');
+
+        // Render Release Notes
+        let html = '';
+        ReleaseNotes.forEach((ver, index) => {
+            html += `<div style="margin-bottom: 25px; ${index !== 0 ? 'border-top: 1px solid #333; padding-top: 15px;' : ''}">`;
+            html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <span style="color: #4fc3f7; font-size: 1.1em; font-weight: bold;">${ver.version}</span>
+                        <span style="color: #666; font-size: 0.85em;">${ver.date}</span>
+                    </div>`;
+            html += '<ul style="padding-left: 20px; margin: 0;">';
+            ver.notes.forEach(note => {
+                html += `<li style="margin-bottom: 8px;">${note}</li>`;
+            });
+            html += '</ul></div>';
+        });
+
+        this.versionContent.innerHTML = html;
+
+        const latestVer = ReleaseNotes[0].version;
+        const verId = document.getElementById('current-version-id');
+        if (verId) verId.textContent = latestVer;
+        if (this.versionBtn) this.versionBtn.textContent = latestVer;
     }
 
     openSaveModal(mode) {

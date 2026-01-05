@@ -39,6 +39,8 @@
             <header class="main-header">
                 <h1>修仙問道</h1>
                 <div class="game-controls">
+                    <button id="version-btn" class="btn"
+                        style="background: #37474f; border-color: #546e7a;">v0.2.0</button>
                     <button id="save-btn" class="btn">保存進度</button>
                     <button id="load-btn" class="btn">讀取進度</button>
                 </div>
@@ -92,6 +94,22 @@
             style="position:fixed; bottom:10px; right:10px; font-size:12px; color:rgba(255,255,255,0.5); pointer-events:none;">
             Build: 2026-01-04 21:40:00
         </footer>
+    </div>
+
+    <!-- 更新日誌彈窗 -->
+    <div id="version-modal" class="modal hidden">
+        <div class="modal-content" style="width: 600px; border: 1px solid #546e7a;">
+            <span class="close-modal" id="close-version-modal">&times;</span>
+            <h3 id="version-modal-title" style="color: #81d4fa; border-bottom: 1px solid #333; padding-bottom: 10px;">
+                更新日誌</h3>
+            <div id="version-content"
+                style="max-height: 400px; overflow-y: auto; color: #ccc; font-size: 0.95em; line-height: 1.8;">
+                <!-- 內容由 JS 動態生成 -->
+            </div>
+            <div style="margin-top: 20px; text-align: right; font-size: 12px; color: #666;">
+                當前版本：<span id="current-version-id">v0.2.0</span>
+            </div>
+        </div>
     </div>
 
     <!-- 存檔彈窗模態框 -->

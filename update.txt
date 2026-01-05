@@ -1,3 +1,23 @@
+[2026-01-05 23:08] ReleaseNotes Refactoring
+1. ReleaseNotes.js: Restructured into a list of versions, with newest updates at the top and explicit version/date headers.
+2. MainView.js: Updated rendering logic to display multiple version logs with clear separators and historical dates.
+
+[2026-01-05 23:05] Release Notes System
+1. Created ReleaseNotes.js: Condensed recent updates for players (v0.2.0).
+2. index.html: Added version button (v0.2.0) next to save/load buttons and a dedicated update log modal.
+3. MainView.js: Implemented logic to display release notes modal and update version display.
+
+[2026-01-05 22:55] Debug Panel Fixes
+1. DebugPanel.js: Updated "Max Era Level" (時期等級全滿) to correctly update the unified save system (`saveToStorage`) and set training time to prevent "Time Required" display issues.
+2. Fixed a synchronization bug where debug actions were being overwritten by the unified save on reload.
+
+[2026-01-05 22:50] Unified Save/Load System & Test Page Update
+1. SaveSystem.js: Unified player state (Era, Level, Skills, etc.) with resources and buildings into a single save file.
+2. PlayerManager.js: Added exportData() and loadData() for unified saving.
+3. core-test.html: Added a dedicated section for Save/Load testing, allowing generation and reading of save codes and storage.
+4. MainView.js: Fixed manual loading to include all data components and trigger a page reload for state consistency.
+5. Fixed: Save codes now correctly persist all player progress.
+
 [2026-01-05 22:35] Added "Help" page & Fixed crash
 1. index.html: Added missing "view-help" container and "Help" tab button.
 2. HelpPanel.js: Created new component for displaying game instructions and developer information.

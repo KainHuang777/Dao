@@ -60,6 +60,17 @@
         <button id="testMaidSystem">測試侍女自動合成</button>
         <button id="testTrainingTime">測試修煉時間顯示</button>
     </div>
+    <div style="margin-top: 20px; padding: 10px; border: 1px solid #444; border-radius: 8px;">
+        <h3>存檔功能測試</h3>
+        <button id="testSaveCode">生成存檔碼</button>
+        <button id="testLoadCode">讀取存檔碼</button>
+        <button id="testSaveStorage">保存至 Storage</button>
+        <button id="testLoadStorage">從 Storage 讀取</button>
+        <div style="margin-top: 10px;">
+            <textarea id="saveCodeArea" style="width: 100%; background: #222; color: #fff; border: 1px solid #555;"
+                rows="5" placeholder="在此處貼上存檔碼..."></textarea>
+        </div>
+    </div>
     <div id="output"></div>
 
     <script type="module">
@@ -76,6 +87,7 @@
 
         let resourceManager = null;
         let buildingManager = null;
+        let SaveSystem = null;
 
         // 初始化
         async function init() {
@@ -83,6 +95,8 @@
                 log('載入模組與 CSV 資料...', 'info');
                 const { default: ResourceManager } = await import('./src/data/Resources.js');
                 const { default: BuildingManager } = await import('./src/utils/BuildingManager.js');
+                const { default: SaveSystemModule } = await import('./src/utils/saveSystem.js');
+                SaveSystem = SaveSystemModule;
                 const { loadBuildings } = await import('./src/data/Buildings.js');
                 const { default: EraManager } = await import('./src/utils/EraManager.js');
                 const { default: SkillManager } = await import('./src/utils/SkillManager.js');
@@ -440,7 +454,78 @@
             if (result.reason.includes('还需') || result.reason.includes('還需')) {
                 log('✓ 包含 "还需/還需" 字樣', 'success');
             } else {
-                log('✗ 缺少 "还需" 字樣', 'error');
+                log(`✗ 缺少 "还需" 字樣`, 'error');
+            }
+        });
+
+        // 存檔系統測試
+        document.getElementById('testSaveCode').addEventListener('click', () => {
+            try {
+                log('開始生成存檔碼...', 'info');
+                if (!SaveSystem) {
+                    log('✗ SaveSystem 類別未載入，請檢查 init() 是否成功', 'error');
+                    return;
+                }
+                if (!resourceManager || !buildingManager) {
+                    log('✗ 管理器未初始化', 'error');
+                    return;
+                }
+
+                log('實例化 SaveSystem...', 'info');
+                const saveSystem = new SaveSystem({ resourceManager, buildingManager });
+
+                log('調用 generateSaveCode()...', 'info');
+                const code = saveSystem.generateSaveCode();
+
+                if (!code) {
+                    log('✗ 生成的存檔碼為空 (可能有錯誤在 Console)', 'error');
+                } else {
+                    document.getElementById('saveCodeArea').value = code;
+                    log('✓ 已生成存檔碼，長度: ' + code.length, 'success');
+                }
+            } catch (err) {
+                log(`✗ 執行崩潰: ${err.message}`, 'error');
+                log(err.stack, 'error');
+                console.error(err);
+            }
+        });
+
+        document.getElementById('testLoadCode').addEventListener('click', async () => {
+            const code = document.getElementById('saveCodeArea').value;
+            if (!code) return log('✗ 請提供存檔碼', 'error');
+            const saveSystem = new SaveSystem({ resourceManager, buildingManager });
+            const data = saveSystem.parseSaveCode(code);
+            if (data) {
+                const { default: PlayerManager } = await import('./src/utils/PlayerManager.js');
+                log('解析成功，正在載入數據...', 'info');
+                if (data.player) PlayerManager.loadData(data.player);
+                resourceManager.loadData(data.resources);
+                buildingManager.loadData(data.buildings);
+                log('✓ 存檔碼讀取完成', 'success');
+            } else {
+                log('✗ 存檔碼無效', 'error');
+            }
+        });
+
+        document.getElementById('testSaveStorage').addEventListener('click', () => {
+            if (!resourceManager || !buildingManager) return log('✗ 管理器未初始化', 'error');
+            const saveSystem = new SaveSystem({ resourceManager, buildingManager });
+            saveSystem.saveToStorage();
+            log('✓ 已保存至 Storage', 'success');
+        });
+
+        document.getElementById('testLoadStorage').addEventListener('click', async () => {
+            if (!resourceManager || !buildingManager) return log('✗ 管理器未初始化', 'error');
+            const saveSystem = new SaveSystem({ resourceManager, buildingManager });
+            const data = saveSystem.loadFromStorage();
+            if (data) {
+                const { default: PlayerManager } = await import('./src/utils/PlayerManager.js');
+                if (data.player) PlayerManager.loadData(data.player);
+                resourceManager.loadData(data.resources);
+                buildingManager.loadData(data.buildings);
+                log('✓ 從 Storage 讀取完成', 'success');
+            } else {
+                log('✗ Storage 中無存檔', 'error');
             }
         });
 

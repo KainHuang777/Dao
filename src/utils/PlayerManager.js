@@ -62,6 +62,19 @@ class PlayerManager {
         localStorage.setItem(this.storageKey, JSON.stringify(state));
     }
 
+    // 用於統一存檔導出
+    exportData() {
+        return { ...this.state };
+    }
+
+    // 用於統一存檔載入
+    loadData(data) {
+        if (!data) return;
+        this.state = { ...this.defaultState, ...data };
+        this._saveState(this.state);
+        console.log('Player data loaded and storage updated.');
+    }
+
     getEraId() { return Number(this.state.eraId); }
     getLevel() { return this.state.level; }
     getStartTimestamp() { return this.state.startTimestamp; }
