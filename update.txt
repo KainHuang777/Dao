@@ -1,32 +1,35 @@
-[2026-01-04 23:40] 摰峕㟲撖衣𣶹嚗朞���號 Buff 蝟餌絞
-1. PlayerManager嚗𡁏鰵憓� activeBuffs ���贝蕭頩方𠪊����𦠜��栶��
-2. PlayerManager嚗𡁜祕�� cleanExpiredBuffs() �芸�皜���擧� buff��
-3. PlayerManager嚗𡁜祕�� getLingliBuffMultiplier() �脣���� buff �齿彍��
-4. PlayerManager嚗帋耨�� consumePill() �閧��𢠃�銝寧鸌畾𦠜��頣�瘛餃� buff + 憓𧼮�靽桃����嚗剹��
-5. BuildingManager嚗𡁏��券��� buff �齿彍�圈��𤤿𤩎�箄�蝞𨰜��
-6. Resources.js嚗帋耨敺� LanguageManager 撘閧鍂�誯�嚗�㺿�� import嚗剹��
+[2026-01-05 21:45] Add Google Analytics
+1. index.html: Added Google Analytics tag (gtag.js) to the head section for usage tracking.
 
-�𢠃�銝寧𣶹�典��游虾�剁�
-- �滨鍂敺屸��𤤿𤩎�箄��� 2�㵪���� 1撟湛�60蝘𡜐�
-- �峕�憓𧼮�蝮賭耨�㗇��� 1撟�
-- Buff �擧�敺諹䌊�閙�敺拇迤撣貊𤩎�箇�
+[2026-01-04 23:40] 靈藥持久時間與 Buff 系統
+1. PlayerManager：新增 activeBuffs 處理多個藥效緩衝。
+2. PlayerManager：實作 cleanExpiredBuffs() 自動清除過期 buff。
+3. PlayerManager：實作 getLingliBuffMultiplier() 注入靈力加成。
+4. PlayerManager：修改 consumePill() 以支持不同丹藥效果，增加 buff + 增加修煉時間。
+5. BuildingManager：計算產出時考慮 buff 加成。
+6. Resources.js：修正對 LanguageManager 調用的錯誤（補充 import）。
 
-[2026-01-04 23:25] �㕑ˊ���蝟餌絞嚗𡁏鰵憓䂿��𦠜��嗉�隞钅𢒰�芸�
-1. ������蝟餌絞嚗�10% 璈毺��Ｗ枂 2�㵪�5% 璈毺��Ｗ枂 3�㵪������＊蝷箸䲰靽桐��亥���
-2. �𢠃�銝孵���矽�湛��寧��屸��𤤿𤩎��2�齿�蝥�1撟湛�憓𧼮�靽桃����1撟氬�㵪��滨蔭撌脫凒�堆�buff蝟餌絞敺�祕�橘���
-3. �厰�閬𤥁死�芸�嚗𡁜��鞉��閗��滨鍂�厰��寞��舐鍂�扳㺿霈𢠃��脰��𤩺�摨艾��
+靈藥具體數值如下：
+- 蘊靈丹效果：靈力產出 2倍，持續 1年 (60秒)。
+- 增加總修煉時間 1年。
+- Buff 結束後會自動恢復正常產出。
 
-[2026-01-04 23:05] 靽桀儔嚗鋴raftingPanel 霈𦠜彍雿𦦵鍂�罸𥲤隤�
-靽格迤 effectDiv 霈𦠜彍�� if ��憛𠰴�摰𡁶儔雿�銁憭㚚�撘閧鍂�� ReferenceError��
-撠� effectDiv 摰��蝘餉秐憭硋惜雿𦦵鍂�煺誑蝣箔��臬銁璇苷辣��憛𠰴�摮睃���
+[2026-01-04 23:25] 靈藥系系統：新增蘊靈丹及其效果
+1. 靈藥系系統：10% 概率產出 2倍，5% 概率產出 3倍，並標示於煉製界面。
+2. 蘊靈丹效果：立即增加修煉產出 2倍持續 1年，增加修煉時間 1年（數值暫定，buff 系統後續實作）。
+3. 界面優化：修正靈藥煉製界面顯示，使其與普通資源煉製界面對齊。
 
-[2026-01-04 21:50] �㕑ˊ���隞钅𢒰嚗𡁻��啗矽�港號�仿＊蝷箔�撅�
-1. 銝寡𠯫���嚗𡁜�撠誩�擃娍�摮埈㺿�箏葆�峕艶�脩�撘瑁矽��憛𠺪�憿舐內�典��齿䲮雿滨蔭��
-2. 銝寡𠯫�齿䲮嚗𡁶宏�喳��鞉��蓥��對��渡泵���雿𨀣�蝔页��������滨��鞉𧋦嚗剹��
-3. �硺號�亦�����齿䲮靽脲��典�雿滨蔭嚗ǎnfo �������
+[2026-01-04 23:05] 修復：CraftingPanel 區域變量使用錯誤
+修復 effectDiv 變量在 if 塊外部使用导致的 ReferenceError。
+將 effectDiv 定義移動到外部使用，並保證其在條件不滿足時為空。
 
-[2026-01-04 21:40] ��𧋦鞈��嚗𡁏凒�� Build ����唾�
-1. index.html: �湔鰵�喃�閫垍��祇＊蝷箇� 2026-01-04 21:40:00
+[2026-01-04 21:50] 介面優化：修煉進度條顯示功能
+1. 進度條：增加對等級提昇時間的進度顯示，數值顯示在進度條中央。
+2. 介面寬度：容器寬度調整，避免文字超出。
+3. 修煉時長：優化顯示格式（nfo -> info）。
+
+[2026-01-04 21:40] 數值驗證：更新 Build 版本
+1. index.html: 更新版本號標籤顯示 2026-01-04 21:40:00
 請強制刷新瀏覽器 (Ctrl+Shift+R) 並打開開發者工具查看 Console。  
 服用蘊靈丹後應該看到時間戳變化的日誌。  
  
@@ -42,7 +45,7 @@
 添加 window.PlayerManager 以便在 Console 中調試。  
 確認蘊靈丹功能完全正常：時間戳修改成功，修煉時間正確增加。  
  
-
+ 
 [2026-01-05 00:45] Fix: Pill effect display and Time Unit
 1. EraManager.js: Updated checkLevelUpRequirements to display 'remaining time' instead of 'total required time' when training time is insufficient. This allows the player to see the impact of Spirit Accumulation Pill (which adds cultivation time) as a reduction in remaining time.
 2. zh-CN.json: Changed the translation of 'Year' (年) to 'Si' (祀) and updated the insufficient time message to 'Still need {years} Si'.
@@ -62,4 +65,3 @@
    If zh-CN, logic does replace params IF translated string has {0}, {1}.
    
    Potential cause: The 'zh-CN.json' file might NOT have the key '建築 <b>{0}</b> 升級至 Lv.{1}' exactly, or it might have different placeholders. I should check zh-CN.json for this specific key.
-
