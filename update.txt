@@ -1,3 +1,10 @@
+[2026-01-05 22:35] Added "Help" page & Fixed crash
+1. index.html: Added missing "view-help" container and "Help" tab button.
+2. HelpPanel.js: Created new component for displaying game instructions and developer information.
+3. MainView.js: Integrated HelpPanel into UIManager and updated tab naming logic.
+4. i18n: Added translations for Help page content (zh-TW, zh-CN, en, ja).
+5. Fixed: TypeError in HelpPanel when container was missing.
+
 [2026-01-05 21:59] 煉製合成功能優化
 1. CraftingPanel.js: 新增 refresh() 方法並重新渲染介面，確保分頁切換時數據與批量按鈕是最新的。
 2. CraftingPanel.js: 修復 updateEntry() 覆蓋丹藥資訊的問題，並在 updateButtons() 循環中加入數據同步更新，保證背景資源增長時按鈕能動態啟用。
