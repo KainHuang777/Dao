@@ -52,6 +52,8 @@
  
  
 [2026-01-05 00:45] Fix: Pill effect display and Time Unit
+- 2026-01-05: Added "Help" page with game instructions, system explanations, and multilingual support.
+- 2026-01-05: Optimized Crafting Panel to refresh resources and button states correctly when switching tabs.
 1. EraManager.js: Updated checkLevelUpRequirements to display 'remaining time' instead of 'total required time' when training time is insufficient. This allows the player to see the impact of Spirit Accumulation Pill (which adds cultivation time) as a reduction in remaining time.
 2. zh-CN.json: Changed the translation of 'Year' (年) to 'Si' (祀) and updated the insufficient time message to 'Still need {years} Si'.
 

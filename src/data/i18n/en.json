@@ -357,5 +357,17 @@
     "合體期": "Body Integration",
     "大乘期": "Mahayana",
     "渡劫期": "Tribulation",
-    "金仙": "Golden Immortal"
+    "金仙": "Golden Immortal",
+    "遊戲說明": "Game Guide",
+    "遊戲簡介": "Game Introduction",
+    "本遊戲是一款修仙主題的放置類網頁遊戲。玩家將扮演一名修仙者，通過採集資源、建造洞府、修煉功法，最終渡劫飛昇，探尋大道的真諦。": "This is a cultivation-themed idle web game. You play as a cultivator, gathering resources, building your cave heaven, training skills, and finally facing tribulation to ascend and seek the truth of the Dao.",
+    "資源系統": "Resource System",
+    "資源是修仙的基礎。靈石用於貨幣流通，靈木、靈鐵等用於建築升級，靈草更是煉製丹藥不可或缺的材料。合理分配人力，最大化資源產出是前期關鍵。": "Resources are the foundation of cultivation. Spirit Stones for currency, Spirit Wood and Iron for upgrades, and Spirit Grass for alchemy. Balancing resource allocation is key in the early game.",
+    "建築系統": "Building System",
+    "洞府建築提供各項加成。「聚靈陣」聚集天地靈氣，「煉丹房」煉製輔助修行的丹藥，「藏經閣」則能讓你領悟更高深的功法。升級建築是提升實力的主要途徑。": "Buildings provide bonuses. 'Spirit Array' gathers energy, 'Alchemy Room' crafts pills, 'Scripture Hall' unlocks skills. Upgrading buildings is the main way to increase power.",
+    "輪迴轉世": "Reincarnation",
+    "當壽元耗盡或修為達到瓶頸，可選擇「輪迴證道」。輪迴雖會重置修為與建築，但能保留你的「道心」與「道證」。": "When lifespan ends or progress stalls, choose 'Reincarnate'. It resets cultivation and buildings but keeps your 'Dao Heart' and 'Dao Proof'.",
+    "每一點道心都能全方位提升你的修煉效率與資源獲取速度，是累積的永久加成。": "Each point of Dao Heart globally boosts training efficiency and resource production permanently.",
+    "稀有的天道證明，可用於解鎖強大的輪迴天賦，讓你在下一世贏在起跑點。": "Rare proof of the Heavenly Dao, used to unlock powerful Reincarnation Talents for a head start in the next life.",
+    "開發者聯絡與反饋": "Developer & Feedback"
 }

@@ -4,6 +4,7 @@ import BuildingPanel from '../components/BuildingPanel.js';
 import CraftingPanel from '../components/CraftingPanel.js';
 import SkillPanel from '../components/SkillPanel.js';
 import TalentPanel from '../components/TalentPanel.js';
+import HelpPanel from '../components/HelpPanel.js';
 import DebugPanel from '../components/DebugPanel.js';
 import TabSystem from '../components/TabSystem.js';
 import PlayerManager from '../utils/PlayerManager.js';
@@ -18,6 +19,7 @@ export default class UIManager {
         this.craftingPanel = new CraftingPanel(game.resourceManager, game.buildingManager);
         this.skillPanel = new SkillPanel();
         this.talentPanel = new TalentPanel();
+        this.helpPanel = new HelpPanel();
         this.debugPanel = new DebugPanel();
         this.tabSystem = new TabSystem();
 
@@ -43,6 +45,7 @@ export default class UIManager {
         this.craftingPanel.init();
         this.skillPanel.init();
         this.talentPanel.init();
+        this.helpPanel.init();
         this.debugPanel.init();
         this.tabSystem.init();
 
@@ -118,6 +121,7 @@ export default class UIManager {
                 'crafting': '煉製合成',
                 'skills': '功法修煉',
                 'talents': '輪迴天賦',
+                'help': '遊戲說明',
                 'debug': 'Debug' // Debug 通常不翻譯
             };
 
