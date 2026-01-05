@@ -40,7 +40,11 @@ export default class CraftingPanel {
 
             const desc = document.createElement('p');
             desc.className = 'craft-desc';
-            desc.textContent = `${LanguageManager.getInstance().t('當前')}: ${Formatter.formatBigNumber(res.value)} / ${Formatter.formatBigNumber(res.max)}`;
+
+            const valueSpan = document.createElement('span');
+            valueSpan.className = 'craft-value';
+            valueSpan.textContent = `${LanguageManager.getInstance().t('當前')}: ${Formatter.formatBigNumber(res.value)} / ${Formatter.formatBigNumber(res.max)}`;
+            desc.appendChild(valueSpan);
 
             // 檢查是否為丹藥
             const pillConfig = PlayerManager.getPillConfig(key);
@@ -201,6 +205,7 @@ export default class CraftingPanel {
 
             this.elements[key] = {
                 descEl: desc,
+                valueSpanEl: valueSpan,
                 craftButtons: craftButtons,
                 consumeBtnEl: consumeBtn,
                 maxCraftable: maxCraftable
@@ -217,6 +222,13 @@ export default class CraftingPanel {
         }
 
         this.container.appendChild(list);
+    }
+
+    /**
+     * 刷新面板（分頁切換時調用）
+     */
+    refresh() {
+        this.render();
     }
 
     /**
@@ -256,7 +268,9 @@ export default class CraftingPanel {
         const els = this.elements[key];
         if (!res || !els) return;
 
-        els.descEl.textContent = `${LanguageManager.getInstance().t('當前')}: ${Formatter.formatBigNumber(res.value)} / ${Formatter.formatBigNumber(res.max)}`;
+        if (els.valueSpanEl) {
+            els.valueSpanEl.textContent = `${LanguageManager.getInstance().t('當前')}: ${Formatter.formatBigNumber(res.value)} / ${Formatter.formatBigNumber(res.max)}`;
+        }
 
         // 更新最大可合成數量
         els.maxCraftable = this.getMaxCraftableAmount(key, res.recipe);
@@ -267,6 +281,9 @@ export default class CraftingPanel {
             const els = this.elements[key];
             const res = this.resourceManager.getResource(key);
             if (!els || !res) return;
+
+            // 先更新數據同步
+            this.updateEntry(key);
 
             // 更新合成按鈕狀態
             if (els.craftButtons) {

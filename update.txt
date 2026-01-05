@@ -1,3 +1,8 @@
+[2026-01-05 21:59] 煉製合成功能優化
+1. CraftingPanel.js: 新增 refresh() 方法並重新渲染介面，確保分頁切換時數據與批量按鈕是最新的。
+2. CraftingPanel.js: 修復 updateEntry() 覆蓋丹藥資訊的問題，並在 updateButtons() 循環中加入數據同步更新，保證背景資源增長時按鈕能動態啟用。
+3. MainView.js: 註冊 'crafting' 分頁切換回調。
+
 [2026-01-05 21:45] Add Google Analytics
 1. index.html: Added Google Analytics tag (gtag.js) to the head section for usage tracking.
 

@@ -46,9 +46,12 @@ export default class UIManager {
         this.debugPanel.init();
         this.tabSystem.init();
 
-        // 註冊 Debug 分頁的刷新回調
+        // 註冊分頁刷新回調
         this.tabSystem.registerCallback('debug', () => {
             this.debugPanel.refresh();
+        });
+        this.tabSystem.registerCallback('crafting', () => {
+            this.craftingPanel.refresh();
         });
 
         this.bindEvents();
