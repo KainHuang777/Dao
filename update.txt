@@ -1,3 +1,108 @@
+[2026-01-07 01:35] I18n Optimization: Skill Requirements
+1. Added I18n support for skill requirements in realm/level-up tooltips.
+2. Refactored `EraManager.js` to prioritize skill IDs for translation, falling back to names from CSV.
+3. Added mapping for all skill IDs in `zh-TW.json`, `zh-CN.json`, `en.json`, and `ja.json`.
+
+[2026-01-07 01:30] I18n Optimization: Resource & Player Info
+1. Added missing translations for "Cultivation Progress" (修練進度), "Mid-grade Spirit Stone", "Pill Liquid", and "Talisman" across all languages.
+2. Refactored `ResourcePanel` and `CraftingPanel` to prioritize Resource ID for translation, ensuring consistent display even with emojis in CSV data.
+3. Updated `EraManager._getResName` to include missing resource IDs (liquid, talisman).
+4. Synchronized `zh-TW.json` with base keys to ensure fallback consistency.
+
+[2026-01-07 01:25] Documentation: Synced & Updated Release Notes v0.21
+1. ReleaseNotes.js: Added missing features to v0.21 notes across all languages (zh-TW, zh-CN, en, ja).
+2. Added items: Resource deduction logs [DEV], Pill consumption limits (limits per realm, 100% cap), Cultivation UI visualization (Progress bar, Hover tooltips), and Version display fix.
+3. Consistency: Ensured all 4 languages have identical 9 items for v0.21 to prevent display discrepancies.
+
+[2026-01-07 01:20] Fix: Initial Version Number Display
+1. MainView.js: Updated `updateStaticText` to initialize the version button and ID from `ReleaseNotes[0]` immediately upon game start.
+2. Rationale: Fixed the issue where the version number displayed an outdated "0.20" until the version modal was opened.
+
+[2026-01-07 01:15] Fix: Dynamic Progress Bar & Tooltip Flickering
+1. MainView.js: Enabled real-time updates for the training progress bar and percentage text in `updatePlayerStatus`.
+2. MainView.js: Removed time-based "reason" from the level-up button title (Tooltip) to stop the constant flickering caused by ticking seconds.
+3. UI Logic: Now the Tooltip focus on resource requirements (updated less frequently), while the progress bar handles cultivation time visualization.
+
+[2026-01-07 01:05] UI: Level-Up Button Tooltip & Training Progress Bar
+1. MainView.js: Level-up button tooltip now shows resource requirements with current/required values and checkmarks.
+2. MainView.js: Added a training progress bar (75% width) below the level-up button to show cultivation progress.
+3. i18n: Added "修練進度" key to zh-TW.json.
+4. Rationale: This avoids tooltip flickering due to constantly updating time values.
+
+[2026-01-07 01:00] Feature: Resource Deduction Log & Pill Consumption Limits
+1. PlayerManager.js:
+   - Added logic to `increaseLevel` to deduct resources (previously only checked).
+   - Added [DEV] tag log for deducted resources when leveling up.
+   - Updated `consumePill` to block tribulation pills if success rate >= 100%.
+   - Updated `consumePill` to limit tribulation pill count based on current Era (e.g., Era 4 can take 4 pills).
+   - Updated pill consumption log to show the new total tribulation success rate.
+2. i18n: Added translation keys for new logs and error messages in zh-TW.
+
+[2026-01-06 23:58] Balance & UX: Pill Logic and Era 2 Requirements
+1. eras.csv: Changed Era 2 (Foundation Establishment) level up requirement from "Mid-grade Spirit Stone x10" to "Low-grade Spirit Stone x50", as Mid-grade stones are not craftable at this stage.
+2. PlayerManager.js: Added restriction to prevent consuming pills with 'tribulationSuccess' effect (e.g., Foundation Pill) when Era < 3 (Golden Core).
+3. PlayerManager.js: Updated pill effect description to show "(Current realm cannot consume)" if the restriction applies.
+4. i18n: Added translation for restriction message.
+
+[2026-01-06 23:55] Feature: Enhanced Level Up Button tooltips
+1. EraManager.js: Refactored checkLevelUpRequirements to provide detailed feedback when resources are insufficient. It now lists specific missing resource names and amounts.
+2. i18n: Added "資源不足: 需要 {res}" template and resource names to zh-TW.json.
+3. Result: Hovering over disabled "Upgrade" button in Player Info now clearly shows exactly what's missing.
+
+[2026-01-06 23:48] Fix: Level up button UI/logic inconsistency
+1. EraManager.js: Fixed checkLevelUpRequirements to correctly read .value from resource objects. Previously, it compared resource objects directly with numbers, leading to logic failure.
+2. MainView.js: Unified resource source to getUnlockedResources() for both level-up button click and UI updates.
+3. Result: Level up button now correctly reflects the satisfied status of resources and training time.
+
+[2026-01-06 23:45] Fix: Realm hint display error in zh-TW
+1. LanguageManager.js: Removed zh-TW special case. Now loads zh-TW.json like other languages.
+2. zh-TW.json: Created new translation file containing hint_era_1~4 and other ID-based keys.
+3. Rationale: Fixed issue where "hint_era_2" ID was shown instead of translated text in TC.
+
+[2026-01-06 23:23] Balance: Dantian Expansion Skill Cost Adjustment
+1. skills.csv: Reduced core_expansion_1 cost from 10800 to 9000.
+2. skills.csv: Reduced core_expansion_2 cost from 18000 to 15000.
+3. skills.csv: Reduced core_expansion_3 cost from 30000 to 24000.
+4. Rationale: Ensure skills are attainable within Golden Core era with Scripture Hall upgrades, without requiring more than 5 reincarnations.
+
+[2026-01-06 23:18] ReleaseNotes v0.21 補齊
+1. ReleaseNotes.js: Added missing entries for v0.21 to match update.txt 2026-01-06 changes.
+2. Added: Language switcher revamped (flat button layout with browser language detection).
+3. Added: Multilingual support expanded (Release Notes multilingual, pill/skill descriptions translatable).
+4. Added: Cultivation system enhanced (level bonuses, prerequisite skills at LV5+, LV9 items).
+5. Added: New reincarnation talent "Celestial Cycle Expansion" (+10% skill point cap).
+
+[2026-01-06 23:05] Gameplay Hint System Upgrade
+1. PlayerManager.js: Added `shownEraHints` to player state to track displayed realm hints.
+2. MainView.js: Implemented immediate hints upon entering a new realm (Era 1-4).
+3. MainView.js: Redesigned early game hints to guide players on specific actions (upgrading storage, crafting pills, preparing for tribulation, or reincarnating) to prevent soft-locks.
+4. i18n: Added multi-language support (zh-CN, en, ja) for all new realm hints.
+
+[2026-01-06 22:40] Localization & Release Notes Update
+1. PlayerManager.js: Replaced hardcoded Spirit Nurturing Pill effect description with translatable key '服用蘊靈丹效果'.
+2. HelpPanel.js: Replaced hardcoded Skills section description with translatable key '功法說明內容'.
+3. ReleaseNotes.js: Refactored data structure to support multilingual notes (zh-TW, zh-CN, en, ja).
+4. MainView.js: Updated Release Notes modal to display notes based on current language.
+5. i18n: Added missing translations for pill effects and help text to all language files.
+
+[2026-01-06 22:30] Language Switcher Enhancements
+1. MainView.js: Added detectBrowserLanguage() method to detect browser's language preference.
+2. MainView.js: Refactored initLanguageSwitcher() from dropdown to flat button layout (EN/TC/SC/JP).
+3. Language switcher now displays detected browser language code above buttons, highlighted in gold if different from current selection.
+4. Selected language button uses gradient style similar to reincarnation talent levels (purple gradient with glow effect).
+5. Unselected buttons have dark background with hover effects for better UX.
+
+[2026-01-06 22:10] Cultivation System Enhancements
+1. eras.csv: Moved upgrade prerequisite skills (up_skills) to level-up skills (lvl_skills) triggered at LV5.
+2. eras.csv: Added stone_mid consumption (lvl_res3) for Era 2+, and special crafted item consumption (lv9_item) for LV9.
+3. skills.csv: Changed core_expansion skills effect from all_max to skill_point_max.
+4. CSVLoader.js: Extended convertToEras() to parse new CSV columns (lvl_res3, lv9_item) and support pipe-delimited skills.
+5. EraManager.js: Modified checkLevelUpRequirements() to only check skills at LV5+, and added LV9 item consumption logic.
+6. PlayerManager.js: Added getLevelProductionBonus() (+1% per level), getLevelSkillPointCapBonus() (+1% per 5 levels), and cycle_expansion talent support.
+7. BuildingManager.js: Applied level production bonus, skill_point_max handling, and cycle_expansion talent to recalculateRates().
+8. TalentPanel.js: Added new reincarnation talent "周天循環·擴" (Celestial Cycle Expansion) for +10% skill point cap.
+9. i18n (zh-CN, en, ja): Added translations for new talent and updated skill descriptions.
+
 [2026-01-05 23:08] ReleaseNotes Refactoring
 1. ReleaseNotes.js: Restructured into a list of versions, with newest updates at the top and explicit version/date headers.
 2. MainView.js: Updated rendering logic to display multiple version logs with clear separators and historical dates.

@@ -26,7 +26,7 @@ export default class HelpPanel {
         // 2. 系統說明
         this.addSection(content, lang.t('資源系統'), lang.t('資源是修仙的基礎。靈石用於貨幣流通，靈木、靈鐵等用於建築升級，靈草更是煉製丹藥不可或缺的材料。合理分配人力，最大化資源產出是前期關鍵。'));
         this.addSection(content, lang.t('建築系統'), lang.t('洞府建築提供各項加成。「聚靈陣」聚集天地靈氣，「煉丹房」煉製輔助修行的丹藥，「藏經閣」則能讓你領悟更高深的功法。升級建築是提升實力的主要途徑。'));
-        this.addSection(content, lang.t('功法修煉'), lang.t('功法能永久提升你的各項屬性。有些功法能提升資源產出，有些能增加修煉速度。注意功法有境界需求，需循序漸進。'));
+        this.addSection(content, lang.t('功法修煉'), lang.t('功法說明內容'));
 
         // 3. 輪迴系統
         this.addSection(content, lang.t('輪迴轉世'), lang.t('當壽元耗盡或修為達到瓶頸，可選擇「輪迴證道」。輪迴雖會重置修為與建築，但能保留你的「道心」與「道證」。'));

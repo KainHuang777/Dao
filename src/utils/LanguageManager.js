@@ -25,24 +25,20 @@ export default class LanguageManager {
     }
 
     async init() {
-        // Load the saved language if it's not the default (TC is default in code)
-        if (this.currentLang !== 'zh-TW') {
-            await this.loadLanguage(this.currentLang);
-        }
+        // Always load current language data
+        await this.loadLanguage(this.currentLang);
     }
 
     async loadLanguage(lang) {
-        if (lang === 'zh-TW') {
-            this.currentLang = lang;
-            localStorage.setItem('gameLanguage', lang);
-            return;
-        }
-
         try {
             this.isLoading = true;
             const response = await fetch(`./src/data/i18n/${lang}.json`);
             if (!response.ok) {
-                throw new Error(`Failed to load language file: ${lang}`);
+                // If file doesn't exist (e.g. TC might originally have no file), still set currentLang
+                console.warn(`Language file not found: ${lang}, falling back to key-based display.`);
+                this.currentLang = lang;
+                localStorage.setItem('gameLanguage', lang);
+                return;
             }
             const data = await response.json();
             this.translations[lang] = data;
@@ -65,44 +61,32 @@ export default class LanguageManager {
      * @returns {string} The translated text or the key if not found.
      */
     t(key, params = {}) {
-        // If current language is TC, return the key (assuming key is the TC text)
-        if (this.currentLang === 'zh-TW') {
-            if (params) {
-                return key.replace(/{(\w+)}/g, (match, paramKey) => {
-                    return params[paramKey] !== undefined ? params[paramKey] : match;
-                });
-            }
-            return key;
-        }
-
         const langData = this.translations[this.currentLang];
 
-        // If language data not loaded, fallback to key
-        if (!langData) {
-            return key;
-        }
+        // 1. Try lookup if language data exists
+        let translated = null;
+        if (langData) {
+            translated = langData[key];
 
-        // 1. Try direct lookup (for UI strings where key is the TC text)
-        let translated = langData[key];
-
-        // 2. If not found, try nested lookup (e.g. "ui.save_game" or "resources.lingli.name")
-        if (!translated && key.includes('.')) {
-            const parts = key.split('.');
-            let current = langData;
-            for (const part of parts) {
-                if (current && current[part]) {
-                    current = current[part];
-                } else {
-                    current = null;
-                    break;
+            // 2. If not found, try nested lookup (e.g. "ui.save_game" or "resources.lingli.name")
+            if (!translated && key.includes('.')) {
+                const parts = key.split('.');
+                let current = langData;
+                for (const part of parts) {
+                    if (current && current[part]) {
+                        current = current[part];
+                    } else {
+                        current = null;
+                        break;
+                    }
+                }
+                if (current && typeof current === 'string') {
+                    translated = current;
                 }
             }
-            if (current && typeof current === 'string') {
-                translated = current;
-            }
         }
 
-        // Fallback: Use key if translation is missing
+        // Fallback: Use key if translation is missing or language not loaded
         let result = translated || key;
 
         // Parameter interpolation (e.g. "Hello {name}")

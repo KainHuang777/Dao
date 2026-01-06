@@ -239,22 +239,36 @@ export default class CSVLoader {
                 levelUpRequirements: {
                     baseTime: row.lvl_baseTime,
                     timeMultiplier: row.lvl_timeMult,
-                    skills: row.lvl_skills ? row.lvl_skills.split(',').map(s => s.trim()) : [],
+                    // 支援管線分隔格式：skill_id:level|skill_id2:level2
+                    skills: row.lvl_skills ? row.lvl_skills.split('|').map(s => s.trim()) : [],
                     resources: {}
                 }
             };
 
-            // 處理資源要求 (lvl_res1, lvl_res2)
+            // 處理資源要求 (lvl_res1, lvl_res2, lvl_res3)
             if (row.lvl_res1_type && row.lvl_res1_amount) {
                 era.levelUpRequirements.resources[row.lvl_res1_type] = row.lvl_res1_amount;
             }
             if (row.lvl_res2_type && row.lvl_res2_amount) {
                 era.levelUpRequirements.resources[row.lvl_res2_type] = row.lvl_res2_amount;
             }
+            // 新增：中品靈石消耗 (lvl_res3)
+            if (row.lvl_res3_type && row.lvl_res3_amount) {
+                era.levelUpRequirements.resources[row.lvl_res3_type] = row.lvl_res3_amount;
+            }
+
+            // 新增：LV9 特殊合成物消耗
+            if (row.lv9_item_type && row.lv9_item_amount) {
+                era.lv9Item = {
+                    type: row.lv9_item_type,
+                    amount: row.lv9_item_amount
+                };
+            }
 
             return era;
         });
     }
+
 
     /**
      * 解析容量要求字串 (格式: "lingli_max:500,stone_max:300")

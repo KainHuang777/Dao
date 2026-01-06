@@ -155,7 +155,7 @@ class EraManager {
 
             if (currentLevel < reqLevel) {
                 const skill = SkillManager.getSkill(skillId);
-                const skillName = skill ? skill.name : skillId;
+                const skillName = skill ? (LanguageManager.getInstance().t(skillId) !== skillId ? LanguageManager.getInstance().t(skillId) : LanguageManager.getInstance().t(skill.name)) : skillId;
                 missingSkillInfo.push(`${skillName} Lv.${reqLevel}`);
             }
         });
@@ -183,6 +183,8 @@ class EraManager {
             spirit_grass_low: '低階靈草',
             stone_mid: '中品靈石',
             stone_high: '上品靈石',
+            liquid: '丹液',
+            talisman: '符咒',
             // 向後相容舊ID
             stone: '下品靈石',
             herb: '藥草',
@@ -267,30 +269,32 @@ class EraManager {
             };
         }
 
-        // 檢查前置技能
+        // 檢查前置技能（僅在 LV5 及以上時檢查）
         const missingSkillInfo = [];
-        requirements.skills.forEach(reqStr => {
-            const parts = reqStr.split(':');
-            const skillId = parts[0];
-            const reqLevel = parts.length > 1 ? parseInt(parts[1]) : 1;
-            const currentLevel = learnedSkills[skillId] || 0;
+        if (currentLevel >= 5 && requirements.skills.length > 0) {
+            requirements.skills.forEach(reqStr => {
+                const parts = reqStr.split(':');
+                const skillId = parts[0];
+                const reqLevel = parts.length > 1 ? parseInt(parts[1]) : 1;
+                const playerSkillLevel = learnedSkills[skillId] || 0;
 
-            if (currentLevel < reqLevel) {
-                const skill = SkillManager.getSkill(skillId);
-                const skillName = skill ? skill.name : skillId;
-                missingSkillInfo.push(`${skillName} Lv.${reqLevel}`);
+                if (playerSkillLevel < reqLevel) {
+                    const skill = SkillManager.getSkill(skillId);
+                    const skillName = skill ? (LanguageManager.getInstance().t(skillId) !== skillId ? LanguageManager.getInstance().t(skillId) : LanguageManager.getInstance().t(skill.name)) : skillId;
+                    missingSkillInfo.push(`${skillName} Lv.${reqLevel}`);
+                }
+            });
+
+            if (missingSkillInfo.length > 0) {
+                const lang = LanguageManager.getInstance();
+                return {
+                    canLevelUp: false,
+                    missingSkills: missingSkillInfo,
+                    missingResources: {},
+                    requiredTime,
+                    reason: lang.t('缺少前置功法: {skills}', { skills: missingSkillInfo.join('、') })
+                };
             }
-        });
-
-        if (missingSkillInfo.length > 0) {
-            const lang = LanguageManager.getInstance();
-            return {
-                canLevelUp: false,
-                missingSkills: missingSkillInfo,
-                missingResources: {},
-                requiredTime,
-                reason: lang.t('缺少前置功法: {skills}', { skills: missingSkillInfo.join('、') })
-            };
         }
 
         // 檢查資源
@@ -299,19 +303,36 @@ class EraManager {
 
         for (let [resourceId, requiredAmount] of Object.entries(requirements.resources)) {
             requiredAmount = Math.floor(requiredAmount * (1 - costReduction));
-            const currentAmount = currentResources[resourceId] || 0;
+            const res = currentResources[resourceId];
+            const currentAmount = (res && typeof res === 'object') ? (res.value || 0) : (res || 0);
             if (currentAmount < requiredAmount) {
                 missingResources[resourceId] = requiredAmount - currentAmount;
             }
         }
 
+        // 檢查 LV9 特殊合成物消耗
+        if (currentLevel === 9 && era.lv9Item) {
+            const lv9Type = era.lv9Item.type;
+            const lv9Amount = Math.floor(era.lv9Item.amount * (1 - costReduction));
+            const res = currentResources[lv9Type];
+            const currentAmount = (res && typeof res === 'object') ? (res.value || 0) : (res || 0);
+            if (currentAmount < lv9Amount) {
+                missingResources[lv9Type] = lv9Amount - currentAmount;
+            }
+        }
+
         if (Object.keys(missingResources).length > 0) {
+            const lang = LanguageManager.getInstance();
+            const details = Object.entries(missingResources)
+                .map(([id, amount]) => `${lang.t(this._getResName(id))} x${Math.ceil(amount)}`)
+                .join('、');
+
             return {
                 canLevelUp: false,
                 missingSkills: [],
                 missingResources,
                 requiredTime,
-                reason: LanguageManager.getInstance().t('資源不足')
+                reason: lang.t('資源不足: 需要 {res}', { res: details })
             };
         }
 
@@ -323,6 +344,7 @@ class EraManager {
             reason: LanguageManager.getInstance().t('滿足升級條件')
         };
     }
+
 
     /**
      * 獲取等級提升所需的資源

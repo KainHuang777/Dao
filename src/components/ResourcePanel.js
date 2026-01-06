@@ -30,7 +30,11 @@ export default class ResourcePanel {
 
             const nameSpan = document.createElement('span');
             nameSpan.className = 'res-name';
-            nameSpan.textContent = LanguageManager.getInstance().t(res.name);
+            // 優先嘗試翻譯 ID，若無翻譯則 fallback 到資源名稱
+            const translatedName = LanguageManager.getInstance().t(key) !== key
+                ? LanguageManager.getInstance().t(key)
+                : LanguageManager.getInstance().t(res.name);
+            nameSpan.textContent = translatedName;
 
             const valueSpan = document.createElement('span');
             valueSpan.className = 'res-value';

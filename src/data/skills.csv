@@ -9,9 +9,9 @@ qi_storage_3,🌊 納靈法·三層,氣海如湖，靈力充盈。,1,passive,lin
 body_strengthening_1,🏋️ 強身術,築基期修煉，擴充身體對資源的承載力。,1,passive,money_max,2000,2,,skill_point,1000
 body_strengthening_2,🏋️ 強身術·二層,筋骨齊鳴，金錢往來更為便利。,1,passive,money_max,5000,2,body_strengthening_1,skill_point,7200
 body_strengthening_3,🏋️ 強身術·三層,脫胎換骨，財源廣進。,1,passive,money_max,15000,2,body_strengthening_2,skill_point,12000
-core_expansion_1,💠 丹田拓寬,金丹期專用，丹田化海，巨幅提升各類上限。,1,passive,all_max,1000,3,,skill_point,10800
-core_expansion_2,💠 丹田拓寬·二層,金丹凝實，納百川之靈。,1,passive,all_max,3000,3,core_expansion_1,skill_point,18000
-core_expansion_3,💠 丹田拓寬·三層,金丹圓滿，萬物皆可內斂。,1,passive,all_max,8000,3,core_expansion_2,skill_point,30000
+core_expansion_1,💠 丹田拓寬,金丹期專用，丹田化海，大幅提升技能點上限。,1,passive,skill_point_max,300,3,,skill_point,9000
+core_expansion_2,💠 丹田拓寬·二層,金丹凝實，氣海如淵。,1,passive,skill_point_max,600,3,core_expansion_1,skill_point,15000
+core_expansion_3,💠 丹田拓寬·三層,金丹圓滿，悟道無礙。,1,passive,skill_point_max,1200,3,core_expansion_2,skill_point,24000
 building_mastery_1,🏗️ 建築精通·初階,掌握基礎建築技藝，所有建築等級上限 +10,1,passive,building_level_cap,10,1,,skill_point,60
 building_mastery_2,🏗️ 建築精通·進階,深入理解建築原理，所有建築等級上限 +20,1,passive,building_level_cap,20,2,building_mastery_1,skill_point,4800
 building_mastery_3,🏗️ 建築精通·高階,融會貫通建築之道，所有建築等級上限 +30,1,passive,building_level_cap,30,3,building_mastery_2,skill_point,15000

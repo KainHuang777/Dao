@@ -25,7 +25,8 @@ class PlayerManager {
             activeBuffs: [],     // 當前生效的 buff { type, multiplier, endTime }
             hints: {
                 rule1Triggered: false, // 壽元 1/3 提示
-                lastRule2Year: -1      // 壽元過半後的週期性提示年份
+                lastRule2Year: -1,      // 壽元過半後的週期性提示年份
+                shownEraHints: []       // 已顯示過的境界提示 (EraId List)
             }
         };
         this.state = this._loadState();
@@ -122,10 +123,11 @@ class PlayerManager {
             sword_heart: 0.15,      // 全資源產出 +15% (劍意加持)
             three_flowers: 0.25,    // 靈力上限 +25%
             lifespan_master: 0.1,   // 壽元上限 +10%
-            world_child: 0.1        // 建築效果 +10%
+            world_child: 0.1,       // 建築效果 +10%
+            cycle_expansion: 0.1    // 技能點上限 +10%
         };
 
-        return talentRates[talentId] * level;
+        return (talentRates[talentId] || 0) * level;
     }
 
     /**
@@ -141,6 +143,31 @@ class PlayerManager {
     getDaoProofBonus() {
         return (this.state.daoProof || 0) * 0.01;
     }
+
+    /**
+     * 獲取等級帶來的資源生產加成
+     * 每級 +1%，計算公式：(eraId - 1) * 10 + level - 1
+     * @returns {number} 加成比例 (例如 0.05 = 5%)
+     */
+    getLevelProductionBonus() {
+        const eraId = this.state.eraId;
+        const level = this.state.level;
+        const totalLevels = (eraId - 1) * 10 + level - 1;
+        return totalLevels * 0.01; // 每級 1%
+    }
+
+    /**
+     * 獲取等級帶來的技能點上限加成
+     * 每 5 級 +1%
+     * @returns {number} 加成比例 (例如 0.02 = 2%)
+     */
+    getLevelSkillPointCapBonus() {
+        const eraId = this.state.eraId;
+        const level = this.state.level;
+        const totalLevels = (eraId - 1) * 10 + level;
+        return Math.floor(totalLevels / 5) * 0.01;
+    }
+
 
     /**
      * 購買天賦
@@ -177,6 +204,48 @@ class PlayerManager {
                 window.game.uiManager.addLog(msg);
             }
             return false;
+        }
+
+        // 檢查是否滿足服用境界條件 (針對渡劫丹藥)
+        if (pillConfig.effect === 'tribulationSuccess') {
+            const lang = LanguageManager.getInstance();
+
+            // 檢查是否已經 100%
+            if (this.getTribulationSuccessRate() >= 1) {
+                if (window.game && window.game.uiManager) {
+                    window.game.uiManager.addLog(lang.t('渡劫成功率已達100%，無需再服用'));
+                }
+                return false;
+            }
+
+            // 境界限制：金丹期及以前(Era < 3)無法服用 (已有的邏輯)
+            if (this.state.eraId < 3) {
+                if (window.game && window.game.uiManager) {
+                    window.game.uiManager.addLog(lang.t('目前境界無法服用'));
+                }
+                return false;
+            }
+
+            // 數量限制：金丹等丹藥，服用數量不能超過當前境界數
+            // 例如：第四境界(元嬰)可服用4顆。
+            // 這裡假設規則適用於所有 tribulationSuccess 類丹藥，或者特定丹藥。
+            // 用戶需求："金丹 服用 則依照該境界數量，例如第四時期可服用4顆金丹"
+            // 我們可以對所有渡劫丹藥應用此規則，或者只對金丹。
+            // 考慮到平衡性，這裡先應用於所有 tribulationSuccess 丹藥，上限為 EraId。
+            // 但原本 maxCount 是靜態配置(如金丹15顆)。
+            // 兩者取其小：Math.min(config.maxCount, this.state.eraId) ? 
+            // 不，用戶的意思應該是動態解鎖上限。如果是 Era 4，上限就是 4。Era 10 上限就是 10。
+            // 但如果 pillConfig.maxCount 比較小(例如 15)，那 Era 20 也只能吃 15。
+            const eraLimit = this.state.eraId;
+            if (currentCount >= eraLimit) {
+                if (window.game && window.game.uiManager) {
+                    window.game.uiManager.addLog(lang.t('{0}已達當前境界服用上限（{1}顆）', {
+                        '0': lang.t(pillConfig.name),
+                        '1': eraLimit
+                    }));
+                }
+                return false;
+            }
         }
 
         // 檢查是否有足夠的丹藥
@@ -224,7 +293,9 @@ class PlayerManager {
             }, 100);
 
             if (window.game && window.game.uiManager) {
-                const msg = `服用<b>${LanguageManager.getInstance().t(pillConfig.name)}</b>，靈力產出2倍持續1祀，修煉時間+1祀`;
+                const msg = LanguageManager.getInstance().t('服用蘊靈丹效果', {
+                    name: LanguageManager.getInstance().t(pillConfig.name)
+                });
                 window.game.uiManager.addLog(msg);
             }
         } else {
@@ -233,12 +304,20 @@ class PlayerManager {
 
             if (window.game && window.game.uiManager) {
                 const effect = this.getPillEffectDescription(pillConfig);
-                const msg = LanguageManager.getInstance().t('服用<b>{0}</b>（{1}/{2}）{3}', {
+                let msg = LanguageManager.getInstance().t('服用<b>{0}</b>（{1}/{2}）{3}', {
                     '0': LanguageManager.getInstance().t(pillConfig.name),
                     '1': currentCount + 1,
                     '2': pillConfig.maxCount,
                     '3': effect
                 });
+
+                // 如果是渡劫類丹藥，補上當前總成功率
+                if (pillConfig.effect === 'tribulationSuccess') {
+                    // 重新計算因為已經加入 consumedPills
+                    const newRate = this.getTribulationSuccessRate();
+                    msg += LanguageManager.getInstance().t('，渡劫成功率: {0}%', { '0': (newRate * 100).toFixed(1) });
+                }
+
                 window.game.uiManager.addLog(msg);
             }
         }
@@ -335,7 +414,14 @@ class PlayerManager {
             : `+${(config.bonus * 100).toFixed(1)}%`;
 
         // "，{0}{1}" -> e.g. "，修煉速度+5.0%"
-        return lang.t('，{0}{1}', { '0': effectName, '1': bonusText });
+        let desc = lang.t('，{0}{1}', { '0': effectName, '1': bonusText });
+
+        // 如果該時期沒有渡劫成功率，則追加提示
+        if (config.effect === 'tribulationSuccess' && this.state.eraId < 3) {
+            desc += ` (${lang.t('目前境界無法服用')})`;
+        }
+
+        return desc;
     }
 
     /**
@@ -833,10 +919,55 @@ class PlayerManager {
 
         if (this.state.level < 10) {
             this.state.level += 1;
+
+            // 2. 扣除資源
+            const costLogParts = [];
+            const eraId = this.state.eraId;
+            // 注意：因為已經 level+1，計算 requirement 應該用原本的 level (即 this.state.level - 1)
+            // 但 checkLevelUpRequirements 是檢查 "能不能升到下一級" 還是 "從當前級升上去"？
+            // 看 EraManager logic: `getLevelUpResourceCost(eraId, currentLevel)`
+            // 如果 currentLevel 是 1，回傳的是 "升到 2" 的消耗。
+            // 我們現在已經 +1 了，所以我們應該用 `this.state.level - 1` 來獲取剛才那次升級的消耗。
+            const prevLevel = this.state.level - 1;
+            const resCosts = EraManager.getLevelUpResourceCost(eraId, prevLevel);
+
+            // 計算天賦減免
+            const talentReduction = this.getTalentBonus('five_elements_root');
+
+            Object.entries(resCosts).forEach(([resId, baseAmount]) => {
+                const amount = Math.floor(baseAmount * (1 - talentReduction));
+                const res = window.game.resourceManager.getResource(resId);
+                if (res) {
+                    res.value -= amount;
+                    const resName = LanguageManager.getInstance().t(EraManager._getResName(resId));
+                    costLogParts.push(`${resName} -${amount}`);
+                }
+            });
+
+            // 檢查 LV9 特殊消耗 (EraManager.checkLevelUpRequirements 也有這段邏輯)
+            // 如果 prevLevel 是 9 (即從 9 升到 10)，可能有特殊道具消耗
+            const era = EraManager.getEraById(eraId);
+            if (prevLevel === 9 && era.lv9Item) {
+                const lv9Type = era.lv9Item.type;
+                const lv9Amount = Math.floor(era.lv9Item.amount * (1 - talentReduction));
+                const res = window.game.resourceManager.getResource(lv9Type);
+                if (res) {
+                    res.value -= lv9Amount;
+                    const resName = LanguageManager.getInstance().t(EraManager._getResName(lv9Type));
+                    costLogParts.push(`${resName} -${lv9Amount}`);
+                }
+            }
+
             this._saveState(this.state);
             if (window.game && window.game.uiManager) {
                 const msg = LanguageManager.getInstance().t('突破成功！當前等級提升至 <b>{0}</b>', { '0': this.state.level });
                 window.game.uiManager.addLog(msg);
+
+                // 顯示資源消耗日誌 (DEV TAG)
+                if (costLogParts.length > 0) {
+                    const costMsg = `<span style="color:#888; font-size:0.9em;">[DEV] ${LanguageManager.getInstance().t('消耗')}: ${costLogParts.join(', ')}</span>`;
+                    window.game.uiManager.addLog(costMsg);
+                }
             }
             return true;
         }

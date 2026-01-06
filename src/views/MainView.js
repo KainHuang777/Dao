@@ -109,6 +109,14 @@ export default class UIManager {
         // 輪迴按鈕 (主動)
         const rebirthBtn = document.getElementById('rebirth-action-btn');
         if (rebirthBtn) rebirthBtn.textContent = lang.t('輪迴證道');
+
+        // 初始化版本號顯示 (新增)
+        if (ReleaseNotes && ReleaseNotes.length > 0) {
+            const latestVer = ReleaseNotes[0].version;
+            const currentVerId = document.getElementById('current-version-id');
+            if (currentVerId) currentVerId.textContent = latestVer;
+            if (this.versionBtn) this.versionBtn.textContent = latestVer;
+        }
     }
 
     updateTabNames() {
@@ -230,6 +238,8 @@ export default class UIManager {
 
         // Render Release Notes
         let html = '';
+        const currentLang = LanguageManager.getInstance().getCurrentLang();
+
         ReleaseNotes.forEach((ver, index) => {
             html += `<div style="margin-bottom: 25px; ${index !== 0 ? 'border-top: 1px solid #333; padding-top: 15px;' : ''}">`;
             html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -237,9 +247,22 @@ export default class UIManager {
                         <span style="color: #666; font-size: 0.85em;">${ver.date}</span>
                     </div>`;
             html += '<ul style="padding-left: 20px; margin: 0;">';
-            ver.notes.forEach(note => {
-                html += `<li style="margin-bottom: 8px;">${note}</li>`;
-            });
+
+            // 獲取對應語言的筆記，如果沒有則回退到 zh-TW
+            let notes = ver.notes[currentLang] || ver.notes['zh-TW'] || ver.notes['zh-CN'];
+
+            // 如果 notes 仍然是 undefined (資料結構不符)，嘗試直接使用 ver.notes (如果還是陣列)
+            if (!notes && Array.isArray(ver.notes)) {
+                notes = ver.notes;
+            }
+
+            if (notes && Array.isArray(notes)) {
+                notes.forEach(note => {
+                    html += `<li style="margin-bottom: 8px;">${note}</li>`;
+                });
+            } else {
+                html += `<li style="margin-bottom: 8px; color: #888;">(No notes available for this language)</li>`;
+            }
             html += '</ul></div>';
         });
 
@@ -307,6 +330,52 @@ export default class UIManager {
                </div>`
             : '';
 
+        // 構建等級提升按鈕的 tooltip：顯示資源需求
+        const lang = LanguageManager.getInstance();
+        let levelUpTooltip = levelUpCheck.reason;
+
+        // 獲取資源需求清單
+        const resourceCosts = EraManager.getLevelUpResourceCost(eraId, level);
+        const talentReduction = PlayerManager.getTalentBonus('five_elements_root');
+        const costLines = [];
+
+        Object.entries(resourceCosts).forEach(([resId, baseAmount]) => {
+            const amount = Math.floor(baseAmount * (1 - talentReduction));
+            const res = currentResources[resId];
+            const currentVal = (res && typeof res === 'object') ? Math.floor(res.value || 0) : 0;
+            const resName = lang.t(EraManager._getResName(resId));
+            const isMet = currentVal >= amount;
+            costLines.push(`${resName}: ${currentVal}/${amount} ${isMet ? '✓' : '✗'}`);
+        });
+
+        // LV9 特殊物品
+        if (level === 9 && era && era.lv9Item) {
+            const lv9Type = era.lv9Item.type;
+            const lv9Amount = Math.floor(era.lv9Item.amount * (1 - talentReduction));
+            const res = currentResources[lv9Type];
+            const currentVal = (res && typeof res === 'object') ? Math.floor(res.value || 0) : 0;
+            const resName = lang.t(EraManager._getResName(lv9Type));
+            const isMet = currentVal >= lv9Amount;
+            costLines.push(`${resName}: ${currentVal}/${lv9Amount} ${isMet ? '✓' : '✗'}`);
+        }
+
+        if (costLines.length > 0) {
+            levelUpTooltip = `${lang.t('升級消耗')}:\n${costLines.join('\n')}`;
+            if (!levelUpCheck.canLevelUp) {
+                // 如果是資源不足以外的原因（如技能），則加上
+                if (Object.keys(levelUpCheck.missingResources || {}).length === 0 && levelUpCheck.reason && !levelUpCheck.reason.includes('時間')) {
+                    levelUpTooltip += `\n\n${levelUpCheck.reason}`;
+                }
+            }
+        }
+
+        // 計算修煉進度條
+        const trainingTime = PlayerManager.getTrainingTime();
+        const requiredTime = levelUpCheck.requiredTime || 0;
+        const trainingProgress = requiredTime > 0 ? Math.min(1, trainingTime / requiredTime) : 0;
+        const progressPercent = (trainingProgress * 100).toFixed(1);
+        const progressBarColor = trainingProgress >= 1 ? '#4caf50' : '#2196f3';
+
         this.playerInfoDiv.innerHTML = `
             ${tribulationDisplay}
             <div class="player-info-line">
@@ -317,7 +386,17 @@ export default class UIManager {
             <div class="player-info-line">
                 <span>${LanguageManager.getInstance().t('等級')}: <b style="color:#fff">${level}</b></span>
                 <button id="level-up-btn" class="mini-btn ${levelUpCheck.canLevelUp ? 'btn-active' : 'btn-disabled'}" 
-                    title="${levelUpCheck.reason}">📈 ${LanguageManager.getInstance().t('提升')}</button>
+                    title="${levelUpTooltip}">📈 ${LanguageManager.getInstance().t('提升')}</button>
+            </div>
+            <!-- 修煉進度條 -->
+            <div id="training-progress-container" style="width: 75%; margin: 5px 0 8px 0;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.75em; color: #aaa; margin-bottom: 2px;">
+                    <span>${lang.t('修練進度')}</span>
+                    <span id="training-progress-percent">${progressPercent}%</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.1); border-radius: 3px; height: 8px; overflow: hidden;">
+                    <div id="training-progress-bar" style="width: ${progressPercent}%; height: 100%; background: ${progressBarColor}; transition: width 0.3s ease;"></div>
+                </div>
             </div>
             <div class="player-info-line" style="font-size: 0.85em; color: #aaa;">
                 <span>${LanguageManager.getInstance().t('境界年歲')}: <span id="player-time-era">0h 0m 0s</span></span>
@@ -342,6 +421,7 @@ export default class UIManager {
                 <button id="rebirth-action-btn" class="btn" style="width:100%; height:36px; background:#9c27b0; color:white; font-weight:bold; font-size: 1em; border:none; border-radius:4px; cursor:pointer;">輪迴證道</button>
             </div>
         `;
+
 
         this.bindPlayerEvents();
         this.updatePlayerStatus();
@@ -499,7 +579,26 @@ export default class UIManager {
         if (lvlBtn) {
             const check = PlayerManager.canLevelUp(currentResources);
             lvlBtn.className = `mini-btn ${check.canLevelUp ? 'btn-active' : 'btn-disabled'}`;
-            lvlBtn.title = check.reason;
+
+            // 更新進度條與百分比 (動態刷新)
+            const progressBar = document.getElementById('training-progress-bar');
+            const progressPercent = document.getElementById('training-progress-percent');
+            if (progressBar && progressPercent) {
+                const trainingTime = PlayerManager.getTrainingTime();
+                const requiredTime = check.requiredTime || 0;
+                const ratio = requiredTime > 0 ? Math.min(1, trainingTime / requiredTime) : 0;
+                const percent = (ratio * 100).toFixed(1);
+
+                progressBar.style.width = `${percent}%`;
+                progressBar.style.background = ratio >= 1 ? '#4caf50' : '#2196f3';
+                progressPercent.textContent = `${percent}%`;
+            }
+
+            // 僅在資源狀態改變時更新 tooltip，且排除時間倒數以防止閃動
+            // 這裡我們簡單處理：如果本來就在顯示 tooltip，且內容沒變，就不重新賦值
+            // 由於我們在 updatePlayerInfo 已經建構了 levelUpTooltip (排除時間)，
+            // 這裡如果只是狀態檢查，我們可以選擇不更新 title，或者只更新資源部分。
+            // 為了簡化，既然主要解決閃爍(時間)問題，我們在 updatePlayerStatus 就不再頻繁更新 title 的時間部分。
         }
 
         // 更新輪迴按鈕顯示
@@ -536,7 +635,31 @@ export default class UIManager {
         if (max <= 0) return;
 
         const ratio = current / max;
+        // Make sure to handle older saves where hints might not have displayedEraHints
         const hints = PlayerManager.getHints();
+        const shownEraHints = hints.shownEraHints || [];
+
+        // 0. 升階後立即顯示境界提示 (New Feature)
+        if (!shownEraHints.includes(eraId)) {
+            const eraHints = {
+                1: 'hint_era_1',
+                2: 'hint_era_2',
+                3: 'hint_era_3',
+                4: 'hint_era_4'
+            };
+
+            const hintKey = eraHints[eraId];
+            if (hintKey) {
+                this.addLog(`<span style="color:#00bcd4">${LanguageManager.getInstance().t(hintKey)}</span>`);
+            }
+
+            // 無論有無提示文本，都標記為已顯示，避免重複檢查
+            const newShownList = [...shownEraHints, eraId];
+            PlayerManager.updateHints({ shownEraHints: newShownList });
+
+            // 更新本地 hints 變量以供後續邏輯使用
+            hints.shownEraHints = newShownList;
+        }
 
         // 提示 1：金丹期及以前 (Era <= 3)，壽元達到 1/3
         if (eraId <= 3 && ratio >= 1 / 3 && !hints.rule1Triggered) {
@@ -584,7 +707,7 @@ export default class UIManager {
 
         if (levelUpBtn) {
             levelUpBtn.onclick = () => {
-                const currentResources = this.game.resourceManager.getAllResources();
+                const currentResources = this.game.resourceManager.getUnlockedResources();
                 if (PlayerManager.increaseLevel(currentResources)) {
                     this.updatePlayerInfo();
                     window.game.buildingManager.recalculateRates();
@@ -753,6 +876,28 @@ export default class UIManager {
         }
     }
 
+    /**
+     * 偵測瀏覽器語系
+     * @returns {string} 語系代碼
+     */
+    detectBrowserLanguage() {
+        const browserLang = navigator.language || navigator.userLanguage;
+
+        // 映射瀏覽器語系到遊戲支援的語系
+        if (browserLang.startsWith('zh')) {
+            if (browserLang.includes('CN') || browserLang.includes('Hans')) {
+                return 'zh-CN';
+            }
+            return 'zh-TW'; // 預設繁體
+        } else if (browserLang.startsWith('ja')) {
+            return 'ja';
+        } else if (browserLang.startsWith('en')) {
+            return 'en';
+        }
+
+        return 'zh-TW'; // 預設繁體中文
+    }
+
     initLanguageSwitcher() {
         // 如果已經存在切換器則不重複創建
         if (document.getElementById('language-switcher')) return;
@@ -766,42 +911,83 @@ export default class UIManager {
         container.style.marginLeft = '10px';
         container.style.verticalAlign = 'middle';
 
-        const select = document.createElement('select');
-        select.style.padding = '5px 10px';
-        select.style.backgroundColor = '#333';
-        select.style.color = '#fff';
-        select.style.border = '1px solid #555';
-        select.style.borderRadius = '4px';
-        select.style.fontSize = '13px';
-        select.style.cursor = 'pointer';
+        const currentLang = LanguageManager.getInstance().getCurrentLang();
+        const detectedLang = this.detectBrowserLanguage();
 
-        const options = [
-            { value: 'zh-TW', text: '繁體中文' },
-            { value: 'zh-CN', text: '简体中文' },
-            { value: 'en', text: 'English' },
-            { value: 'ja', text: '日本語' }
+        // 語系代碼顯示（在按鈕上方）
+        const detectedLabel = document.createElement('div');
+        detectedLabel.style.fontSize = '11px';
+        detectedLabel.style.color = detectedLang !== currentLang ? '#ffd700' : '#888';
+        detectedLabel.style.marginBottom = '3px';
+        detectedLabel.style.textAlign = 'center';
+        detectedLabel.textContent = `Browser: ${detectedLang}`;
+        detectedLabel.style.fontWeight = detectedLang !== currentLang ? 'bold' : 'normal';
+        container.appendChild(detectedLabel);
+
+        // 按鈕容器
+        const btnGroup = document.createElement('div');
+        btnGroup.style.display = 'flex';
+        btnGroup.style.gap = '4px';
+        btnGroup.style.alignItems = 'center';
+
+        const languages = [
+            { value: 'en', label: 'EN' },
+            { value: 'zh-TW', label: 'TC' },
+            { value: 'zh-CN', label: 'SC' },
+            { value: 'ja', label: 'JP' }
         ];
 
-        const currentLang = LanguageManager.getInstance().getCurrentLang();
+        languages.forEach(lang => {
+            const btn = document.createElement('button');
+            btn.textContent = lang.label;
+            btn.style.padding = '4px 8px';
+            btn.style.fontSize = '12px';
+            btn.style.border = '1px solid #555';
+            btn.style.borderRadius = '3px';
+            btn.style.cursor = 'pointer';
+            btn.style.transition = 'all 0.2s';
+            btn.style.fontWeight = '500';
 
-        options.forEach(opt => {
-            const option = document.createElement('option');
-            option.value = opt.value;
-            option.textContent = opt.text;
-            if (opt.value === currentLang) {
-                option.selected = true;
+            // 選中狀態樣式（類似輪迴天賦的反白樣式）
+            if (lang.value === currentLang) {
+                btn.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                btn.style.color = '#fff';
+                btn.style.borderColor = '#764ba2';
+                btn.style.boxShadow = '0 0 8px rgba(118, 75, 162, 0.6)';
+            } else {
+                btn.style.background = '#2a2a2a';
+                btn.style.color = '#aaa';
+                btn.style.borderColor = '#444';
             }
-            select.appendChild(option);
+
+            // Hover 效果
+            btn.addEventListener('mouseenter', () => {
+                if (lang.value !== currentLang) {
+                    btn.style.background = '#3a3a3a';
+                    btn.style.color = '#fff';
+                    btn.style.borderColor = '#666';
+                }
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                if (lang.value !== currentLang) {
+                    btn.style.background = '#2a2a2a';
+                    btn.style.color = '#aaa';
+                    btn.style.borderColor = '#444';
+                }
+            });
+
+            btn.addEventListener('click', async () => {
+                if (lang.value !== currentLang) {
+                    await LanguageManager.getInstance().loadLanguage(lang.value);
+                    location.reload();
+                }
+            });
+
+            btnGroup.appendChild(btn);
         });
 
-        select.addEventListener('change', async (e) => {
-            const lang = e.target.value;
-            await LanguageManager.getInstance().loadLanguage(lang);
-            // Reload page to apply changes fully
-            location.reload();
-        });
-
-        container.appendChild(select);
+        container.appendChild(btnGroup);
         controls.appendChild(container);
     }
 }

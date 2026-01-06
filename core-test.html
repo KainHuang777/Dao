@@ -59,6 +59,7 @@
         <button id="testLifespanReset">測試壽元已盡重置</button>
         <button id="testMaidSystem">測試侍女自動合成</button>
         <button id="testTrainingTime">測試修煉時間顯示</button>
+        <button id="testHintSystem">測試提示系統狀態</button>
     </div>
     <div style="margin-top: 20px; padding: 10px; border: 1px solid #444; border-radius: 8px;">
         <h3>存檔功能測試</h3>
@@ -455,6 +456,45 @@
                 log('✓ 包含 "还需/還需" 字樣', 'success');
             } else {
                 log(`✗ 缺少 "还需" 字樣`, 'error');
+            }
+        });
+
+        // 測試提示系統狀態
+        document.getElementById('testHintSystem').addEventListener('click', async () => {
+            log('\n=== 測試提示系統狀態 ===', 'info');
+            const { default: PlayerManager } = await import('./src/utils/PlayerManager.js');
+
+            // 1. Check if shownEraHints exists in default state
+            const hints = PlayerManager.getHints();
+            log(`Hints State: ${JSON.stringify(hints)}`, 'info');
+
+            if (Array.isArray(hints.shownEraHints)) {
+                log('✓ shownEraHints array exists', 'success');
+            } else {
+                log('✗ shownEraHints is missing or not an array', 'error');
+            }
+
+            // 2. Mock adding a hint
+            const mockEraId = 99;
+            const currentShown = hints.shownEraHints || [];
+            if (!currentShown.includes(mockEraId)) {
+                const newShown = [...currentShown, mockEraId];
+                PlayerManager.updateHints({ shownEraHints: newShown });
+
+                const updatedHints = PlayerManager.getHints();
+                log(`Updated Hints: ${JSON.stringify(updatedHints)}`, 'info');
+
+                if (updatedHints.shownEraHints.includes(mockEraId)) {
+                    log('✓ Hint state updated successfully', 'success');
+                } else {
+                    log('✗ Failed to update hint state', 'error');
+                }
+
+                // Cleanup (optional, but good for repetitive testing)
+                const cleanupShown = newShown.filter(id => id !== mockEraId);
+                PlayerManager.updateHints({ shownEraHints: cleanupShown });
+            } else {
+                log('✓ Mock hint already exists (skipping update test)', 'info');
             }
         });
 

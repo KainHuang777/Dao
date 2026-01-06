@@ -36,7 +36,11 @@ export default class CraftingPanel {
             info.className = 'craft-info';
 
             const title = document.createElement('h3');
-            title.textContent = LanguageManager.getInstance().t(res.name);
+            // 優先嘗試翻譯 ID，若無翻譯則 fallback 到資源名稱
+            const translatedName = LanguageManager.getInstance().t(key) !== key
+                ? LanguageManager.getInstance().t(key)
+                : LanguageManager.getInstance().t(res.name);
+            title.textContent = translatedName;
 
             const desc = document.createElement('p');
             desc.className = 'craft-desc';
@@ -93,8 +97,12 @@ export default class CraftingPanel {
                 const recipeText = Object.entries(res.recipe)
                     .map(([ingredientKey, amount]) => {
                         const ingredient = resources[ingredientKey];
-                        const name = ingredient?.name ? LanguageManager.getInstance().t(ingredient.name) : ingredientKey;
-                        return `${name} ×${Formatter.formatBigNumber(amount)}`;
+                        const translatedName = ingredient?.name
+                            ? (LanguageManager.getInstance().t(ingredientKey) !== ingredientKey
+                                ? LanguageManager.getInstance().t(ingredientKey)
+                                : LanguageManager.getInstance().t(ingredient.name))
+                            : ingredientKey;
+                        return `${translatedName} ×${Formatter.formatBigNumber(amount)}`;
                     })
                     .join(', ');
                 recipeDiv.textContent += recipeText;

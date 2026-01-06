@@ -407,10 +407,19 @@ export default class BuildingManager {
         });
 
         // 4. Apply Talent Multipliers to final rates and caps
+        const levelProdBonus = PlayerManager.getLevelProductionBonus();
+        const levelSkillCapBonus = PlayerManager.getLevelSkillPointCapBonus();
+        const cycleExpansionBonus = PlayerManager.getTalentBonus('cycle_expansion');
+
         for (const [key, res] of Object.entries(resources)) {
             // 通用產量加成
             res.rate *= (1 + globalProdBonus);
             res.rate *= (1 + swordBonus);
+
+            // 等級生產加成（只對基礎資源生效）
+            if (res.type === 'basic') {
+                res.rate *= (1 + levelProdBonus);
+            }
 
             // 專屬產量加成
             if (key === 'money') res.rate *= (1 + goldBonus);
@@ -433,6 +442,11 @@ export default class BuildingManager {
             // 專屬上限加成
             if (key === 'lingli') res.max *= (1 + lingliCapBonus);
 
+            // 技能點上限加成（等級加成 + 周天循環·擴天賦）
+            if (key === 'skill_point') {
+                res.max *= (1 + levelSkillCapBonus + cycleExpansionBonus);
+            }
+
             // 道心與道證加成 (Request 3)
             const daoHeartBonus = PlayerManager.getDaoHeartBonus();
             const daoProofBonus = PlayerManager.getDaoProofBonus();
@@ -441,6 +455,7 @@ export default class BuildingManager {
 
             res.max = Math.floor(res.max);
         }
+
 
         // 5. Apply Pill Bonuses (丹藥加成)
         const pillAllProductionBonus = PlayerManager.getPillBonus('allProduction');
