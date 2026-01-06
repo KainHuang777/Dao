@@ -636,10 +636,11 @@ export default class UIManager {
 
         const ratio = current / max;
         // Make sure to handle older saves where hints might not have displayedEraHints
+        const lang = LanguageManager.getInstance();
         const hints = PlayerManager.getHints();
         const shownEraHints = hints.shownEraHints || [];
 
-        // 0. 升階後立即顯示境界提示 (New Feature)
+        // 0. 升階後立即顯示境界提示
         if (!shownEraHints.includes(eraId)) {
             const eraHints = {
                 1: 'hint_era_1',
@@ -650,7 +651,7 @@ export default class UIManager {
 
             const hintKey = eraHints[eraId];
             if (hintKey) {
-                this.addLog(`<span style="color:#00bcd4">${LanguageManager.getInstance().t(hintKey)}</span>`);
+                this.addLog(`<span style="color:#00bcd4">${lang.t(hintKey)}</span>`);
             }
 
             // 無論有無提示文本，都標記為已顯示，避免重複檢查
@@ -663,7 +664,7 @@ export default class UIManager {
 
         // 提示 1：金丹期及以前 (Era <= 3)，壽元達到 1/3
         if (eraId <= 3 && ratio >= 1 / 3 && !hints.rule1Triggered) {
-            this.addLog(`<span style="color:#ffa726">${LanguageManager.getInstance().t('🏃【修煉提示】目前壽元已過三分之一，建議抓緊時間修煉功法。同時別忘了透過「合成」面板準備丹藥，以提高未來渡劫的成功率！')}</span>`);
+            this.addLog(`<span style="color:#ffa726">${lang.t('hint_lifespan_warning')}</span>`);
             PlayerManager.updateHints({ rule1Triggered: true });
         }
 
@@ -674,7 +675,9 @@ export default class UIManager {
             const lastInterval = Math.floor(hints.lastRule2Year / 60);
 
             if (interval > lastInterval) {
-                this.addLog(`<span style="color:#ffa726">${LanguageManager.getInstance().t('🧘【修煉提示】目前壽元剩餘不到一半。若覺本世突破無望，可考慮建造「🪷 往生蓮臺」提前輪迴，以積累更多道心與道證，助下世修仙路更順遂。')}</span>`);
+                // 如果是 Era 4，優先使用 hint_era_4 (User Request)
+                const periodicKey = (eraId === 4) ? 'hint_era_4' : 'hint_reincarnation_periodic';
+                this.addLog(`<span style="color:#ffa726">${lang.t(periodicKey)}</span>`);
                 PlayerManager.updateHints({ lastRule2Year: currentYearFloor });
             }
         }

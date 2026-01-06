@@ -1,3 +1,10 @@
+[2026-01-07 01:45] Feature & Localization: Refined Realm Hints & I18n Cleanup
+1. Refined Realm Hints: Redesigned immediate and periodic hints for Eras 1-4 to be more actionable and accurate across all languages.
+2. MainView.js: Refactored `checkGameHints` to use semantic i18n keys instead of hardcoded strings.
+3. Era 4 Logic: Unified Era 4 entry and periodic hints to use `hint_era_4` key for consistency.
+4. I18n Resolution: Cleaned up `en.json` and `ja.json` to resolve duplicate key errors and unified terminology (e.g., Skill Points).
+5. Localization: Ensured all hint keys (hint_era_1~4, hint_lifespan_warning, hint_reincarnation_periodic) are available and consistent in all i18n files.
+
 [2026-01-07 01:35] I18n Optimization: Skill Requirements
 1. Added I18n support for skill requirements in realm/level-up tooltips.
 2. Refactored `EraManager.js` to prioritize skill IDs for translation, falling back to names from CSV.
