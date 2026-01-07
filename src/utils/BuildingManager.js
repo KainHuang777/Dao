@@ -52,7 +52,10 @@ export default class BuildingManager {
             if (enabled) {
                 if (this.resourceManager.craft(key, 1)) {
                     const res = this.resourceManager.getResource(key);
-                    const resName = LanguageManager.getInstance().t(res.name);
+                    // 優先嘗試翻譯 ID，若無翻譯則 fallback 到資源名稱
+                    const resName = LanguageManager.getInstance().t(key) !== key
+                        ? LanguageManager.getInstance().t(key)
+                        : LanguageManager.getInstance().t(res.name);
                     craftedItems.push(`${resName} x1`);
                 }
             }
@@ -161,7 +164,7 @@ export default class BuildingManager {
 
         // 檢查等級上限
         if (state.level >= levelCap) {
-            return `已達等級上限 (${levelCap})，需要學習建築精通技能`;
+            return LanguageManager.getInstance().t('已達等級上限') + ` (${levelCap})，` + LanguageManager.getInstance().t('需建築精通技能');
         }
 
         // 檢查資源
@@ -185,7 +188,11 @@ export default class BuildingManager {
                 // 優先檢查資源容量是否低於所需消耗
                 if (res.max < amount) {
                     hasInsufficientProduction = true;
-                    insufficientResourceName = `${res.name}容量不足`;
+                    // 優先嘗試翻譯 ID，若無翻譯則 fallback 到資源名稱
+                    const resName = LanguageManager.getInstance().t(key) !== key
+                        ? LanguageManager.getInstance().t(key)
+                        : LanguageManager.getInstance().t(res.name);
+                    insufficientResourceName = resName + LanguageManager.getInstance().t('容量不足');
                     break;
                 }
 
@@ -200,7 +207,11 @@ export default class BuildingManager {
                 // 如果淨產出率 <= 0，表示無法透過等待獲得
                 if (netRate <= 0) {
                     hasInsufficientProduction = true;
-                    insufficientResourceName = `${res.name}產能不足`;
+                    // 優先嘗試翻譯 ID，若無翻譯則 fallback 到資源名稱
+                    const resName = LanguageManager.getInstance().t(key) !== key
+                        ? LanguageManager.getInstance().t(key)
+                        : LanguageManager.getInstance().t(res.name);
+                    insufficientResourceName = resName + LanguageManager.getInstance().t('產能不足');
                     break;
                 }
 
@@ -214,7 +225,7 @@ export default class BuildingManager {
 
         // 如果有資源產能不足
         if (hasInsufficientProduction) {
-            return `${insufficientResourceName} 產能不足`;
+            return insufficientResourceName;
         }
 
         // 如果需要等待

@@ -314,7 +314,7 @@ export default class UIManager {
         // 構建升階按鈕的 tooltip
         let upgradeTooltip = upgradeCheck.reason;
         if (needsTribulation && upgradeCheck.canUpgrade) {
-            upgradeTooltip = `渡劫成功率: ${(tribulationRate * 100).toFixed(1)}%\n${upgradeCheck.reason}`;
+            upgradeTooltip = `${LanguageManager.getInstance().t('渡劫成功率')}: ${(tribulationRate * 100).toFixed(1)}%\n${upgradeCheck.reason}`;
         }
 
         // 渡劫成功率顏色
@@ -550,7 +550,7 @@ export default class UIManager {
                 if (tribulationRate <= 0.5) tribulationColor = '#f44336'; // 紅色 (50%或以下)
 
                 tribulationSpan.style.color = tribulationColor;
-                tribulationSpan.textContent = `渡劫成功率: ${(tribulationRate * 100).toFixed(1)}%`;
+                tribulationSpan.textContent = `${LanguageManager.getInstance().t('渡劫成功率')}: ${(tribulationRate * 100).toFixed(1)}%`;
             }
 
             // 更新升階按鈕的 tooltip
@@ -558,7 +558,7 @@ export default class UIManager {
             if (upBtn) {
                 const check = PlayerManager.canUpgrade(currentResources);
                 if (check.canUpgrade) {
-                    upBtn.title = `渡劫成功率: ${(tribulationRate * 100).toFixed(1)}%\n${check.reason}`;
+                    upBtn.title = `${LanguageManager.getInstance().t('渡劫成功率')}: ${(tribulationRate * 100).toFixed(1)}%\n${check.reason}`;
                 } else {
                     upBtn.title = check.reason;
                 }
@@ -569,7 +569,7 @@ export default class UIManager {
         if (upBtn) {
             const check = PlayerManager.canUpgrade(currentResources);
             upBtn.className = `mini-btn ${check.canUpgrade ? 'btn-active' : 'btn-disabled'}`;
-            // tooltip 已在上面的渡劫成功率更新中處理
+            // 無論是否渡劫階段，都需要即時更新 tooltip
             if (!needsTribulation) {
                 upBtn.title = check.reason;
             }

@@ -1,3 +1,33 @@
+[2026-01-07 23:58] Release: v0.22 Published
+1. ReleaseNotes.js: Added v0.22 release notes with 8 items covering all I18n fixes and balance adjustments from 2026-01-07.
+2. Multi-lingual: All 4 languages (zh-TW, zh-CN, en, ja) updated with consistent content.
+3. Key updates: Realm Tooltip I18n, Maid Auto-Craft I18n, Building Reasons I18n, LV9 Resource Names, Golden Core LV9 Balance Fix.
+
+[2026-01-07 23:55] Balance: Era 3 (Golden Core) LV9 Requirement Fix
+1. eras.csv: Changed Golden Core Era LV9 requirement from "spirit_grass_100y x10" (100-Year Spirit Grass) to "talisman x10" (Talisman).
+2. Reason: 100-Year Spirit Grass is only available starting from Era 4 (Nascent Soul). Talisman is craftable in Era 3, making this a valid progression requirement.
+
+[2026-01-07 23:50] Fix: LV9 Resource Name Display
+1. EraManager.js (_getResName): Added missing resource name mappings for LV9 special items across all eras.
+2. Added mappings: spirit_grass_100y (百年靈草), spirit_grass_1000y (千年靈草), spirit_herb_10000y (萬年靈藥), monster_core_mid (中級妖丹), trans_pill (化神丹), tribulation_pill (渡劫丹), breakthrough_pill (破境丹), immortal_pill (仙丹), nine_turn_pill (九轉金丹), dao_saint_pill (大道聖丹).
+3. Result: LV9 upgrade requirements now display correctly localized resource names in all languages.
+
+[2026-01-07 23:45] Fix: Multi-Lingual Content Coverage
+1. BuildingManager.js (Maid Automation): Fixed resource name translation in maid auto-craft log messages - now prioritizes resource ID translation (e.g., 'talisman') over CSV name (e.g., '🏷️ 符咒').
+2. BuildingManager.js (getUpgradeBlockReason): Multi-lingualized hardcoded strings for level cap, capacity insufficient, and production insufficient messages.
+3. BuildingPanel.js: Multi-lingualized "目前上限" (current cap) bottleneck text.
+4. en.json: Fixed typo "天聲" -> "天生" for innate dao body talent description.
+5. en.json, ja.json: Fixed translation key suffix for "稀有的天道證明..." (Dao Proof description) from ". " to "。" to match HelpPanel usage.
+6. i18n (all files): Added translation keys for "容量不足", "產能不足".
+7. Result: Maid automation logs, building upgrade reasons, and more UI elements now display correctly in all supported languages.
+
+[2026-01-07 23:25] Fix: Realm Ascend Button Tooltip Refresh & I18n
+1. MainView.js: Fixed tooltip refresh logic for ascend button - now updates reason text immediately when resource conditions change (for both tribulation and non-tribulation phases).
+2. MainView.js: Multi-lingualized "渡劫成功率" display in tooltip and status bar using LanguageManager.t().
+3. PlayerManager.js: Multi-lingualized "壽元已盡，無法突破" error message in canUpgrade().
+4. i18n (zh-TW, zh-CN, en, ja): Added translation key "壽元已盡，無法突破" to all language files.
+5. Result: Tooltip content now correctly refreshes when resources are met, and all realm ascend button text is fully translated.
+
 [2026-01-07 01:45] Feature & Localization: Refined Realm Hints & I18n Cleanup
 1. Refined Realm Hints: Redesigned immediate and periodic hints for Eras 1-4 to be more actionable and accurate across all languages.
 2. MainView.js: Refactored `checkGameHints` to use semantic i18n keys instead of hardcoded strings.

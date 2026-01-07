@@ -185,6 +185,17 @@ class EraManager {
             stone_high: '上品靈石',
             liquid: '丹液',
             talisman: '符咒',
+            // LV9 特殊消耗資源
+            spirit_grass_100y: '百年靈草',
+            spirit_grass_1000y: '千年靈草',
+            spirit_herb_10000y: '萬年靈藥',
+            monster_core_mid: '🧿 中級妖丹',
+            trans_pill: '🌈 化神丹',
+            tribulation_pill: '⚡ 渡劫丹',
+            breakthrough_pill: '💥 破境丹',
+            immortal_pill: '☀️ 仙丹',
+            nine_turn_pill: '🔄 九轉金丹',
+            dao_saint_pill: '☯️ 大道聖丹',
             // 向後相容舊ID
             stone: '下品靈石',
             herb: '藥草',

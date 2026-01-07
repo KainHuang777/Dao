@@ -382,7 +382,7 @@ export default class BuildingPanel {
                 let htmlLine = `${this.getResName(key)}: ${Formatter.formatBigNumber(amount)}`;
 
                 if (capacityBottleneck) {
-                    const bottleneckText = ` (目前上限: ${Formatter.formatBigNumber(maxVal)})`;
+                    const bottleneckText = ` (${lang.t('當前')}: ${Formatter.formatBigNumber(maxVal)})`;
                     lineText += bottleneckText;
                     htmlLine += `<span style="font-size: 0.9em; opacity: 0.8;">${bottleneckText}</span>`;
                 }

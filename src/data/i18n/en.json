@@ -64,6 +64,8 @@
     "stone_mid": "Mid-grade Stone",
     "liquid": "Pill Liquid",
     "talisman": "Talisman",
+    "容量不足": " capacity insufficient",
+    "產能不足": " production insufficient",
     "目前境界無法服用": "Cannot consume in current realm",
     "，渡劫成功率: {0}%": ", Tribulation Success: {0}%",
     "{0}已達當前境界服用上限（{1}顆）": "{0} reached current realm limit ({1} pills)",
@@ -261,7 +263,7 @@
     "三花聚頂": "Three Flowers Gathering",
     "長生久視": "Longevity Vision",
     "位面之子": "Child of the Plane",
-    "天聲親近大道，所有資源產出 +10%": "Naturally close to Dao, all resource production +10%",
+    "天生親近大道，所有資源產出 +10%": "Naturally close to Dao, all resource production +10%",
     "道胎蘊養，基礎修煉時間減少 15%": "Dao fetus nurturing, base training time -15%",
     "五行圓滿，所有建築與修煉消耗減少 10%": "Five elements perfect, building and training costs -10%",
     "身負國運，基礎資源上限 +5%": "Bearer of national fate, basic resource cap +5%",
@@ -359,7 +361,7 @@
     "輪迴轉世": "Reincarnation",
     "當壽元耗盡或修為達到瓶頸，可選擇「輪迴證道」。輪迴雖會重置修為與建築，但能保留你的「道心」與「道證」。": "When lifespan ends or progress stalls, choose 'Reincarnate'. It resets cultivation and buildings but keeps your 'Dao Heart' and 'Dao Proof'.",
     "每一點道心都能全方位提升你的修煉效率與資源獲取速度，是累積的永久加成。": "Each point of Dao Heart globally boosts training efficiency and resource production permanently.",
-    "稀有的天道證明，可用於解鎖強大的輪迴天賦，讓你在下一世贏在起跑點. ": "Rare proof of the Heavenly Dao, used to unlock powerful Reincarnation Talents for a head start in the next life.",
+    "稀有的天道證明，可用於解鎖強大的輪迴天賦，讓你在下一世贏在起跑點。": "Rare proof of the Heavenly Dao, used to unlock powerful Reincarnation Talents for a head start in the next life.",
     "開發者聯絡與反饋": "Developer & Feedback",
     "周天循環·擴": "Celestial Cycle Expansion",
     "周天運轉，氣海擴張，技能點上限 +10%": "Celestial cycle rotates, qi sea expands, Skill Point cap +10%",
@@ -392,5 +394,6 @@
     "building_mastery_3": "🏗️ Building Mastery III",
     "building_mastery_4": "🏗️ Building Mastery IV",
     "nascent_soul_incubation": "👼 Nascent Soul Incubation",
-    "nascent_soul_mastery": "🔱 Nascent Soul Mastery"
+    "nascent_soul_mastery": "🔱 Nascent Soul Mastery",
+    "壽元已盡，無法突破": "Lifespan exhausted, cannot ascend"
 }

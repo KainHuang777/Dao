@@ -1,6 +1,52 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.22",
+        date: "2026-01-07",
+        notes: {
+            "zh-TW": [
+                "【多語化】境界升階按鈕 TIP 修復：正確顯示渡劫成功率與條件不滿足原因，並即時刷新。",
+                "【多語化】侍女自動合成日誌：資源名稱現在正確翻譯，不再顯示英文 ID。",
+                "【多語化】建築升級原因：「容量不足」、「產能不足」、「已達等級上限」等提示現已完全翻譯。",
+                "【多語化】LV9 資源需求：所有境界的 LV9 特殊消耗資源名稱現在正確顯示翻譯。",
+                "【多語化】遊戲指南與天賦說明：修復了部分翻譯鍵結尾符號不一致的問題。",
+                "【多語化】技能需求顯示：境界/等級提升時所需的前置功法名稱現在正確翻譯。",
+                "【平衡】金丹期 LV9 消耗調整：從「百年靈草 x10」改為「符咒 x10」（百年靈草需元嬰期才能獲得）。",
+                "【修復】境界指引優化：四大境界的即時提示內容更精準，使用正確的建築與資源名稱。"
+            ],
+            "zh-CN": [
+                "【多语化】境界升阶按钮 TIP 修复：正确显示渡劫成功率与条件不满足原因，并即时刷新。",
+                "【多语化】侍女自动合成日志：资源名称现在正确翻译，不再显示英文 ID。",
+                "【多语化】建筑升级原因：「容量不足」、「产能不足」、「已达等级上限」等提示现已完全翻译。",
+                "【多语化】LV9 资源需求：所有境界的 LV9 特殊消耗资源名称现在正确显示翻译。",
+                "【多语化】游戏指南与天赋说明：修复了部分翻译键结尾符号不一致的问题。",
+                "【多语化】技能需求显示：境界/等级提升时所需的前置功法名称现在正确翻译。",
+                "【平衡】金丹期 LV9 消耗调整：从「百年灵草 x10」改为「符咒 x10」（百年灵草需元婴期才能获得）。",
+                "【修复】境界指引优化：四大境界的即时提示内容更精准，使用正确的建筑与资源名称。"
+            ],
+            "en": [
+                "[I18n] Realm Ascend Button Tooltip: Now correctly displays tribulation success rate and unmet conditions, with real-time refresh.",
+                "[I18n] Maid Auto-Craft Logs: Resource names are now properly translated instead of showing English IDs.",
+                "[I18n] Building Upgrade Reasons: 'Capacity insufficient', 'Production insufficient', 'Max level reached' messages are now fully translated.",
+                "[I18n] LV9 Resource Requirements: Special item names for LV9 upgrades across all realms now display correctly in all languages.",
+                "[I18n] Game Guide & Talent Descriptions: Fixed translation key suffix inconsistencies.",
+                "[I18n] Skill Requirements: Prerequisite skill names for realm/level-up now correctly translated.",
+                "[Balance] Golden Core LV9 Requirement: Changed from 'Spirit Grass 100y x10' to 'Talisman x10' (100y grass requires Nascent Soul era).",
+                "[Fix] Realm Hints Refined: Four realm instant-hints now use accurate building and resource names."
+            ],
+            "ja": [
+                "【多言語化】境界昇格ボタンツールチップ修正：渡劫成功率と条件未達理由が正しく表示され、リアルタイムで更新。",
+                "【多言語化】メイド自動合成ログ：資源名が正しく翻訳され、英語IDが表示されなくなりました。",
+                "【多言語化】建築アップグレード理由：「容量不足」「生産能力不足」「最大レベル到達」メッセージを完全翻訳。",
+                "【多言語化】LV9資源要件：全境界のLV9特殊消費資源名が正しく翻訳されて表示。",
+                "【多言語化】ゲームガイドと天賦説明：翻訳キーの末尾記号の不一致を修正。",
+                "【多言語化】スキル要件表示：境界/レベルアップに必要な前提スキル名が正しく翻訳。",
+                "【平衡】金丹期LV9消費調整：「百年霊草 x10」から「お札 x10」に変更（百年霊草は元嬰期から入手可能）。",
+                "【修正】境界ヒント改善：4つの境界即時ヒントが正確な建築名と資源名を使用。"
+            ]
+        }
+    },
+    {
         version: "v0.21",
         date: "2026-01-06",
         notes: {

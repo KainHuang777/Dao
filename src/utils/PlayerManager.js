@@ -777,7 +777,7 @@ class PlayerManager {
      */
     canUpgrade(currentResources = {}) {
         if (this.isLifespanExhausted()) {
-            return { canUpgrade: false, reason: '壽元已盡，無法突破' };
+            return { canUpgrade: false, reason: LanguageManager.getInstance().t('壽元已盡，無法突破') };
         }
         return EraManager.checkUpgradeRequirements(
             this.state.eraId,
