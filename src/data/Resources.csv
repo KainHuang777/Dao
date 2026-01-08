@@ -22,7 +22,7 @@ cold_iron,寒鐵,advance,80,0.01,FALSE,,4,
 spirit_jade,靈玉,advance,50,0,FALSE,,5,
 beast_hide_mid,中級獸皮毛,advance,60,0.01,FALSE,,4,
 beast_bone_mid,中級獸骨,advance,60,0.01,FALSE,,4,
-beast_crystal_mid,中級獸晶,advance,40,0,FALSE,,5,
+beast_crystal_mid,中級獸晶,crafted,40,0,FALSE,,5,"{""beast_crystal_low"":20}"
 golden_core_pill,🔮 金丹,crafted,100,0,FALSE,,3,"{""foundation_pill"":3,""spirit_grass_100y"":2,""stone_mid"":5}"
 trans_pill,🌈 化神丹,crafted,80,0,FALSE,,5,"{""golden_core_pill"":2,""spirit_grass_1000y"":1,""mithril"":2}"
 monster_core_mid,🧿 中級妖丹,crafted,80,0,FALSE,,5,"{""beast_crystal_mid"":2,""spirit_grass_100y"":3}"

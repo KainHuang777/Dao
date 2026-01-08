@@ -30,3 +30,4 @@ storage_cold_iron,❄️ 寒鐵庫,以寒玉砌成，適合存放寒鐵。,1.5,5
 storage_spirit_herb_100y,🎋 百草架,特製的藥架，能更妥善保存百年靈草。,1.5,50,4,spirit_garden,0,money,5000,wood,500,spirit_grass_100y,10,0,0,0,0,0,0,0,spirit_grass_100y_max,100,0,0,0,0,0,0,0,0
 storage_spirit_jade,💎 靈玉匣,精緻的玉匣，用於存放靈玉。,1.6,20,5,sky_mine,0,money,20000,stone_mid,500,spirit_jade,5,0,0,0,0,0,0,0,spirit_jade_max,50,0,0,0,0,0,0,0,0
 storage_beast_mid,🦁 獸材庫,寬敞的倉庫，分類存放各種中級妖獸材料。,1.5,50,5,beast_ranch,0,money,10000,wood,1000,stone_mid,300,0,0,0,0,0,0,0,beast_hide_mid_max,100,beast_bone_mid_max,100,beast_crystal_mid_max,80,0,0,0,0
+storage_beast_crystal_low,🥚 獸晶地窖,存放初級獸晶的地下倉庫。,1.5,50,5,beast_hunt_camp,0,money,10000,stone_mid,200,wood,1000,0,0,0,0,0,0,0,beast_crystal_low_max,200,0,0,0,0,0,0,0,0

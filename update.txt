@@ -1,3 +1,8 @@
+[2026-01-09 00:55] Feature & Fix: Beast Crystal Adjustments
+1. Resources.csv: Changed `beast_crystal_mid` (Intermediate Beast Crystal) type to `crafted` and added recipe: `beast_crystal_low` x20.
+2. buildings.csv: Added `storage_beast_crystal_low` (Beast Crystal Cellar) in Era 5 to increase `beast_crystal_low` cap.
+3. i18n: Added translations for new building.
+
 [2026-01-09 00:35] Feature: Advanced Resource Cap Systems
 1. buildings.csv: Added 5 new storage buildings for Era 4+ resources:
    - Mithril Vault (秘銀庫): Increases Mithril cap.
