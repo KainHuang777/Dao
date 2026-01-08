@@ -1,3 +1,8 @@
+[2026-01-09 00:20] Bugfix: Era 5 Data Parsing
+1. eras.csv: Fixed CSV parsing error in Era 5 (Spirit Transformation)
+   - Issue: English comma in description "元神化形,掌控天地" caused incorrect column shifting.
+   - Fix: Replaced with Chinese comma "，".
+
 [2026-01-08 23:20] Balance: Nascent Soul Mastery (元嬰大成)
 1. skills.csv: Adjusted requirements and cost
    - Cost reduced from 51000 to 21000 skill points.

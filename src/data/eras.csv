@@ -3,7 +3,7 @@ id,name,description,maxLevel,resourceMultiplier,lifespan,up_level,up_skills,up_c
 2,築基期,築基煉體，為金丹做準備,10,1.5,120,10,,"lingli_max:2000,stone_low_max:1000",120,1.18,basic_meditation:5,lingli,500,money,100,stone_low,50,,
 3,金丹期,凝聚金丹，壽元大增,10,2,200,10,,"lingli_max:10000,stone_low_max:5000",240,1.22,foundation_building:5|golden_core_formation:5,lingli,2000,money,500,stone_mid,50,talisman,10
 4,元嬰期,元嬰出竅，神通初顯,10,3,350,10,,"lingli_max:50000,stone_low_max:20000,money_max:10000",480,1.28,nascent_soul_incubation:5|nascent_soul_mastery:5,lingli,5000,money,2000,stone_mid,200,monster_core_mid,5
-5,化神期,元神化形,掌控天地,10,4.5,600,10,,"lingli_max:200000,stone_low_max:100000",800,1.35,nascent_soul_mastery:5,lingli,15000,money,5000,stone_mid,1000,spirit_grass_1000y,10
+5,化神期,元神化形，掌控天地,10,4.5,600,10,,"lingli_max:200000,stone_low_max:100000",800,1.35,nascent_soul_mastery:5,lingli,15000,money,5000,stone_mid,1000,spirit_grass_1000y,10
 6,煉虛期,煉虛合道，返璞歸真,10,6,950,10,,"lingli_max:1000000",1500,1.45,spirit_transformation:5,lingli,40000,money,15000,stone_mid,5000,trans_pill,5
 7,合體期,天人合一，法力無邊,10,8,1440,10,,"lingli_max:5000000",3000,1.6,void_refinement:5,lingli,100000,money,40000,stone_mid,10000,spirit_herb_10000y,10
 8,大乘期,大乘境界，飛升在即,10,10,2500,10,,"lingli_max:20000000",6000,1.8,unity_mastery:5,lingli,250000,money,100000,stone_mid,30000,tribulation_pill,5
