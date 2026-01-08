@@ -1,3 +1,13 @@
+[2026-01-08 22:42] Bugfix: Tribulation Failure UI Update
+1. MainView.js: Fixed level display not refreshing after tribulation failure
+   - Issue: UI update was only triggered on successful upgrades, ignoring level drops from failures.
+   - Fix: Changed upgrade button handler to always update player info regardless of upgrade result.
+
+[2026-01-08 22:38] Bugfix: Spirit Nurturing Pill Duration
+1. PlayerManager.js: Increased spirit_nurt_pill buff duration from 1s to 60s
+   - Issue: Previous duration (1000ms) was too short to be noticeable or displayed correctly in the new Buff UI.
+   - Fix: Changed duration to 60000ms (1 minute).
+
 [2026-01-08 22:20] Feature: Buff Status Display
 1. ResourcePanel.js: Added buff indicator bar at top of resource panel
    - [蘊] Spirit Pill buff with countdown timer (cyan)

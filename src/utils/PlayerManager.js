@@ -342,7 +342,7 @@ class PlayerManager {
                 name: '蘊靈丹',
                 effect: 'lingliBoost',  // 特殊效果：靈力產出2倍持續1年
                 bonus: 1.0,   // 2倍 = 100% 加成
-                duration: 1000,  // 持續時間：1年 = 1秒 = 1000毫秒
+                duration: 60000,  // 持續時間：60秒 (原1秒太短)
                 trainingBonus: 1000,  // 增加修煉時間 1年 = 1000毫秒
                 maxCount: 20
             },

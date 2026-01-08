@@ -701,10 +701,10 @@ export default class UIManager {
         if (upgradeBtn) {
             upgradeBtn.onclick = () => {
                 const currentResources = this.game.resourceManager.getUnlockedResources();
-                if (PlayerManager.upgrade(currentResources)) {
-                    this.updatePlayerInfo();
-                    window.game.buildingManager.recalculateRates();
-                }
+                PlayerManager.upgrade(currentResources);
+                // 無論成功失敗（如渡劫失敗導致掉級），都需要更新 UI
+                this.updatePlayerInfo();
+                window.game.buildingManager.recalculateRates();
             };
         }
 
