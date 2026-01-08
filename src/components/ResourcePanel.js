@@ -7,10 +7,95 @@ export default class ResourcePanel {
         this.container = document.getElementById('resources-container');
         this.elements = {}; // Cache DOM elements: { key: { el, valueEl } }
         this.currentCraftCounts = [1, 5, 10];
+        this.buffBar = null;
     }
 
     init() {
+        this.initBuffBar();
         this.render();
+    }
+
+    /**
+     * 初始化 Buff 狀態列
+     */
+    initBuffBar() {
+        if (!this.buffBar) {
+            this.buffBar = document.createElement('div');
+            this.buffBar.id = 'buff-bar';
+            this.buffBar.className = 'buff-bar';
+            this.buffBar.style.cssText = `
+                display: none;
+                gap: 8px;
+                padding: 6px 10px;
+                background: rgba(0, 0, 0, 0.5);
+                border-radius: 6px;
+                margin-bottom: 8px;
+                flex-wrap: wrap;
+            `;
+            this.container.parentNode.insertBefore(this.buffBar, this.container);
+        }
+    }
+
+    /**
+     * 渲染 Buff 狀態列
+     */
+    renderBuffBar() {
+        if (!this.buffBar) return;
+
+        const buffs = [];
+
+        // 蘊靈丹 buff (靈力產出 2 倍)
+        const lingliRemainingMs = PlayerManager.getLingliBuffRemainingMs();
+        if (lingliRemainingMs > 0) {
+            const seconds = Math.ceil(lingliRemainingMs / 1000);
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            const timeStr = mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}s`;
+            buffs.push({
+                label: '蘊',
+                time: timeStr,
+                color: '#00bcd4',
+                title: '蘊靈丹效果：靈力產出 2 倍'
+            });
+        }
+
+        // 劍侍糯美子 (自動建築)
+        if (window.game?.buildingManager?.buildings['sword_maid']?.level >= 1 &&
+            window.game.buildingManager.autoBuildEnabled) {
+            buffs.push({
+                label: '美',
+                color: '#9c27b0',
+                title: '劍侍糯美子：自動升級建築中'
+            });
+        }
+
+        // Debug 自動建築
+        if (window.game?.buildingManager?.debugAutoBuildEnabled) {
+            buffs.push({
+                label: '調',
+                color: '#ff9800',
+                title: 'Debug 自動建築啟用中'
+            });
+        }
+
+        // 渲染 buff 標籤
+        if (buffs.length > 0) {
+            this.buffBar.innerHTML = buffs.map(b => `
+                <span class="buff-tag" title="${b.title}" style="
+                    padding: 3px 8px;
+                    border-radius: 4px;
+                    font-size: 0.85em;
+                    font-weight: bold;
+                    background: ${b.color}33;
+                    border: 1px solid ${b.color};
+                    color: ${b.color};
+                    animation: buff-pulse 2s infinite;
+                ">[${b.label}${b.time ? ' ' + b.time : ''}]</span>
+            `).join('');
+            this.buffBar.style.display = 'flex';
+        } else {
+            this.buffBar.style.display = 'none';
+        }
     }
 
     render() {
@@ -132,6 +217,9 @@ export default class ResourcePanel {
     }
 
     update() {
+        // 更新 Buff 狀態列
+        this.renderBuffBar();
+
         const resources = this.resourceManager.getUnlockedResources();
         const currentKeys = Object.keys(this.elements);
         const craftCounts = this.getCraftCounts();

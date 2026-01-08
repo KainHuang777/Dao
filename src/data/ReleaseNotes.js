@@ -1,6 +1,44 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.23",
+        date: "2026-01-08",
+        notes: {
+            "zh-TW": [
+                "【新建築】⚔️ 劍侍糯美子：Era 5 解鎖，每 30 秒自動升級建築，侍女合成量 1→5。",
+                "【介面】Buff 狀態顯示：資源列上方新增效果指示器 [蘊][美][調]，實時顯示生效中的增益。",
+                "【Debug】新增「自動建築」測試工具，不受時期限制。",
+                "【數值】高階功法消耗降低 15%：結丹法、丹田拓寬、強身術·三層、元嬰系列。",
+                "【數值】建築精通重構：Era 5 上限降至 30，新增大帝(Era 9)與仙級(Era 11)階段。",
+                "【修復】築基丹服用上限：修正誤套用境界限制的問題（現正確使用 20 顆上限）。"
+            ],
+            "zh-CN": [
+                "【新建筑】⚔️ 剑侍糯美子：Era 5 解锁，每 30 秒自动升级建筑，侍女合成量 1→5。",
+                "【界面】Buff 状态显示：资源列上方新增效果指示器 [蕴][美][调]，实时显示生效中的增益。",
+                "【Debug】新增「自动建筑」测试工具，不受时期限制。",
+                "【数值】高阶功法消耗降低 15%：结丹法、丹田拓宽、强身术·三层、元婴系列。",
+                "【数值】建筑精通重构：Era 5 上限降至 30，新增大帝(Era 9)与仙级(Era 11)阶段。",
+                "【修复】筑基丹服用上限：修正误套用境界限制的问题（现正确使用 20 颗上限）。"
+            ],
+            "en": [
+                "[Building] ⚔️ Sword Maid Numeiko: Era 5 building, auto-upgrades every 30s, maid crafting x5.",
+                "[UI] Buff Status Display: Added effect indicators [蘊][美][調] above resource panel.",
+                "[Debug] Added 'Auto-Build' test tool without era restrictions.",
+                "[Balance] High-tier skill costs reduced by 15%: Golden Core, Core Expansion, Nascent Soul series.",
+                "[Balance] Building Mastery restructured: Era 5 cap lowered to 30, added Emperor(Era 9) & Immortal(Era 11).",
+                "[Fix] Foundation Pill limit: Fixed era-based restriction bug (now correctly uses 20 pill cap)."
+            ],
+            "ja": [
+                "【新建築】⚔️ 剣侍ぬめい子：Era 5解放、30秒ごとに建築を自動アップグレード、侍女の合成量1→5。",
+                "【UI】Buff状態表示：リソースパネル上部に効果インジケーター[蘊][美][調]を追加。",
+                "【Debug】「自動建築」テストツール追加、時期制限なし。",
+                "【数値】高階功法コスト15%減：結丹法、丹田拡張、強身術・三層、元嬰系列。",
+                "【数値】建築精通再構築：Era 5上限を30に、皇帝(Era 9)と仙級(Era 11)段階を追加。",
+                "【修正】築基丹服用上限：境界制限の誤適用を修正（正しく20個上限を使用）。"
+            ]
+        }
+    },
+    {
         version: "v0.22",
         date: "2026-01-07",
         notes: {

@@ -701,36 +701,52 @@
                 return;
             }
 
+            console.log('Building ROI Analysis - Total buildings:', Object.keys(Buildings).length);
+
             let html = '<table>';
             html += '<tr><th>建築名稱</th><th>初始成本</th><th>產出類型</th><th>基礎產率</th><th>權重</th><th>Lv.1 產率</th><th>ROI 評級</th></tr>';
 
             const buildingData = [];
 
             Object.entries(Buildings).forEach(([id, building]) => {
-                if (building.effects) {
-                    const totalCost = Object.values(building.baseCost).reduce((sum, val) => sum + val, 0);
-                    const effectKey = Object.keys(building.effects)[0];
+                // Check if effects exists and has at least one key
+                const effectKeys = building.effects ? Object.keys(building.effects) : [];
+                if (effectKeys.length > 0) {
+                    const totalCost = Object.values(building.baseCost || {}).reduce((sum, val) => sum + val, 0);
+                    const effectKey = effectKeys[0];
                     const effectValue = building.effects[effectKey];
                     const weight = building.effectWeight || 0;
-                    const level1Output = effectValue * Math.pow(1 + weight, 2);
 
-                    // 計算 ROI（簡化版：產出/成本）
-                    const roi = level1Output / (totalCost / 100);
+                    // Skip if effectValue is 0 or negative (special buildings like rebirth_lotus)
+                    if (effectValue > 0 && totalCost > 0) {
+                        const level1Output = effectValue * Math.pow(1 + weight, 2);
 
-                    buildingData.push({
-                        name: building.name,
-                        cost: totalCost,
-                        effectType: effectKey,
-                        baseRate: effectValue,
-                        weight: weight,
-                        level1Rate: level1Output,
-                        roi: roi
-                    });
+                        // 計算 ROI（簡化版：產出/成本）
+                        const roi = level1Output / (totalCost / 100);
+
+                        buildingData.push({
+                            name: building.name,
+                            cost: totalCost,
+                            effectType: effectKey,
+                            baseRate: effectValue,
+                            weight: weight,
+                            level1Rate: level1Output,
+                            roi: roi
+                        });
+                    }
                 }
             });
 
+            console.log('Buildings with valid effects for ROI:', buildingData.length);
+
             // 按 ROI 排序
             buildingData.sort((a, b) => b.roi - a.roi);
+
+            // Check if any buildings have valid ROI data
+            if (buildingData.length === 0) {
+                html += '<tr><td colspan="7" style="text-align: center; color: #ff9800;">無可計算 ROI 的建築（建築需有正向產出效果且無零成本）</td></tr>';
+                console.warn('No buildings with valid positive effects found. Check Buildings data:', Buildings);
+            }
 
             buildingData.forEach(b => {
                 let roiClass = 'highlight';

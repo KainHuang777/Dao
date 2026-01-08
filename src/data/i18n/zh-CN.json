@@ -392,8 +392,16 @@
     "building_mastery_1": "🏗️ 建筑精通·初阶",
     "building_mastery_2": "🏗️ 建筑精通·进阶",
     "building_mastery_3": "🏗️ 建筑精通·高阶",
-    "building_mastery_4": "🏗️ 建筑精通·宗師",
+    "building_mastery_4": "🏗️ 建筑精通·宗师",
+    "building_mastery_5": "🏗️ 建筑精通·大帝",
+    "building_mastery_6": "🏗️ 建筑精通·仙级",
     "nascent_soul_incubation": "👼 元婴孕育",
     "nascent_soul_mastery": "🔱 元婴大成",
-    "壽元已盡，無法突破": "寿元已尽，无法突破"
+    "壽元已盡，無法突破": "寿元已尽，无法突破",
+    "sword_maid": "⚔️ 剑侍糯美子",
+    "⚔️ 劍侍糯美子": "⚔️ 剑侍糯美子",
+    "招募精通劍道的侍女，自動升級建築並增強合成效率。": "招募精通剑道的侍女，自动升级建筑并增强合成效率。",
+    "[自動建築] {0} 升級至 Lv.{1}": "[自动建筑] {0} 升级至 Lv.{1}",
+    "自動建築": "自动建筑",
+    "自動建築 (DEBUG)": "自动建筑 (DEBUG)"
 }

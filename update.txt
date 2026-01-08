@@ -1,3 +1,43 @@
+[2026-01-08 22:20] Feature: Buff Status Display
+1. ResourcePanel.js: Added buff indicator bar at top of resource panel
+   - [蘊] Spirit Pill buff with countdown timer (cyan)
+   - [美] Sword Maid auto-build active (purple)
+   - [調] Debug auto-build active (orange)
+2. PlayerManager.js: Added getLingliBuffRemainingMs() for buff countdown
+3. style.css: Added buff-pulse animation for breathing effect
+
+[2026-01-08 22:12] Bugfix: Foundation Pill Consumption Limit
+1. PlayerManager.js: Fixed foundation_pill (築基丹) consumption limit calculation
+   - Issue: Era-based limit was incorrectly applied to foundation_pill, restricting it to 2-3 pills instead of 20
+   - Fix: Excluded foundation_pill from era-based restrictions (line 229-241)
+   - Result: Foundation pill now correctly uses maxCount (20), while golden_core_pill and higher use min(maxCount, eraId)
+
+[2026-01-08 21:58] Feature: Sword Maid Numeiko Building (⚔️ 劍侍糯美子)
+1. buildings.csv: Added new building "sword_maid" (Era 5, requires: 金錢×100000, 秘銀×200, 寒鐵×200, 中級獸晶×200)
+2. BuildingManager.js: Implemented auto-build system - every 30 seconds, auto-upgrades one affordable building
+   - Added autoBuildEnabled, debugAutoBuildEnabled flags
+   - Added initAutoBuild(), runAutoBuild(), toggleAutoBuild(), toggleDebugAutoBuild() methods
+   - Added getMaidCraftAmount() - returns 5 when Sword Maid is built, 1 otherwise
+   - Updated runMaidWork() to use dynamic craft amount (1 → 5 with Sword Maid)
+   - Updated exportData/loadData for autoBuildEnabled persistence
+3. DebugPanel.js: Added "Auto-Build (DEBUG)" card - enables auto-build without era restrictions
+4. i18n: Added sword_maid and auto-build translations for all 4 languages
+
+[2026-01-08 21:42] Balance: Skill Costs Reduction & Building Level Cap Progression
+1. skills.csv: Reduced skill costs by 15% for all skills with cost >= 9000 (starting from Golden Core Formation).
+   - golden_core_formation: 9000 → 7650
+   - core_expansion_1~3: 9000/15000/24000 → 7650/12750/20400
+   - body_strengthening_3: 12000 → 10200
+   - nascent_soul_incubation/mastery: 25000/60000 → 21250/51000
+2. skills.csv: Restructured building_mastery tiers to slow down mid-game building level cap:
+   - building_mastery_1 (Era 1): +10 → cumulative max 10
+   - building_mastery_2 (Era 3): +10 → cumulative max 20
+   - building_mastery_3 (Era 5): +10 → cumulative max 30
+   - building_mastery_4 (Era 7): +10 → cumulative max 40
+   - building_mastery_5 (Era 9): +20 → cumulative max 60 (NEW)
+   - building_mastery_6 (Era 11): +40 → cumulative max 100 (NEW)
+3. Result: By Era 5, max building level is now capped at 30 (was 60). Players must progress further to unlock higher building levels.
+
 [2026-01-07 23:58] Release: v0.22 Published
 1. ReleaseNotes.js: Added v0.22 release notes with 8 items covering all I18n fixes and balance adjustments from 2026-01-07.
 2. Multi-lingual: All 4 languages (zh-TW, zh-CN, en, ja) updated with consistent content.

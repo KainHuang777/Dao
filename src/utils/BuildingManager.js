@@ -11,6 +11,9 @@ export default class BuildingManager {
         this.buildings = {};
         this.maidAutoTargets = {}; // 侍女自動合成設定 { resId: boolean }
         this.maidInterval = null;
+        this.autoBuildEnabled = true; // 自動建築開關
+        this.autoBuildInterval = null;
+        this.debugAutoBuildEnabled = false; // Debug 模式自動建築
         // 初始狀態可以在 init() 裡面建立
     }
 
@@ -40,6 +43,75 @@ export default class BuildingManager {
         // 啟動侍女自動化檢查 (每60秒)
         if (this.maidInterval) clearInterval(this.maidInterval);
         this.maidInterval = setInterval(() => this.runMaidWork(), 60000);
+
+        // 啟動自動建築檢查 (每30秒)
+        this.initAutoBuild();
+    }
+
+    /**
+     * 初始化自動建築計時器
+     */
+    initAutoBuild() {
+        if (this.autoBuildInterval) clearInterval(this.autoBuildInterval);
+        this.autoBuildInterval = setInterval(() => this.runAutoBuild(), 30000);
+    }
+
+    /**
+     * 執行自動建築
+     */
+    runAutoBuild() {
+        // 檢查是否啟用（需要劍侍糯美子或 Debug 模式）
+        const hasSwordMaid = this.buildings['sword_maid'] && this.buildings['sword_maid'].level >= 1;
+        if (!this.autoBuildEnabled && !this.debugAutoBuildEnabled) return;
+        if (!hasSwordMaid && !this.debugAutoBuildEnabled) return;
+
+        // 按順序嘗試升級第一個可升級的建築
+        for (const id of Object.keys(Buildings)) {
+            if (this.canUpgrade(id)) {
+                const def = Buildings[id];
+                const previousLevel = this.buildings[id].level;
+                this.upgrade(id);
+
+                // Log auto-build action
+                if (window.game && window.game.uiManager) {
+                    const msg = LanguageManager.getInstance().t('[自動建築] {0} 升級至 Lv.{1}', {
+                        '0': LanguageManager.getInstance().t(def.name),
+                        '1': this.buildings[id].level
+                    });
+                    window.game.uiManager.addLog(msg);
+                }
+                break; // 每次只升級一個
+            }
+        }
+    }
+
+    /**
+     * 切換自動建築開關
+     * @returns {boolean} 切換後的新狀態
+     */
+    toggleAutoBuild() {
+        this.autoBuildEnabled = !this.autoBuildEnabled;
+        return this.autoBuildEnabled;
+    }
+
+    /**
+     * 切換 Debug 自動建築
+     * @returns {boolean} 切換後的新狀態
+     */
+    toggleDebugAutoBuild() {
+        this.debugAutoBuildEnabled = !this.debugAutoBuildEnabled;
+        return this.debugAutoBuildEnabled;
+    }
+
+    /**
+     * 獲取侍女合成數量
+     * @returns {number} 每次合成數量
+     */
+    getMaidCraftAmount() {
+        if (this.buildings['sword_maid'] && this.buildings['sword_maid'].level >= 1) {
+            return 5;
+        }
+        return 1;
     }
 
     runMaidWork() {
@@ -48,15 +120,17 @@ export default class BuildingManager {
         // 嘗試根據設定自動合成
         const craftedItems = [];
 
+        const craftAmount = this.getMaidCraftAmount();
+
         Object.entries(this.maidAutoTargets).forEach(([key, enabled]) => {
             if (enabled) {
-                if (this.resourceManager.craft(key, 1)) {
+                if (this.resourceManager.craft(key, craftAmount)) {
                     const res = this.resourceManager.getResource(key);
                     // 優先嘗試翻譯 ID，若無翻譯則 fallback 到資源名稱
                     const resName = LanguageManager.getInstance().t(key) !== key
                         ? LanguageManager.getInstance().t(key)
                         : LanguageManager.getInstance().t(res.name);
-                    craftedItems.push(`${resName} x1`);
+                    craftedItems.push(`${resName} x${craftAmount}`);
                 }
             }
         });
@@ -130,9 +204,11 @@ export default class BuildingManager {
         // 計算建築精通技能提供的額外上限
         const masterySkills = [
             { id: 'building_mastery_1', cap: 10 },
-            { id: 'building_mastery_2', cap: 20 },
-            { id: 'building_mastery_3', cap: 30 },
-            { id: 'building_mastery_4', cap: 40 }
+            { id: 'building_mastery_2', cap: 10 },
+            { id: 'building_mastery_3', cap: 10 },
+            { id: 'building_mastery_4', cap: 10 },
+            { id: 'building_mastery_5', cap: 20 },
+            { id: 'building_mastery_6', cap: 40 }
         ];
 
         masterySkills.forEach(skill => {
@@ -502,7 +578,8 @@ export default class BuildingManager {
     exportData() {
         return {
             buildings: this.buildings,
-            maidAutoTargets: this.maidAutoTargets
+            maidAutoTargets: this.maidAutoTargets,
+            autoBuildEnabled: this.autoBuildEnabled
         };
     }
 
@@ -521,6 +598,11 @@ export default class BuildingManager {
 
         // 載入自動合成設定
         this.maidAutoTargets = maidAutoTargets;
+
+        // 載入自動建築設定
+        if (data.autoBuildEnabled !== undefined) {
+            this.autoBuildEnabled = data.autoBuildEnabled;
+        }
 
         this.recalculateRates();
     }

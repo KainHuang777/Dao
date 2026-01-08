@@ -226,25 +226,20 @@ class PlayerManager {
                 return false;
             }
 
-            // 數量限制：金丹等丹藥，服用數量不能超過當前境界數
-            // 例如：第四境界(元嬰)可服用4顆。
-            // 這裡假設規則適用於所有 tribulationSuccess 類丹藥，或者特定丹藥。
-            // 用戶需求："金丹 服用 則依照該境界數量，例如第四時期可服用4顆金丹"
-            // 我們可以對所有渡劫丹藥應用此規則，或者只對金丹。
-            // 考慮到平衡性，這裡先應用於所有 tribulationSuccess 丹藥，上限為 EraId。
-            // 但原本 maxCount 是靜態配置(如金丹15顆)。
-            // 兩者取其小：Math.min(config.maxCount, this.state.eraId) ? 
-            // 不，用戶的意思應該是動態解鎖上限。如果是 Era 4，上限就是 4。Era 10 上限就是 10。
-            // 但如果 pillConfig.maxCount 比較小(例如 15)，那 Era 20 也只能吃 15。
-            const eraLimit = this.state.eraId;
-            if (currentCount >= eraLimit) {
-                if (window.game && window.game.uiManager) {
-                    window.game.uiManager.addLog(lang.t('{0}已達當前境界服用上限（{1}顆）', {
-                        '0': lang.t(pillConfig.name),
-                        '1': eraLimit
-                    }));
+            // 數量限制：金丹及以上的渡劫丹藥，服用數量不能超過當前境界數
+            // 築基丹例外：使用固定上限 maxCount (20)
+            // 金丹、渡劫丹等：使用 min(maxCount, eraId)
+            if (pillId !== 'foundation_pill') {
+                const eraLimit = this.state.eraId;
+                if (currentCount >= eraLimit) {
+                    if (window.game && window.game.uiManager) {
+                        window.game.uiManager.addLog(lang.t('{0}已達當前境界服用上限（{1}顆）', {
+                            '0': lang.t(pillConfig.name),
+                            '1': eraLimit
+                        }));
+                    }
+                    return false;
                 }
-                return false;
             }
         }
 
@@ -469,6 +464,20 @@ class PlayerManager {
             return Math.max(...lingliBuffs.map(b => b.multiplier));
         }
         return 1.0;
+    }
+
+    /**
+     * 獲取靈力 buff 剩餘時間（毫秒）
+     * @returns {number} 剩餘毫秒數，0 表示無 buff
+     */
+    getLingliBuffRemainingMs() {
+        this.cleanExpiredBuffs();
+        const lingliBuffs = this.state.activeBuffs.filter(b => b.type === 'lingliBoost');
+        if (lingliBuffs.length > 0) {
+            const maxEndTime = Math.max(...lingliBuffs.map(b => b.endTime));
+            return Math.max(0, maxEndTime - Date.now());
+        }
+        return 0;
     }
 
     /**

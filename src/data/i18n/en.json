@@ -393,7 +393,15 @@
     "building_mastery_2": "🏗️ Building Mastery II",
     "building_mastery_3": "🏗️ Building Mastery III",
     "building_mastery_4": "🏗️ Building Mastery IV",
+    "building_mastery_5": "🏗️ Building Mastery V",
+    "building_mastery_6": "🏗️ Building Mastery VI",
     "nascent_soul_incubation": "👼 Nascent Soul Incubation",
     "nascent_soul_mastery": "🔱 Nascent Soul Mastery",
-    "壽元已盡，無法突破": "Lifespan exhausted, cannot ascend"
+    "壽元已盡，無法突破": "Lifespan exhausted, cannot ascend",
+    "sword_maid": "⚔️ Sword Maid Numeiko",
+    "⚔️ 劍侍糯美子": "⚔️ Sword Maid Numeiko",
+    "招募精通劍道的侍女，自動升級建築並增強合成效率。": "Recruit a sword-skilled maid to auto-upgrade buildings and boost crafting efficiency.",
+    "[自動建築] {0} 升級至 Lv.{1}": "[Auto-Build] {0} upgraded to Lv.{1}",
+    "自動建築": "Auto-Build",
+    "自動建築 (DEBUG)": "Auto-Build (DEBUG)"
 }

@@ -90,6 +90,18 @@ export default class DebugPanel {
                         重置進度
                     </button>
                 </div>
+
+                <!-- 自動建築 (DEBUG) -->
+                <div class="debug-card">
+                    <h3 style="color: #9c27b0;">自動建築 (DEBUG)</h3>
+                    <p style="color: #aaa; font-size: 0.9em;">啟用後每 30 秒自動升級一個資源充足的建築，不受時期限制。</p>
+                    <div id="auto-build-status" style="margin: 10px 0; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 0.9em;">
+                        <div>狀態: <span id="auto-build-state" style="color: #f44336;">已關閉</span></div>
+                    </div>
+                    <button id="debug-auto-build-btn" class="btn" style="width: 100%; background: #9c27b0;">
+                        啟用自動建築
+                    </button>
+                </div>
             </div>
         `;
 
@@ -226,6 +238,35 @@ export default class DebugPanel {
                     alert('輸入錯誤，取消重置。');
                 }
             };
+        }
+
+        // 自動建築按鈕
+        const autoBuildBtn = document.getElementById('debug-auto-build-btn');
+        if (autoBuildBtn) {
+            autoBuildBtn.onclick = () => {
+                const newState = window.game.buildingManager.toggleDebugAutoBuild();
+                this.updateAutoBuildStatus(newState);
+
+                if (newState) {
+                    alert('已啟用自動建築！每 30 秒將自動升級一個資源充足的建築。');
+                } else {
+                    alert('已關閉自動建築。');
+                }
+            };
+        }
+    }
+
+    updateAutoBuildStatus(enabled) {
+        const stateEl = document.getElementById('auto-build-state');
+        const btn = document.getElementById('debug-auto-build-btn');
+
+        if (stateEl) {
+            stateEl.textContent = enabled ? '已啟用' : '已關閉';
+            stateEl.style.color = enabled ? '#4caf50' : '#f44336';
+        }
+        if (btn) {
+            btn.textContent = enabled ? '關閉自動建築' : '啟用自動建築';
+            btn.style.background = enabled ? '#666' : '#9c27b0';
         }
     }
 

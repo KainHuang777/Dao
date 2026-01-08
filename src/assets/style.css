@@ -304,7 +304,6 @@ body {
     color: var(--gold-color);
 }
 
-/* 採集動畫效果 */
 @keyframes gatherPulse {
     0% {
         transform: scale(1);
@@ -322,6 +321,16 @@ body {
 
 .gather-pulse {
     animation: gatherPulse 0.3s ease;
+}
+
+/* Buff 狀態指示器動畫 */
+@keyframes buff-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
 }
 
 /* 主內容區 */
