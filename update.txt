@@ -1,3 +1,8 @@
+[2026-01-08 23:20] Balance: Nascent Soul Mastery (元嬰大成)
+1. skills.csv: Adjusted requirements and cost
+   - Cost reduced from 51000 to 21000 skill points.
+   - Requirement explicitly set to Nascent Soul Incubation (元嬰孕育) Lv.1 (was implicitly Lv.1, now explicit).
+
 [2026-01-08 22:42] Bugfix: Tribulation Failure UI Update
 1. MainView.js: Fixed level display not refreshing after tribulation failure
    - Issue: UI update was only triggered on successful upgrades, ignoring level drops from failures.
