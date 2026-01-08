@@ -309,6 +309,30 @@ export default class BuildingPanel {
                         `${lang.t('合成資源容量')}: +${currentBonus}%` +
                         (state.level < levelCap ? ` → +${nextBonus}%` : '')
                     );
+                } else if (resKey === 'auto_build') {
+                    // 自動升級功能
+                    const isActive = state.level > 0;
+                    const text = lang.t('自動升級建築');
+
+                    if (isActive) {
+                        effectTexts.push(text);
+                        tooltipEffectTexts.push(text);
+                    } else {
+                        // 雖然 tooltipEffectTexts 主要顯示下一級，但這解釋了解鎖了什麼
+                        tooltipEffectTexts.push(`${lang.t('解鎖')}: ${text}`);
+                    }
+                } else if (resKey === 'maid_craft_boost') {
+                    // 侍女合成量加成
+                    const currentBonus = amountPerLevel * state.level;
+                    const nextBonus = amountPerLevel * (state.level + 1);
+                    const nextNextBonus = amountPerLevel * (state.level + 2);
+
+                    const displayBonus = state.level > 0 ? currentBonus : nextBonus;
+                    effectTexts.push(`${lang.t('侍女合成量')}: +${displayBonus}`);
+                    tooltipEffectTexts.push(
+                        `${lang.t('侍女合成量')}: +${currentBonus}` +
+                        (state.level < levelCap ? ` → +${nextBonus}` : '')
+                    );
                 } else {
                     // 產出類效果
                     const currentRate = amountPerLevel * Math.pow(state.level + weight, 2);

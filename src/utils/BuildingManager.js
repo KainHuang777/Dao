@@ -386,6 +386,7 @@ export default class BuildingManager {
         const natureBonus = PlayerManager.getTalentBonus('nature_friend');
         const lingliCapBonus = PlayerManager.getTalentBonus('three_flowers');
         const buildingEffectBonus = PlayerManager.getTalentBonus('world_child');
+        const advanceMaxTalentBonus = PlayerManager.getTalentBonus('void_body');
 
         // 1. Reset to base values from loaded CSV data
         for (const [key, base] of Object.entries(baseData)) {
@@ -452,6 +453,7 @@ export default class BuildingManager {
         // 3. Add skill bonuses
         const learnedSkills = PlayerManager.getLearnedSkills();
         const skillMultipliers = {}; // 儲存倍率效果
+        let advanceMaxSkillMult = 1; // 進階資源上限倍率
 
         Object.entries(learnedSkills).forEach(([skillId, level]) => {
             const skill = SkillManager.getSkill(skillId);
@@ -459,7 +461,10 @@ export default class BuildingManager {
                 const { type, amount } = skill.effects;
 
                 // 處理倍率效果（multiplier）
-                if (type.endsWith('_multiplier')) {
+                if (type === 'advance_max_multiplier') {
+                    // 進階資源上限倍率
+                    advanceMaxSkillMult *= Math.pow(amount, level);
+                } else if (type.endsWith('_multiplier')) {
                     const resKey = type.replace('_multiplier', '');
                     if (!skillMultipliers[resKey]) {
                         skillMultipliers[resKey] = 1;
@@ -532,6 +537,12 @@ export default class BuildingManager {
             // 技能點上限加成（等級加成 + 周天循環·擴天賦）
             if (key === 'skill_point') {
                 res.max *= (1 + levelSkillCapBonus + cycleExpansionBonus);
+            }
+
+            // 進階資源上限加成 (天賦 + 技能)
+            if (res.type === 'advance') {
+                res.max *= (1 + advanceMaxTalentBonus);
+                res.max *= advanceMaxSkillMult;
             }
 
             // 道心與道證加成 (Request 3)

@@ -403,5 +403,17 @@
     "招募精通劍道的侍女，自動升級建築並增強合成效率。": "Recruit a sword-skilled maid to auto-upgrade buildings and boost crafting efficiency.",
     "[自動建築] {0} 升級至 Lv.{1}": "[Auto-Build] {0} upgraded to Lv.{1}",
     "自動建築": "Auto-Build",
-    "自動建築 (DEBUG)": "Auto-Build (DEBUG)"
+    "自動建築 (DEBUG)": "Auto-Build (DEBUG)",
+    "自動升級建築": "Auto-upgrade Buildings",
+    "解鎖": "Unlocks",
+    "侍女合成量": "Maid Craft Amount",
+    "storage_mithril": "🔒 Mithril Vault",
+    "storage_cold_iron": "❄️ Cold Iron Vault",
+    "storage_spirit_herb_100y": "🎋 Spirit Herb Rack",
+    "storage_spirit_jade": "💎 Spirit Jade Casket",
+    "storage_beast_mid": "🦁 Beast Warehouse",
+    "void_expansion": "🌌 Void Expansion",
+    "void_body": "Void Body",
+    "虛空之體": "Void Body",
+    "虛空體質，進階資源上限 +20%": "Void Body, Advanced Resource Caps +20%"
 }

@@ -20,7 +20,8 @@ export default class TalentPanel {
             { id: 'three_flowers', name: lang.t('三花聚頂'), desc: lang.t('精氣神合一，靈力上限額外 +25%'), baseCost: 20 },
             { id: 'lifespan_master', name: lang.t('長生久視'), desc: lang.t('天賦延壽，基礎壽元上限 +10%'), baseCost: 40 },
             { id: 'world_child', name: lang.t('位面之子'), desc: lang.t('世界意志眷顧，所有建築效果額外 +10%'), baseCost: 50 },
-            { id: 'cycle_expansion', name: lang.t('周天循環·擴'), desc: lang.t('周天運轉，氣海擴張，技能點上限 +10%'), baseCost: 20 }
+            { id: 'cycle_expansion', name: lang.t('周天循環·擴'), desc: lang.t('周天運轉，氣海擴張，技能點上限 +10%'), baseCost: 20 },
+            { id: 'void_body', name: lang.t('虛空之體'), desc: lang.t('虛空體質，進階資源上限 +20%'), baseCost: 50 },
         ];
     }
 

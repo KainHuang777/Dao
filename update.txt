@@ -1,3 +1,22 @@
+[2026-01-09 00:35] Feature: Advanced Resource Cap Systems
+1. buildings.csv: Added 5 new storage buildings for Era 4+ resources:
+   - Mithril Vault (秘銀庫): Increases Mithril cap.
+   - Cold Iron Vault (寒鐵庫): Increases Cold Iron cap.
+   - Spirit Herb Rack (百草架): Increases 100y Spirit Grass cap.
+   - Jade Casket (靈玉匣): Increases Spirit Jade cap.
+   - Beast Warehouse (獸材庫): Increases mid-tier beast material caps.
+2. skills.csv: Added "Void Expansion" (虛空擴展) skill (Era 5)
+   - Effect: Increases Advanced Resource caps by ~28.5% per level.
+   - Total Bonus: ~250% at Level 5.
+3. TalentPanel.js: Added "Void Body" (虛空之體) talent
+   - Effect: +20% capacity for all Advanced Resources.
+4. BuildingManager.js: Implemented logic for 'advance_max_multiplier' and 'advance' resource type cap bonuses.
+5. i18n: Added translations for all new items in zh-TW, zh-CN, en, ja.
+
+[2026-01-09 00:30] Fix: Sword Maid Effect Translation
+1. BuildingPanel.js: Added custom handling for 'auto_build' and 'maid_craft_boost' effects to support multilingual display.
+2. i18n/*.json: Added translation keys for "Automatic Upgrade", "Unlock", and "Maid Craft Amount".
+
 [2026-01-09 00:20] Bugfix: Era 5 Data Parsing
 1. eras.csv: Fixed CSV parsing error in Era 5 (Spirit Transformation)
    - Issue: English comma in description "元神化形,掌控天地" caused incorrect column shifting.
