@@ -1,3 +1,8 @@
+[2026-01-10 12:00] Fix: i18n Key Mismatches
+1. i18n: Fixed untranslated storage building descriptions (e.g. "匯聚周遭靈氣") by correcting keys in JSON files (removed extra punctuation).
+2. i18n: Corrected `rebirth_lotus` and `void_mirror` translation keys to match CSV exactly.
+3. i18n: Cleaned up zh-TW and zh-CN files to ensure consistent key usage.
+
 [2026-01-10 11:50] Release: v0.24 Published
 1. ReleaseNotes.js: Added v0.24 release notes covering all updates from v0.23 onwards (Jan 9-10).
 2. Content: Includes new interlocking buildings, Void Expansion, full i18n refactor, and resource cap systems.
