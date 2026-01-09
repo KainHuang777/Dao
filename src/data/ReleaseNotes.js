@@ -1,6 +1,40 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.24",
+        date: "2026-01-10",
+        notes: {
+            "zh-TW": [
+                "【新建築】新增 7 種儲存建築：玄鐵倉、獸骨窖、秘銀庫、寒鐵庫等，構建完整資源鏈。",
+                "【平衡】資源互卡機制：高階倉庫建造需消耗前一時期對應的基礎資源上限（如秘銀庫需精鐵）。",
+                "【技能/天賦】新增功法「虛空擴張」與天賦「虛空之體」，大幅提升進階資源上限。",
+                "【多語化】全面重構翻譯文件，統一「祀」時間單位，修復大量 UI 與日誌未翻譯問題。",
+                "【調整】調整獸晶配方並新增獸晶地窖。"
+            ],
+            "zh-CN": [
+                "【新建筑】新增 7 种储存建筑：玄铁仓、兽骨窖、秘银库、寒铁库等，构建完整资源链。",
+                "【平衡】资源互卡机制：高阶仓库建造需消耗前一时期对应的基础资源上限（如秘银库需精铁）。",
+                "【技能/天赋】新增功法「虚空扩张」与天赋「虚空之体」，大幅提升进阶资源上限。",
+                "【多语化】全面重构翻译文件，统一「祀」时间单位，修复大量 UI 与日志未翻译问题。",
+                "【调整】调整兽晶配方并新增兽晶地窖。"
+            ],
+            "en": [
+                "[New Buildings] Added 7 storage buildings including Alloy Warehouse, Beast Bone Cellar, Mithril Vault, etc.",
+                "[Balance] Resource Interlocking: Advanced storage now requires resource caps from previous eras (e.g. Mithril Vault needs Refined Iron).",
+                "[Skill/Talent] Added 'Void Expansion' skill and 'Void Body' talent to boost advanced resource caps.",
+                "[I18n] Comprehensive localization update: unified 'Si' time unit, fixed untranslated UI and logs.",
+                "[Adjustments] Adjusted Beast Crystal recipes and added Beast Crystal Cellar."
+            ],
+            "ja": [
+                "【新建築】玄鉄倉、獣骨の穴蔵、ミスリル庫など7種類の貯蔵建築を追加し、完全な資源チェーンを構築。",
+                "【平衡】資源相互依存メカニズム：高レベル倉庫の建設には、前の時期の基礎資源上限が必要（例：ミスリル庫には精鉄が必要）。",
+                "【技能/天賦】新功法「虚空拡張」と天賦「虚空体質」を追加し、高度な資源上限を大幅に引き上げ。",
+                "【多言語化】翻訳ファイルを全面的に再構築し、「祀」の時間単位を統一、多数のUIとログの未翻訳問題を修正。",
+                "【調整】獣晶レシピを調整し、獣晶貯蔵庫を追加。"
+            ]
+        }
+    },
+    {
         version: "v0.23",
         date: "2026-01-08",
         notes: {

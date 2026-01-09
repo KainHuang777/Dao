@@ -266,7 +266,8 @@ export default class ResourceManager {
         // 6. 如果發生爆擊，記錄到日誌
         if (criticalMultiplier > 1 && window.game && window.game.uiManager) {
             const resName = LanguageManager.getInstance().t(res.name);
-            const critMsg = `<span style="color:#ffd700">⚡【合成爆擊 ×${criticalMultiplier}】</span> ${resName} ×${count} → <span style="color:#4caf50">×${finalCount}</span>`;
+            const critMsg = LanguageManager.getInstance().t('⚡【合成爆擊 ×{0}】', { '0': criticalMultiplier }) +
+                ` ${resName} ×${count} → <span style="color:#4caf50">×${finalCount}</span>`;
             window.game.uiManager.addLog(critMsg);
         }
 

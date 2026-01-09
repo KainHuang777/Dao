@@ -1,3 +1,33 @@
+[2026-01-10 11:50] Release: v0.24 Published
+1. ReleaseNotes.js: Added v0.24 release notes covering all updates from v0.23 onwards (Jan 9-10).
+2. Content: Includes new interlocking buildings, Void Expansion, full i18n refactor, and resource cap systems.
+
+[2026-01-10 11:30] Feature & Balance: Resource Interlocking & New Storage
+1. New Buildings: Added "Alloy Warehouse" (Era 3) and "Beast Bone Cellar" (Era 4) to provide specific resource caps (Black Copper/Refined Iron & Beast Hide/Bone).
+2. Balance: Updated Era 3-5 storage buildings to consume underused resources (Black Copper, Refined Iron, Beast Hide/Bone Low) in their upgrade costs.
+   - Designed to create "resource interlocking" where advanced storage requires caps from previous era's specific storage.
+3. i18n: Added translations for new buildings in all languages.
+
+[2026-01-10 10:30] Fix: localization and UI Text Refinement (Final)
+1. i18n System: Rewrote all i18n JSON files (en, ja, zh-CN, zh-TW) to resolve all duplicate key warnings and ensure a clean, organized structure.
+2. Units: Fully synchronized the time unit "Si" (祀) across all codebases and translations.
+3. LanguageManager: Fixed potential caching issues by adding a timestamp query to translation fetches.
+4. MainView: Added specific ID to tribulation success rate display for precise UI updates across all languages.
+5. Resources: Confirmed and refined the "Crafting Critical Hit" log localization, including resource names.
+6. Skills: Added missing translations for "Building Mastery V/VI" and "Void Expansion".
+
+[2026-01-09 20:30] Fix: localization and UI Text Refinement
+1. i18n System: Standardized the time unit from "Year" to "Si" (祀) across all languages (en, zh-TW, zh-CN, ja).
+2. UI: Added missing translation keys for "Upgrade" (升級) and "Awaken" (覺醒) to ensure talent buttons display correctly in all languages.
+3. Skills: Updated translations for "Dantian Expansion" and "Building Mastery" to align with their actual effects in skills.csv.
+4. Logs: Localized the "Crafting Critical Hit" log message and ensured it uses correct localized units and terminology.
+5. Cleanup: Resolved duplicate object key warnings in i18n files for better stability.
+
+[2026-01-09 19:55] Fix: Spirit Nurturing Pill Effect Description Translation
+1. i18n: Added 'spirit_nurt_pill_effect_desc' to all languages (zh-TW, zh-CN, en, ja).
+2. CraftingPanel.js: Replaced hardcoded effect description strings with the new translation key.
+3. en.json: Updated "修練時間" from "Play Time" to "Cultivation Time" for better immersion and consistency.
+
 [2026-01-09 00:55] Feature & Fix: Beast Crystal Adjustments
 1. Resources.csv: Changed `beast_crystal_mid` (Intermediate Beast Crystal) type to `crafted` and added recipe: `beast_crystal_low` x20.
 2. buildings.csv: Added `storage_beast_crystal_low` (Beast Crystal Cellar) in Era 5 to increase `beast_crystal_low` cap.

@@ -326,7 +326,7 @@ export default class UIManager {
         // 渡劫成功率顯示（僅在需要渡劫時顯示）
         const tribulationDisplay = needsTribulation
             ? `<div class="player-info-line" style="font-size: 0.85em; margin-bottom: 8px;">
-                   <span style="color: ${tribulationColor}; font-weight: bold;">${LanguageManager.getInstance().t('渡劫成功率')}: ${(tribulationRate * 100).toFixed(1)}%</span>
+                   <span id="tribulation-success-rate" style="color: ${tribulationColor}; font-weight: bold;">${LanguageManager.getInstance().t('渡劫成功率')}: ${(tribulationRate * 100).toFixed(1)}%</span>
                </div>`
             : '';
 
@@ -433,7 +433,7 @@ export default class UIManager {
      */
     addLog(message) {
         const lang = LanguageManager.getInstance();
-        const yearUnit = lang.t('年');
+        const yearUnit = lang.t('祀');
         const currentYear = PlayerManager.getLifespan().toFixed(1);
         const formattedMessage = `<span style="color:#aaa">[${currentYear} ${yearUnit}]</span> ${message}`;
 
@@ -541,8 +541,8 @@ export default class UIManager {
             const tribulationRate = PlayerManager.getTribulationSuccessRate();
 
             // 更新渡劫成功率文字
-            const tribulationSpan = document.querySelector('#player-info .player-info-line span[style*="font-weight: bold"]');
-            if (tribulationSpan && tribulationSpan.textContent.includes('渡劫成功率')) {
+            const tribulationSpan = document.getElementById('tribulation-success-rate');
+            if (tribulationSpan) {
                 // 更新顏色
                 let tribulationColor = '#fff'; // 白色 (90%+)
                 if (tribulationRate < 0.9) tribulationColor = '#2196f3'; // 藍色 (70-90%)

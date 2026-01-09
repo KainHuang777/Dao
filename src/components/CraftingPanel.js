@@ -319,7 +319,7 @@ export default class CraftingPanel {
 
         // 特殊處理：蘊靈丹
         if (pillConfig.effect === 'lingliBoost') {
-            return `${lang.t('靈力產出')}2${lang.t('倍')}${lang.t('持續')}1祀，${lang.t('增加修煉時間')}1祀`;
+            return lang.t('spirit_nurt_pill_effect_desc');
         }
 
         const effectNames = {

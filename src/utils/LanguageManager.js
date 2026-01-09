@@ -32,7 +32,7 @@ export default class LanguageManager {
     async loadLanguage(lang) {
         try {
             this.isLoading = true;
-            const response = await fetch(`./src/data/i18n/${lang}.json`);
+            const response = await fetch(`./src/data/i18n/${lang}.json?v=${Date.now()}`);
             if (!response.ok) {
                 // If file doesn't exist (e.g. TC might originally have no file), still set currentLang
                 console.warn(`Language file not found: ${lang}, falling back to key-based display.`);
