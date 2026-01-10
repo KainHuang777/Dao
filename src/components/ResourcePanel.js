@@ -1,6 +1,8 @@
 import PlayerManager from '../utils/PlayerManager.js';
 import Formatter from '../utils/Formatter.js';
 import LanguageManager from '../utils/LanguageManager.js';
+import { Buildings } from '../data/Buildings.js';
+
 export default class ResourcePanel {
     constructor(resourceManager) {
         this.resourceManager = resourceManager;
@@ -356,31 +358,38 @@ export default class ResourcePanel {
 
         // 查詢建築
         if (window.game && window.game.buildingManager) {
-            const buildings = window.game.buildingManager.getBuildingDefinitions();
             const buildingStates = window.game.buildingManager.buildings;
 
-            for (const def of Object.values(buildings)) {
+            for (const def of Object.values(Buildings)) {
                 const state = buildingStates[def.id];
                 if (!state || state.level <= 0) continue;
 
                 // 檢查產出效果
                 if (def.effects) {
-                    for (const eff of def.effects) {
-                        if (eff.type === resourceKey && eff.amount > 0) {
-                            const buildingName = lang.t(def.name);
-                            productionSources.push(`${buildingName} LV${state.level}`);
+                    let hasProduction = false;
+                    let hasCap = false;
+
+                    for (const [effType, effAmount] of Object.entries(def.effects)) {
+                        if ((effType === resourceKey || effType === 'all_rate') && effAmount > 0) {
+                            hasProduction = true;
                         }
-                        if (eff.type === `${resourceKey}_max` && eff.amount > 0) {
-                            const buildingName = lang.t(def.name);
-                            capSources.push(`${buildingName} LV${state.level}`);
+                        if ((effType === `${resourceKey}_max` || effType === 'all_max') && effAmount > 0) {
+                            hasCap = true;
                         }
-                        if (eff.type === 'all_rate' && eff.amount > 0) {
-                            const buildingName = lang.t(def.name);
-                            productionSources.push(`${buildingName} LV${state.level}`);
+                    }
+
+                    if (hasProduction) {
+                        const buildingName = lang.t(def.name);
+                        const str = `${buildingName} LV${state.level}`;
+                        if (!productionSources.includes(str)) {
+                            productionSources.push(str);
                         }
-                        if (eff.type === 'all_max' && eff.amount > 0) {
-                            const buildingName = lang.t(def.name);
-                            capSources.push(`${buildingName} LV${state.level}`);
+                    }
+                    if (hasCap) {
+                        const buildingName = lang.t(def.name);
+                        const str = `${buildingName} LV${state.level}`;
+                        if (!capSources.includes(str)) {
+                            capSources.push(str);
                         }
                     }
                 }

@@ -1,6 +1,36 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.252",
+        date: "2026-01-10",
+        notes: {
+            "zh-TW": [
+                "【平衡】元嬰期難度調整：Lv.5 升級要求大幅降低，從「元嬰孕育/大成 Lv.5」降為「元嬰孕育 Lv.1」。",
+                "【介面】資源面板優化：新增 MAX 合成按鈕，資源按類型（基礎/進階/合成）自動排序。",
+                "【介面】建築升級視覺化：按鈕新增進度條背景，綠框代表可升級，紅框代表上限不足。",
+                "【修復】資源提示框崩潰：修復了 Era 2+ 滑鼠懸停基礎資源時的遊戲崩潰問題，並優化來源顯示。"
+            ],
+            "zh-CN": [
+                "【平衡】元婴期难度调整：Lv.5 升级要求大幅降低，从「元婴孕育/大成 Lv.5」降为「元婴孕育 Lv.1」。",
+                "【界面】资源面板优化：新增 MAX 合成按钮，资源按类型（基础/进阶/合成）自动排序。",
+                "【界面】建筑升级可视化：按钮新增进度条背景，绿框代表可升级，红框代表上限不足。",
+                "【修复】资源提示框崩溃：修复了 Era 2+ 鼠标悬停基础资源时的游戏崩溃问题，并优化来源显示。"
+            ],
+            "en": [
+                "[Balance] Nascent Soul Era Adjusted: Reduced Lv.5 requirement from 'Incubation/Mastery Lv.5' to 'Incubation Lv.1'.",
+                "[UI] Resource Panel Enhanced: Added MAX craft button; resources now sorted by type (Basic/Adv/Crafted).",
+                "[UI] Building Progress: Added visual indicators for upgrade status (Green), progress (Bar), and cap bottlenecks (Red).",
+                "[Fix] Tooltip Crash: Fixed game crash when hovering resources in Era 2+; optimized source display."
+            ],
+            "ja": [
+                "【バランス】元嬰期難易度調整：Lv.5 の必要条件を「元嬰孕育/大成 Lv.5」から「元嬰孕育 Lv.1」に大幅緩和。",
+                "【UI】リソースパネル改善：MAX合成ボタンを追加、リソースをタイプ順（基礎/上位/合成）に自動ソート。",
+                "【UI】建築進捗の可視化：アップグレードボタンに進捗バー、緑枠（可能）、赤枠（上限不足）の表示を追加。",
+                "【修正】ツールチップクラッシュ：Era 2+でリソースにホバーした際のクラッシュを修正し、ソース表示を最適化。"
+            ]
+        }
+    },
+    {
         version: "v0.251",
         date: "2026-01-10",
         notes: {

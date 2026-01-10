@@ -107,7 +107,13 @@ export default class BuildingPanel {
 
                 const nameH3 = document.createElement('h3');
                 nameH3.className = 'b-name';
-                nameH3.textContent = LanguageManager.getInstance().t(def.name) + ' ';
+                // 嘗試使用 ID 翻譯，找不到則回退到名稱翻譯
+                const lm = LanguageManager.getInstance();
+                let displayName = lm.t(def.id);
+                if (displayName === def.id) {
+                    displayName = lm.t(def.name);
+                }
+                nameH3.textContent = displayName + ' ';
 
                 const levelInfo = document.createElement('span');
                 levelInfo.className = 'b-level';

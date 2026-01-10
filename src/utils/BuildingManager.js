@@ -170,6 +170,8 @@ export default class BuildingManager {
         return !!this.maidAutoTargets[resKey];
     }
 
+
+
     getBuilding(id) {
         return this.buildings[id];
     }

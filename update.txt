@@ -1,5 +1,7 @@
 [2026-01-10 23:08] Balance: Era 4 Requirement Adjustment
 1. Lowered Era 4 (元嬰期) Level 5+ skill requirement from "元嬰孕育 Lv.5 + 元嬰大成 Lv.5" to "元嬰孕育 Lv.1".
+2. Fixed a crash when hovering over resources in Era 2+ (Tooltip error).
+3. Improved resource tooltip to remove duplicate source entries.
 
 [2026-01-10 22:50] Feature: Building Button Progress Indicator
 1. Green border: Can upgrade (existing rule).
