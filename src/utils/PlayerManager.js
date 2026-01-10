@@ -6,6 +6,7 @@
 import EraManager from './EraManager.js';
 import SkillManager from './SkillManager.js';
 import LanguageManager from './LanguageManager.js';
+import SectManager from './SectManager.js';
 
 class PlayerManager {
     constructor() {
@@ -328,6 +329,90 @@ class PlayerManager {
     }
 
     /**
+     * 管理員/宗門服用丹藥 (不消耗資源，但檢查上限)
+     * @param {string} pillId
+     * @returns {Object} { success: boolean, msg: string }
+     */
+    adminConsumePill(pillId) {
+        const pillConfig = this.getPillConfig(pillId);
+        if (!pillConfig) return { success: false, msg: '未知的丹藥' };
+
+        const currentCount = this.state.consumedPills[pillId] || 0;
+        const lang = LanguageManager.getInstance();
+
+        if (currentCount >= pillConfig.maxCount) {
+            return {
+                success: false,
+                msg: lang.t('{0}已達服用上限（{1}次）', {
+                    '0': lang.t(pillConfig.name),
+                    '1': pillConfig.maxCount
+                })
+            };
+        }
+
+        // 渡劫丹藥檢查
+        if (pillConfig.effect === 'tribulationSuccess') {
+            if (this.getTribulationSuccessRate() >= 1) {
+                return { success: false, msg: lang.t('渡劫成功率已達100%，無需再服用') };
+            }
+            if (this.state.eraId < 3) {
+                return { success: false, msg: lang.t('目前境界無法服用') };
+            }
+            // 境界數量限制
+            if (pillId !== 'foundation_pill' && pillId !== 'sect_high_golden_pill') {
+                const eraLimit = this.state.eraId;
+                if (currentCount >= eraLimit) {
+                    return {
+                        success: false,
+                        msg: lang.t('{0}已達當前境界服用上限（{1}顆）', {
+                            '0': lang.t(pillConfig.name),
+                            '1': eraLimit
+                        })
+                    };
+                }
+            }
+        }
+
+        // Apply Effect
+        if (pillConfig.effect === 'lingliBoost') {
+            const endTime = Date.now() + pillConfig.duration;
+            this.state.activeBuffs.push({
+                type: 'lingliBoost',
+                multiplier: 1 + pillConfig.bonus,
+                endTime: endTime
+            });
+            this.state.startTimestamp -= pillConfig.trainingBonus;
+            this.state.totalStartTimestamp -= pillConfig.trainingBonus;
+        } else {
+            this.state.consumedPills[pillId] = currentCount + 1;
+        }
+
+        this._saveState(this.state);
+        // Recalculate rates if necessary (usually for production buffs)
+        if (window.game && window.game.buildingManager) {
+            window.game.buildingManager.recalculateRates();
+        }
+
+        // Log result
+        if (window.game && window.game.uiManager) {
+            const effect = this.getPillEffectDescription(pillConfig);
+            let msg = lang.t('宗門賜予<b>{0}</b>（{1}/{2}）{3}', {
+                '0': lang.t(pillConfig.name),
+                '1': (this.state.consumedPills[pillId] || 0),
+                '2': pillConfig.maxCount,
+                '3': effect
+            });
+            if (pillConfig.effect === 'tribulationSuccess') {
+                const newRate = this.getTribulationSuccessRate();
+                msg += lang.t('，渡劫成功率: {0}%', { '0': (newRate * 100).toFixed(1) });
+            }
+            window.game.uiManager.addLog(msg, 'INFO');
+        }
+
+        return { success: true, msg: '服用成功' };
+    }
+
+    /**
      * 獲取丹藥配置
      */
     getPillConfig(pillId) {
@@ -351,6 +436,12 @@ class PlayerManager {
                 effect: 'tribulationSuccess',
                 bonus: 0.03,   // 每顆 +3% 渡劫成功率
                 maxCount: 15
+            },
+            sect_high_golden_pill: {
+                name: '上品金丹',
+                effect: 'tribulationSuccess',
+                bonus: 0.05,
+                maxCount: 10
             },
             trans_pill: {
                 name: '化神丹',
@@ -669,8 +760,11 @@ class PlayerManager {
         };
 
         // 重置建築與資源
-        window.game.buildingManager.reset();
-        window.game.resourceManager.reset();
+        if (window.game) {
+            window.game.buildingManager.reset();
+            window.game.resourceManager.reset();
+        }
+        SectManager.reset();
 
         this._saveState(this.state);
 
@@ -713,8 +807,11 @@ class PlayerManager {
         };
 
         // 重置建築與資源
-        window.game.buildingManager.reset();
-        window.game.resourceManager.reset();
+        if (window.game) {
+            window.game.buildingManager.reset();
+            window.game.resourceManager.reset();
+        }
+        SectManager.reset();
 
         this._saveState(this.state);
 
@@ -834,7 +931,7 @@ class PlayerManager {
                             '5': info.pillStatus // pillars Status already localized parts of it
                         }
                     );
-                    window.game.uiManager.addLog(msgSuccess);
+                    window.game.uiManager.addLog(msgSuccess, 'SYSTEM');
                 }
                 return true;
             } else {
@@ -857,7 +954,7 @@ class PlayerManager {
                             '5': info.pillStatus
                         }
                     );
-                    window.game.uiManager.addLog(msgFail);
+                    window.game.uiManager.addLog(msgFail, 'SYSTEM');
                 }
                 return false;
             }
@@ -872,7 +969,7 @@ class PlayerManager {
                 const newEra = EraManager.getEraById(this.state.eraId);
                 const eraName = newEra ? LanguageManager.getInstance().t(newEra.eraName) : this.state.eraId;
                 const msg = LanguageManager.getInstance().t('境界突破！晉升至 <b>{0}</b>', { '0': eraName });
-                window.game.uiManager.addLog(msg);
+                window.game.uiManager.addLog(msg, 'SYSTEM');
             }
             return true;
         }
@@ -900,7 +997,13 @@ class PlayerManager {
         // 丹藥加成（築基丹、金丹、九轉金丹）
         const pillTrainingBonus = this.getPillBonus('trainingSpeed');
 
-        const totalSpeedBonus = talentTimeBonus + daoHeartBonus + daoProofBonus + pillTrainingBonus;
+        // 宗門聚靈陣加成 (Lv4+)
+        let sectSpeedBonus = 0;
+        if (window.game && window.game.sectManager && window.game.sectManager.getSectLevel() >= 4) {
+            sectSpeedBonus = 0.5; // (1 + 0.5) = 1.5x speed
+        }
+
+        const totalSpeedBonus = talentTimeBonus + daoHeartBonus + daoProofBonus + pillTrainingBonus + sectSpeedBonus;
 
         const costReduction = this.getTalentBonus('five_elements_root');
 
@@ -975,7 +1078,7 @@ class PlayerManager {
                 // 顯示資源消耗日誌 (DEV TAG)
                 if (costLogParts.length > 0) {
                     const costMsg = `<span style="color:#888; font-size:0.9em;">[DEV] ${LanguageManager.getInstance().t('消耗')}: ${costLogParts.join(', ')}</span>`;
-                    window.game.uiManager.addLog(costMsg);
+                    window.game.uiManager.addLog(costMsg, 'DEV');
                 }
             }
             return true;
@@ -1012,6 +1115,10 @@ class PlayerManager {
                 localStorage.removeItem('cultivation_game_save');
             }
         }
+
+        // 重置宗門系統
+        SectManager.reset();
+        localStorage.removeItem('sectState');
 
         // 清除 PlayerManager 存檔
         localStorage.removeItem(this.storageKey);

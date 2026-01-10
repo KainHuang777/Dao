@@ -1,4 +1,3 @@
-
 import ResourcePanel from '../components/ResourcePanel.js';
 import BuildingPanel from '../components/BuildingPanel.js';
 import CraftingPanel from '../components/CraftingPanel.js';
@@ -6,9 +5,11 @@ import SkillPanel from '../components/SkillPanel.js';
 import TalentPanel from '../components/TalentPanel.js';
 import HelpPanel from '../components/HelpPanel.js';
 import DebugPanel from '../components/DebugPanel.js';
+import SectPanel from '../components/SectPanel.js';
 import TabSystem from '../components/TabSystem.js';
 import PlayerManager from '../utils/PlayerManager.js';
 import EraManager from '../utils/EraManager.js';
+import SectManager from '../utils/SectManager.js';
 import LanguageManager from '../utils/LanguageManager.js';
 import { ReleaseNotes } from '../data/ReleaseNotes.js';
 
@@ -22,6 +23,7 @@ export default class UIManager {
         this.talentPanel = new TalentPanel();
         this.helpPanel = new HelpPanel();
         this.debugPanel = new DebugPanel();
+        this.sectPanel = new SectPanel();
         this.tabSystem = new TabSystem();
 
         // Dom elements
@@ -54,6 +56,15 @@ export default class UIManager {
         this.talentPanel.init();
         this.helpPanel.init();
         this.debugPanel.init();
+
+        if (this.sectPanel) {
+            this.sectPanel.init();
+        } else {
+            console.warn('SectPanel missing, re-initializing...');
+            this.sectPanel = new SectPanel();
+            this.sectPanel.init();
+        }
+
         this.tabSystem.init();
 
         // 註冊分頁刷新回調
@@ -63,6 +74,9 @@ export default class UIManager {
         this.tabSystem.registerCallback('crafting', () => {
             this.craftingPanel.refresh();
         });
+        this.tabSystem.registerCallback('buildings', () => this.buildingPanel.update());
+        this.tabSystem.registerCallback('sect', () => this.sectPanel.update());
+        this.tabSystem.registerCallback('opportunities', () => this.sectPanel.update());
 
         this.bindEvents();
         this.updatePlayerInfo();
@@ -90,8 +104,48 @@ export default class UIManager {
         if (this.loadBtn) this.loadBtn.textContent = lang.t('讀取進度');
 
         // 右側日誌標題
-        const logHeader = document.querySelector('#log-header h3');
-        if (logHeader) logHeader.textContent = lang.t('修仙日誌');
+        // 右側日誌標題
+        const logHeader = document.querySelector('#log-header');
+        if (logHeader) {
+            // Check if filter exists
+            if (!logHeader.querySelector('.log-filter-container')) {
+                const titleText = lang.t('修仙日誌');
+                logHeader.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0;">${titleText}</h3>
+                        <div class="log-filter-container" style="display: flex; gap: 5px; font-size: 0.8em;">
+                             <span class="log-filter-btn active" data-filter="ALL" style="cursor: pointer; padding: 2px 5px; background: #555; border-radius: 3px;">ALL</span>
+                             <span class="log-filter-btn" data-filter="INFO" style="cursor: pointer; padding: 2px 5px; color: #888;">INFO</span>
+                             <span class="log-filter-btn" data-filter="SYSTEM" style="cursor: pointer; padding: 2px 5px; color: #888;">SYS</span>
+                             <span class="log-filter-btn" data-filter="DEV" style="cursor: pointer; padding: 2px 5px; color: #888;">DEV</span>
+                        </div>
+                    </div>
+                `;
+
+                // Bind click events
+                const btns = logHeader.querySelectorAll('.log-filter-btn');
+                btns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        // Update UI
+                        btns.forEach(b => {
+                            b.classList.remove('active');
+                            b.style.background = 'transparent';
+                            b.style.color = '#888';
+                        });
+                        btn.classList.add('active');
+                        btn.style.background = '#555';
+                        btn.style.color = '#fff';
+
+                        // Apply filter
+                        this.filterLogs(btn.dataset.filter);
+                    });
+                });
+            } else {
+                // Update title text only
+                const h3 = logHeader.querySelector('h3');
+                if (h3) h3.textContent = lang.t('修仙日誌');
+            }
+        }
 
         // Modal 內容 (部分動態生成，但初始靜態部分也可更新)
         const modalP = document.querySelector('#save-modal p');
@@ -136,6 +190,8 @@ export default class UIManager {
                 'crafting': '煉製合成',
                 'skills': '功法修煉',
                 'talents': '輪迴天賦',
+                'sect': '宗門',
+                'opportunities': '機緣',
                 'help': '遊戲說明',
                 'debug': 'Debug' // Debug 通常不翻譯
             };
@@ -158,6 +214,7 @@ export default class UIManager {
             const welcomeText = LanguageManager.getInstance().t('歡迎來到修仙世界') + '...';
             const li = document.createElement('li');
             li.textContent = welcomeText;
+            li.dataset.type = 'SYSTEM';
             logList.appendChild(li);
         }
 
@@ -379,7 +436,7 @@ export default class UIManager {
         this.playerInfoDiv.innerHTML = `
             ${tribulationDisplay}
             <div class="player-info-line">
-                <span>${LanguageManager.getInstance().t('境界')}: <b style="color:var(--gold-color)">${era ? LanguageManager.getInstance().t(era.eraName) : '...'}</b></span>
+                <span>${LanguageManager.getInstance().t('境界')}: <b style="color:var(--gold-color)">${era ? LanguageManager.getInstance().t(era.eraName) : '...'}</b> <span style="font-size:0.8em; color:#aaa;">(Era ${eraId})</span></span>
                 <button id="upgrade-btn" class="mini-btn ${upgradeCheck.canUpgrade ? 'btn-active' : 'btn-disabled'}" 
                     title="${upgradeTooltip}">${LanguageManager.getInstance().t(upgradeButtonText.replace('⚡ ', '').replace('✨ ', ''))}</button>
             </div>
@@ -430,8 +487,9 @@ export default class UIManager {
     /**
      * 新增日誌
      * @param {string} message - 日誌內容
+     * @param {string} type - 日誌類型 'DEV' | 'INFO' | 'SYSTEM'
      */
-    addLog(message) {
+    addLog(message, type = 'INFO') {
         const lang = LanguageManager.getInstance();
         const yearUnit = lang.t('祀');
         const currentYear = PlayerManager.getLifespan().toFixed(1);
@@ -444,14 +502,18 @@ export default class UIManager {
         if (logList) {
             const li = document.createElement('li');
             li.innerHTML = formattedMessage;
+            li.dataset.type = type;
 
-            // 保持最新在底部，符合聊天室/日誌習慣，或者頂部？
-            // 原有邏輯是 insertBefore (最新在最上)。
-            // 為了配合自動滾動到底部，通常最新在最下。
-            // 但如果用戶想要最新在最上，就不需要滾動到底部。
-            // 讓我們改為最新在最上，這樣不需要滾動，且符合"日誌"查看習慣。
-            // 修正：原左側CSS是 overflow-y: auto。
+            // Apply current filter visibility
+            const activeFilter = document.querySelector('.log-filter-btn.active');
+            if (activeFilter) {
+                const filterType = activeFilter.dataset.filter;
+                if (filterType !== 'ALL' && filterType !== type) {
+                    li.style.display = 'none';
+                }
+            }
 
+            // 保持最新在最上
             if (logList.firstChild) {
                 logList.insertBefore(li, logList.firstChild);
             } else {
@@ -463,10 +525,24 @@ export default class UIManager {
                 logList.removeChild(logList.lastChild);
             }
 
-            // 確保容器滾動到頂部（如果用戶向上滾動查看歷史，可能不需要強制？但最新消息通常需要看到）
-            // 如果最新在最上，則scrollTop應該是0
+            // 確保容器滾動到頂部
             if (logContainer) {
                 logContainer.scrollTop = 0;
+            }
+        }
+    }
+
+    filterLogs(type) {
+        const logList = document.getElementById('log-list');
+        if (!logList) return;
+
+        const logs = logList.children;
+        for (let i = 0; i < logs.length; i++) {
+            const log = logs[i];
+            if (type === 'ALL' || log.dataset.type === type) {
+                log.style.display = '';
+            } else {
+                log.style.display = 'none';
             }
         }
     }
@@ -651,7 +727,7 @@ export default class UIManager {
 
             const hintKey = eraHints[eraId];
             if (hintKey) {
-                this.addLog(`<span style="color:#00bcd4">${lang.t(hintKey)}</span>`);
+                this.addLog(`<span style="color:#00bcd4">${lang.t(hintKey)}</span>`, 'SYSTEM');
             }
 
             // 無論有無提示文本，都標記為已顯示，避免重複檢查
@@ -664,7 +740,7 @@ export default class UIManager {
 
         // 提示 1：金丹期及以前 (Era <= 3)，壽元達到 1/3
         if (eraId <= 3 && ratio >= 1 / 3 && !hints.rule1Triggered) {
-            this.addLog(`<span style="color:#ffa726">${lang.t('hint_lifespan_warning')}</span>`);
+            this.addLog(`<span style="color:#ffa726">${lang.t('hint_lifespan_warning')}</span>`, 'SYSTEM');
             PlayerManager.updateHints({ rule1Triggered: true });
         }
 
@@ -677,7 +753,7 @@ export default class UIManager {
             if (interval > lastInterval) {
                 // 如果是 Era 4，優先使用 hint_era_4 (User Request)
                 const periodicKey = (eraId === 4) ? 'hint_era_4' : 'hint_reincarnation_periodic';
-                this.addLog(`<span style="color:#ffa726">${lang.t(periodicKey)}</span>`);
+                this.addLog(`<span style="color:#ffa726">${lang.t(periodicKey)}</span>`, 'SYSTEM');
                 PlayerManager.updateHints({ lastRule2Year: currentYearFloor });
             }
         }
@@ -826,6 +902,32 @@ export default class UIManager {
     update() {
         if (this.resourcePanel) this.resourcePanel.update();
         this.updatePlayerStatus();
+        this.checkTabUnlocks();
+    }
+
+    checkTabUnlocks() {
+        const eraId = PlayerManager.getEraId();
+        const sectLevel = SectManager.getSectLevel();
+
+        // 宗門分頁: 築基期 (Era 2) 解鎖
+        const sectBtn = document.querySelector('.tab-btn[data-tab="sect"]');
+        if (sectBtn) {
+            if (eraId >= 2) {
+                if (sectBtn.style.display === 'none') sectBtn.style.display = '';
+            } else {
+                if (sectBtn.style.display !== 'none') sectBtn.style.display = 'none';
+            }
+        }
+
+        // 機緣分頁: 宗門等級 2 解鎖
+        const oppBtn = document.querySelector('.tab-btn[data-tab="opportunities"]');
+        if (oppBtn) {
+            if (sectLevel >= 2) {
+                if (oppBtn.style.display === 'none') oppBtn.style.display = '';
+            } else {
+                if (oppBtn.style.display !== 'none') oppBtn.style.display = 'none';
+            }
+        }
     }
 
     /**

@@ -1,6 +1,44 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.25",
+        date: "2026-01-10",
+        notes: {
+            "zh-TW": [
+                "【新功能】宗門系統：築基期解鎖，可參與宗門建設與領取歷練任務。",
+                "【宗門】宗門丹堂與聚靈陣：宗門等級提升後解鎖，提供渡劫仙丹與大幅修煉加成。",
+                "【系統】日誌分類過濾：修仙日誌新增分類（資訊/系統/開發），支援分類過濾顯示。",
+                "【重置】宗門傳承優化：輪迴與 DEBUG 重置現在會正確清空宗門進度。",
+                "【多語化】術語優化：英文版時間單位統一改為 Year，修復大量宗門相關多語缺失。",
+                "【平衡】下調「劍侍糯美子」的中級獸晶需求，解決前期上限不足問題。"
+            ],
+            "zh-CN": [
+                "【新功能】宗门系统：筑基期解锁，可参与宗门建设与领取历炼任务。",
+                "【宗门】宗门丹堂与聚灵阵：宗门等级提升后解锁，提供渡劫仙丹与大幅修炼加成。",
+                "|系统】日志分类过滤：修仙日志新增分类（资讯/系统/开发），支持分类过滤显示。",
+                "【重置】宗门传承优化：轮回与 DEBUG 重置现在会正确清空宗门进度。",
+                "【多语化】术语优化：英文版时间单位统一改为 Year，修复大量宗门相关多语缺失。",
+                "【平衡】下调「剑侍糯美子」的中级兽晶需求，解决前期上限不足问题。"
+            ],
+            "en": [
+                "[Sect System] Unlocked at Foundation Establishment. Contribute to development and complete tasks for rewards.",
+                "[Sect Features] Alchemy Hall & Spirit Array: Level up your Sect to get Tribulation Pills and massive cultivation speed boosts.",
+                "[System] Log Filtering: Categorized cultivation logs with UI filters (Info/System/Dev).",
+                "[Reset] Sect Persistence: Sect progress now correctly resets on reincarnation and debug reset.",
+                "[I18n] Terminology Refresh: Unified English time unit to 'Year'; added comprehensive Sect translations.",
+                "[Balance] Reduced Sword Maid requirements to address early-game resource cap issues."
+            ],
+            "ja": [
+                "【新機能】宗門システム：築基期で開放。宗門の建設に参加し、試練任務をクリアして報酬を獲得。",
+                "【宗門】錬丹堂と聚霊陣：宗門レベル上昇で開放。渡劫用丹薬や強力な修練ボーナスを提供。",
+                "【システム】ログの分類フィルタ：修仙日誌にカテゴリを追加し、フィルタリング表示を実装。",
+                "【リセット】宗門進行の修正：輪廻やデバッグリセット時に宗門データも正しくリセット。",
+                "【多言語化】翻訳の改善：英語版の時間単位を 'Year' に統一。宗門関連の翻訳を大幅追加。",
+                "【平衡】「剣侍ぬめい子」の中級獣晶要件を下方修正し、序盤の上限問題を解決。"
+            ]
+        }
+    },
+    {
         version: "v0.24",
         date: "2026-01-10",
         notes: {

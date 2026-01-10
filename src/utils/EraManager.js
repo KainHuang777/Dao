@@ -271,12 +271,15 @@ class EraManager {
         // 檢查修練時間
         if (trainingTime < requiredTime) {
             const remainingTime = requiredTime - trainingTime;
+            const years = (remainingTime / 60).toFixed(2);
+            const msgKey = trainingTime > 0 ? '修練時間不足 (還需 {years} 祀)' : '修練時間不足 (需要 {years} 祀)';
+
             return {
                 canLevelUp: false,
                 missingSkills: [],
                 missingResources: {},
                 requiredTime,
-                reason: LanguageManager.getInstance().t('修練時間不足 (需要 {years} 祀)', { years: (remainingTime / 60).toFixed(2) })
+                reason: LanguageManager.getInstance().t(msgKey, { years })
             };
         }
 

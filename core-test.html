@@ -61,6 +61,14 @@
         <button id="testTrainingTime">測試修煉時間顯示</button>
         <button id="testHintSystem">測試提示系統狀態</button>
     </div>
+    <div style="margin-top: 20px; padding: 10px; border: 1px solid #9c27b0; border-radius: 8px;">
+        <h3 style="color: #ba68c8;">宗門系統測試</h3>
+        <button id="sectCheckUnlock" style="background: #ba68c8;">1. 前往築基期 (解鎖測試)</button>
+        <button id="sectAddRes" style="background: #9c27b0;">2. 添加貢獻資源</button>
+        <button id="sectContribute" style="background: #7b1fa2;">3. 執行貢獻</button>
+        <button id="sectMaxLevel" style="background: #ab47bc;">4. 宗門滿級 (LV5)</button>
+        <button id="sectTaskTest" style="background: #8e24aa;">5. 任務流程測試 (刷新/接受/領取)</button>
+    </div>
     <div style="margin-top: 20px; padding: 10px; border: 1px solid #444; border-radius: 8px;">
         <h3>存檔功能測試</h3>
         <button id="testSaveCode">生成存檔碼</button>
@@ -89,6 +97,12 @@
         let resourceManager = null;
         let buildingManager = null;
         let SaveSystem = null;
+        // Pre-define window.game as a fallback
+        window.game = {
+            resourceManager: null,
+            buildingManager: null,
+            uiManager: { addLog: (msg, type) => log(`[GameLog] ${msg}`, type || 'info') }
+        };
 
         // 初始化
         async function init() {
@@ -114,6 +128,13 @@
                 await loadBuildings();
                 buildingManager = new BuildingManager(resourceManager);
                 buildingManager.init();
+
+                // Mock window.game for modules that depend on it (like SectManager)
+                // Update the pre-defined object properties instead of reassignment
+                window.game.resourceManager = resourceManager;
+                window.game.buildingManager = buildingManager;
+                // uiManager is already set in pre-define.
+                window.game.saveSystem = null; // Set later if needed
 
                 log('✓ 模組載入成功', 'success');
 
@@ -495,6 +516,134 @@
                 PlayerManager.updateHints({ shownEraHints: cleanupShown });
             } else {
                 log('✓ Mock hint already exists (skipping update test)', 'info');
+            }
+        });
+
+        // --- 宗門系統測試邏輯 ---
+        let SectManager = null;
+
+        // Lazy load SectManager manually for tests if not global
+        async function getSectManager() {
+            if (SectManager) return SectManager;
+            const { default: sm } = await import('./src/utils/SectManager.js');
+            SectManager = sm;
+            return SectManager;
+        }
+
+        document.getElementById('sectCheckUnlock').addEventListener('click', async () => {
+            log('\n=== 宗門解鎖測試 ===', 'info');
+            const { default: PlayerManager } = await import('./src/utils/PlayerManager.js');
+
+            // Set Era to 2
+            PlayerManager.state.eraId = 2;
+            log('已將境界設為 2 (築基期)', 'info');
+
+            // Check logic (MainView visibility logic mock)
+            if (PlayerManager.getEraId() >= 2) {
+                log('✓ 解鎖條件檢查通過: Era >= 2', 'success');
+            } else {
+                log('✗ 解鎖條件檢查失敗', 'error');
+            }
+        });
+
+        document.getElementById('sectAddRes').addEventListener('click', async () => {
+            if (!resourceManager) return log('✗ 資源管理器未初始化', 'error');
+
+            // Add basic resources for contribution (Era 2 cost)
+            // Era 2 cost: stone_low: 100, wood: 100
+            const resList = ['stone_low', 'wood', 'spirit_grass_low'];
+            resList.forEach(id => {
+                const res = resourceManager.getResource(id);
+                if (res) {
+                    res.unlocked = true;
+                    res.value += 1000;
+                    log(`已添加 ${id}: +1000 (當前: ${res.value})`, 'info');
+                }
+            });
+
+            // Unlock lingli just in case
+            const lingli = resourceManager.getResource('lingli');
+            if (lingli) { lingli.unlocked = true; lingli.value = 10000; }
+        });
+
+        document.getElementById('sectContribute').addEventListener('click', async () => {
+            const sm = await getSectManager();
+            const { default: PlayerManager } = await import('./src/utils/PlayerManager.js');
+
+            log('\n=== 宗門貢獻測試 ===', 'info');
+
+            // Ensure window.game is set (fix for undefined error)
+            if (!window.game || !window.game.resourceManager) {
+                log('修復 window.game 參考...', 'info');
+                window.game = window.game || {};
+                window.game.resourceManager = resourceManager;
+                window.game.buildingManager = buildingManager;
+                window.game.uiManager = { addLog: (msg, type) => log(`[GameLog] ${msg}`, type || 'info') };
+            }
+
+            // Force active contribution count for test
+            sm.state.contributionCount = 3;
+            log(`重置今日貢獻次數為: ${sm.state.contributionCount}`, 'info');
+
+            // Mock Player Era if needed (ensure Era 2 for low cost)
+            if (PlayerManager.getEraId() < 2) PlayerManager.state.eraId = 2;
+
+            const beforeDev = sm.state.developmentPoints;
+            const result = sm.contribute();
+
+            if (result.success) {
+                log(`✓ 貢獻成功!`, 'success');
+                log(`發展度: ${beforeDev} -> ${sm.state.developmentPoints}`, 'info');
+                log(`剩餘次數: ${sm.state.contributionCount}`, 'info');
+            } else {
+                log(`✗ 貢獻失敗: ${result.msg}`, 'error');
+            }
+        });
+
+        document.getElementById('sectMaxLevel').addEventListener('click', async () => {
+            const sm = await getSectManager();
+            sm.state.sectLevel = 5;
+            sm.state.developmentPoints = 999;
+            log('✓ 已將宗門設為 LV5 (滿級)', 'success');
+        });
+
+        document.getElementById('sectTaskTest').addEventListener('click', async () => {
+            const sm = await getSectManager();
+            log('\n=== 宗門任務測試 ===', 'info');
+
+            // 1. Refresh
+            if (sm.refreshTasks) sm.refreshTasks();
+            else if (sm.default && sm.default.refreshTasks) sm.default.refreshTasks();
+            log('1. 已刷新任務列表', 'info');
+            if (sm.state.tasks.length > 0) {
+                log(`生成了 ${sm.state.tasks.length} 個任務`, 'success');
+                const task = sm.state.tasks[0];
+                log(`> 任務0: ${task.name} (時間: ${task.duration / 1000}s)`, 'info');
+
+                // 2. Start Task
+                // Force 5 seconds duration for test
+                task.duration = 5000;
+                const startRes = sm.startTask(0);
+                if (startRes.success) {
+                    log(`2. 任務開始成功 (測試修改時長為 5s)`, 'success');
+
+                    // 3. Wait/Simulate
+                    log('...模擬等待 5秒...', 'info');
+                    // Manually set start time to past
+                    sm.state.activeTask.startTime = Date.now() - 6000;
+
+                    // 4. Claim
+                    const claimRes = sm.claimTaskReward();
+                    if (claimRes.success) {
+                        log(`3. 獎勵領取成功! 獲得: ${JSON.stringify(claimRes.rewards)}`, 'success');
+                    } else {
+                        log(`✗ 領取失敗: ${claimRes.msg}`, 'error');
+                    }
+                } else {
+                    log(`✗ 任務開始失敗: ${startRes.msg}`, 'error');
+                }
+            } else {
+                log('✗ 任務列表為空', 'error');
             }
         });
 

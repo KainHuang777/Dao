@@ -1,4 +1,3 @@
-
 // src/main.js
 import GameLoop from './utils/gameLoop.js';
 import ResourceManager from './data/Resources.js';
@@ -8,6 +7,7 @@ import SaveSystem from './utils/saveSystem.js';
 import { loadBuildings } from './data/Buildings.js';
 import EraManager from './utils/EraManager.js';
 import SkillManager from './utils/SkillManager.js';
+import SectManager from './utils/SectManager.js';
 
 class Game {
     constructor() {
@@ -53,6 +53,9 @@ class Game {
             if (savedData.buildings) {
                 this.buildingManager.loadData(savedData.buildings);
             }
+            if (savedData.sect) {
+                SectManager.loadData(savedData.sect);
+            }
             console.log('Loaded save data.');
         }
 
@@ -69,6 +72,9 @@ class Game {
         // Core game logic update
         // 資源產出
         this.resourceManager.update(deltaTime);
+
+        // 宗門系統與計時器
+        SectManager.update(deltaTime);
 
         // UI 更新
         this.uiManager.update();

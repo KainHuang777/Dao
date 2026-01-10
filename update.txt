@@ -1,3 +1,48 @@
+[2026-01-10 15:45] Documentation: Published Release Notes v0.25
+1. Updated `ReleaseNotes.js` with comprehensive notes for Sect System, Log filtering, and balance fixes.
+
+[2026-01-10 15:08] Bugfix: Sect Reset on DEBUG Reset
+1. Added `SectManager.reset()` call to `PlayerManager.reset()` for proper Sect data cleanup.
+2. Also removes `sectState` from localStorage during full reset.
+
+[2026-01-10 14:45] Balance: Sword Maid Cost Adjustment
+1. Reduced beast_crystal_mid requirement for `sword_maid` from 200 to 70 to avoid resource cap bottleneck.
+
+[2026-01-10 14:15] Feature: Reincarnation & Sect Persistence Adjustment
+1. Persistence: Sect Level and progress are now RESET after reincarnation (User Request: 478/542).
+2. Tab Unlocks: Reverted tab logic. "Sect" still requires Era 2, and "Opportunities" still requires Sect Level 2, regardless of reincarnation count.
+3. UX: Kept the Sect system guidance in the Era 2 realm breakthrough hint.
+
+[2026-01-10 13:45] Feature: Sect System Enhancements
+1. UI Redesign: Rearranged Sect Panel header for better accessibility.
+   - Sect Contribution button moved quickly accessible location next to Sect Level.
+   - Added level-based descriptions next to Sect Level (e.g., Unlocks for next level).
+2. New Feature: Alchemy Hall (Sect Lv.2)
+   - Unlocked at Sect Level 2.
+   - Allows purchasing "High-grade Golden Pill" (上品金丹) for Money and Spirit Stones.
+   - Effect: +5% Tribulation Success Rate (Directly consumed).
+3. New Feature: Spirit Gathering Array (Sect Lv.4)
+   - Passive Bonus: +50% Cultivation Speed (reduces time by ~33%) when Sect Level >= 4.
+4. Logic: Implemented adminConsumePill in PlayerManager to handle special item consumption.
+
+[2026-01-10 13:30] Feature: Sect System (宗門系統)
+1. New Feature: Sect System unlocked at Era 2 (Foundation Establishment).
+   - Construction: Contribute resources every 3 hours to level up Sect.
+   - Tasks: Idle tasks refreshing every 3 hours with rewards.
+   - Opportunities: Future content tab unlocked at Sect LV2.
+2. UI: Added "Sect" and "Opportunities" tabs to Main Navigation.
+3. System: Implemented SectManager for state persistence and game loop integration.
+4. i18n: Added comprehensive translations for Sect UI and Tasks in zh-TW.
+
+[2026-01-10 09:30] Feature: Cultivation Log Categories & Filtering
+1. Log System: Implemented log categorization (INFO, SYSTEM, DEV).
+   - INFO: Building/Technique upgrades, Synthesis, Auto-messages.
+   - SYSTEM: Realm progression guidance, Tribulation results, Initial welcome.
+   - DEV: Debug info (e.g., Level up consumption details).
+2. UI: Added Log Filter controls in the Cultivation Log header (ALL/INFO/SYS/DEV).
+3. MainView.js: Refactored addLog to support types and filtering; added filterLogs logic.
+4. PlayerManager.js: Updated log calls to classify critical events as SYSTEM or DEV.
+
 [2026-01-10 12:00] Fix: i18n Key Mismatches
 1. i18n: Fixed untranslated storage building descriptions (e.g. "匯聚周遭靈氣") by correcting keys in JSON files (removed extra punctuation).
 2. i18n: Corrected `rebirth_lotus` and `void_mirror` translation keys to match CSV exactly.

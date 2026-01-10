@@ -1,5 +1,5 @@
-
 import PlayerManager from './PlayerManager.js';
+import SectManager from './SectManager.js';
 
 export default class SaveSystem {
     constructor(gameInstance) {
@@ -18,7 +18,8 @@ export default class SaveSystem {
             timestamp: Date.now(),
             player: PlayerManager ? PlayerManager.exportData() : null,
             resources: this.game.resourceManager.exportData(),
-            buildings: this.game.buildingManager.exportData()
+            buildings: this.game.buildingManager.exportData(),
+            sect: SectManager.exportData()
         };
     }
 
