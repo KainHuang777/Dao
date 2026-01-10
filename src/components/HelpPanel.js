@@ -56,22 +56,39 @@ export default class HelpPanel {
 
         const contact = document.createElement('div');
         contact.style.display = 'flex';
-        contact.style.flexDirection = 'column';
-        contact.style.gap = '5px';
+        contact.style.flexWrap = 'wrap';
+        contact.style.gap = '15px';
+        contact.style.justifyContent = 'center';
+        contact.style.alignItems = 'center';
 
-        const email = document.createElement('p');
+        const email = document.createElement('span');
         email.textContent = `${lang.t('開發者聯絡與反饋')}: kainjalos@gmail.com`;
         contact.appendChild(email);
 
-        const redditLink = document.createElement('p');
+        const separator1 = document.createElement('span');
+        separator1.textContent = '|';
+        separator1.style.color = '#555';
+        contact.appendChild(separator1);
+
+        const redditLink = document.createElement('span');
         redditLink.innerHTML = `<a href="https://www.reddit.com/r/incremental_games/" target="_blank" style="color: #ff4500; text-decoration: none;">🔗 ${lang.t('Reddit 增量遊戲論壇')}</a>`;
         contact.appendChild(redditLink);
 
-        const fbLink = document.createElement('p');
+        const separator2 = document.createElement('span');
+        separator2.textContent = '|';
+        separator2.style.color = '#555';
+        contact.appendChild(separator2);
+
+        const fbLink = document.createElement('span');
         fbLink.innerHTML = `<a href="https://www.facebook.com/kain.huang/" target="_blank" style="color: #4267B2; text-decoration: none;">🔗 ${lang.t('開發者 Facebook')}</a>`;
         contact.appendChild(fbLink);
 
-        const qqInfo = document.createElement('p');
+        const separator3 = document.createElement('span');
+        separator3.textContent = '|';
+        separator3.style.color = '#555';
+        contact.appendChild(separator3);
+
+        const qqInfo = document.createElement('span');
         qqInfo.textContent = `💬 ${lang.t('開發者 QQ')}: 1182218525`;
         contact.appendChild(qqInfo);
 

@@ -62,6 +62,9 @@ class Game {
         await this.uiManager.init();
         this.gameLoop.start();
 
+        // Initialize header contact info
+        this.initHeaderContactInfo();
+
         // 自動存檔 (每分鐘)
         setInterval(() => {
             this.saveSystem.saveToStorage();
@@ -78,6 +81,25 @@ class Game {
 
         // UI 更新
         this.uiManager.update();
+    }
+
+    initHeaderContactInfo() {
+        const container = document.getElementById('header-contact-info');
+        if (!container) return;
+
+        const lang = this.uiManager.languageManager;
+
+        container.innerHTML = `
+            <span>📧 kainjalos@gmail.com</span>
+            <span style="color: #555;">|</span>
+            <a href="https://www.reddit.com/r/incremental_games/" target="_blank" style="color: #ff4500; text-decoration: none;">🔗 Reddit</a>
+            <span style="color: #555;">|</span>
+            <a href="https://www.facebook.com/kain.huang/" target="_blank" style="color: #4267B2; text-decoration: none;">🔗 Facebook</a>
+            <span style="color: #555;">|</span>
+            <span>💬 QQ: 1182218525</span>
+            <span style="color: #555;">|</span>
+            <span style="color: #ff6b6b;">Antigravity</span>
+        `;
     }
 }
 
