@@ -41,7 +41,7 @@ export default class SectPanel {
                         </div>
                         <div style="font-size: 0.8em; color: #bbb;">
                             ${lang.t('次數')}: <span id="sect-contrib-count" style="color: #fff;">0</span>/3
-                            <span style="font-size: 0.9em; margin-left: 5px;">(🔄 <span id="sect-contrib-timer">00:00:00</span>)</span>
+                            <span style="font-size: 0.9em; margin-left: 5px;">(<span id="btn-sect-refresh-contribution" style="cursor: pointer;" title="刷新次數">🔄</span> <span id="sect-contrib-timer">00:00:00</span>)</span>
                         </div>
                          <div id="contrib-cost-preview" style="font-size: 0.75em; color: #e57373; margin-top: 2px;"></div>
                     </div>
@@ -69,7 +69,10 @@ export default class SectPanel {
             <div class="sect-tasks" style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
                     <h3 style="margin: 0; font-size: 1.1em;">${lang.t('宗門任務')}</h3>
-                    <span style="font-size: 0.85em; color: #888;">${lang.t('刷新')}: <span id="sect-task-timer">00:00:00</span></span>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 0.85em; color: #888;">${lang.t('刷新')}: <span id="sect-task-timer">00:00:00</span></span>
+                        <button id="btn-sect-refresh-tasks" class="btn" style="padding: 2px 8px; font-size: 0.75em;" title="${lang.t('手動刷新任務')}">🔄 <span id="sect-refresh-cost"></span></button>
+                    </div>
                 </div>
                 
                 <!-- Active Task -->
@@ -78,6 +81,8 @@ export default class SectPanel {
                         <h4 id="active-task-name" style="margin: 0; color: #4fc3f7;"></h4>
                         <span id="active-task-timer" style="font-size: 0.9em; font-weight: bold; color: #fff;">00:00</span>
                     </div>
+                    <div id="active-task-desc" style="font-size: 0.85em; color: #ccc; margin-bottom: 5px; font-style: italic;"></div>
+                    <div id="active-task-reward" style="font-size: 0.85em; color: #ffd700; margin-bottom: 8px;"></div>
                     <div class="progress-container" style="background: rgba(0,0,0,0.5); height: 8px; border-radius: 4px; margin-bottom: 8px;">
                         <div id="active-task-bar" style="width: 0%; height: 100%; background: #2196f3; border-radius: 4px; transition: width 0.5s linear;"></div>
                     </div>
@@ -133,6 +138,19 @@ export default class SectPanel {
             };
         }
 
+        const btnRefreshContrib = document.getElementById('btn-sect-refresh-contribution');
+        if (btnRefreshContrib) {
+            btnRefreshContrib.onclick = () => {
+                const result = SectManager.manualRefreshContribution();
+                if (window.game && window.game.uiManager) {
+                    window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'SYSTEM');
+                }
+                if (result.success) {
+                    this.update();
+                }
+            };
+        }
+
         const btnBuyPill = document.getElementById('btn-buy-sect-pill');
         if (btnBuyPill) {
             btnBuyPill.onclick = () => {
@@ -145,6 +163,18 @@ export default class SectPanel {
                     }
                     if (result.success) this.update();
                 }
+            };
+        }
+
+        // Manual Refresh Tasks Button
+        const btnRefresh = document.getElementById('btn-sect-refresh-tasks');
+        if (btnRefresh) {
+            btnRefresh.onclick = () => {
+                const result = SectManager.manualRefreshTasks();
+                if (window.game && window.game.uiManager) {
+                    window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'INFO');
+                }
+                if (result.success) this.update();
             };
         }
     }
@@ -168,22 +198,22 @@ export default class SectPanel {
 
         // Level Description
         if (elLevelDesc) {
-            let desc = '';
-            let next = '';
-            if (level === 1) {
-                desc = lang.t('可接取宗門任務');
-                next = lang.t('下一級: 開放宗門丹堂');
-            } else if (level === 2) {
-                desc = lang.t('已開放宗門丹堂');
-                next = lang.t('下一級: 增加任務獎勵');
-            } else if (level === 3) {
-                desc = lang.t('已開放宗門丹堂');
-                next = lang.t('下一級: 開放宗門聚靈陣');
-            } else if (level >= 4) {
-                desc = lang.t('已開放宗門聚靈陣 (修煉速度+50%)');
-                next = (level < 5) ? lang.t('下一級: 宗門圓滿') : lang.t('已臻圓滿');
-            }
-            elLevelDesc.innerHTML = `${desc} <span style="color:#666; margin-left:5px;">(${next})</span>`;
+            let descKey = `宗門_desc_${level}`;
+            let nextKey = '';
+
+            if (level === 1) nextKey = '下一級: 開放宗門丹堂';
+            else if (level === 2) nextKey = '下一級: 增加任務獎勵';
+            else if (level === 3) nextKey = '下一級: 開放宗門聚靈陣';
+            else if (level >= 4 && level < 5) nextKey = '下一級: 宗門圓滿';
+            else if (level === 5) nextKey = '已臻圓滿';
+
+            const descText = lang.t(descKey);
+            const nextText = nextKey ? lang.t(nextKey) : '';
+
+            // Fallback if key missing (for dev safety)
+            const finalDesc = (descText === descKey) ? lang.t('可接取宗門任務') : descText;
+
+            elLevelDesc.innerHTML = `${finalDesc} <span style="color:#666; margin-left:5px;">(${nextText})</span>`;
         }
 
         // Alchemy Hall Visibility
@@ -202,16 +232,42 @@ export default class SectPanel {
             const diff = Math.max(0, SectManager.state.nextContributionReset - Date.now());
             elContribTimer.textContent = Formatter.formatTime(diff / 1000);
         }
+
+        // Update Refresh Contrib Tooltip
+        const btnRefreshContrib = document.getElementById('btn-sect-refresh-contribution');
+        if (btnRefreshContrib) {
+            const isDebug = window.game?.buildingManager?.debugAutoBuildEnabled;
+            const costName = isDebug ? lang.t('金錢') : lang.t('丹液');
+            const costAmount = isDebug ? 1 : '10000';
+            btnRefreshContrib.title = `${lang.t('刷新次數')} (${costName}x${costAmount})`;
+        }
+
         if (elCost) {
             const cost = SectManager.getContributionCost();
             const costText = Object.entries(cost).map(([k, v]) => `${lang.t(k)}x${v}`).join(', ');
             elCost.textContent = `${lang.t('消耗')}: ${costText}`;
+
+            // Check sufficiency to set color
+            let affordable = true;
+            if (window.game && window.game.resourceManager) {
+                for (const [key, val] of Object.entries(cost)) {
+                    const res = window.game.resourceManager.getResource(key);
+                    const current = res ? res.value : 0;
+                    if (current < val) {
+                        affordable = false;
+                        break;
+                    }
+                }
+            }
+            elCost.style.color = affordable ? '#ffffff' : '#e57373';
         }
 
         // Update Active Task
         const activeTask = SectManager.state.activeTask;
         const elActiveBox = document.getElementById('sect-active-task');
         const elActiveName = document.getElementById('active-task-name');
+        const elActiveDesc = document.getElementById('active-task-desc');
+        const elActiveReward = document.getElementById('active-task-reward');
         const elActiveBar = document.getElementById('active-task-bar');
         const elActiveTimer = document.getElementById('active-task-timer');
         const btnClaim = document.getElementById('btn-sect-claim');
@@ -219,7 +275,28 @@ export default class SectPanel {
         if (elActiveBox) {
             if (activeTask) {
                 elActiveBox.style.display = 'block';
-                elActiveName.textContent = lang.t(activeTask.name);
+
+                // Rarity Styling
+                const rarityColor = activeTask.rarityColor || '#4fc3f7';
+                elActiveBox.style.borderColor = rarityColor;
+                elActiveBox.style.background = `${rarityColor}1a`; // Low opacity background
+                elActiveName.style.color = rarityColor;
+
+                // Name & Descripton & Reward
+                const rarityName = activeTask.rarityName ? `[${lang.t(activeTask.rarityName)}] ` : '';
+                elActiveName.textContent = rarityName + lang.t(activeTask.name);
+
+                if (elActiveDesc) elActiveDesc.textContent = lang.t(activeTask.desc);
+
+                if (elActiveReward) {
+                    let rewardText = Object.entries(activeTask.reward).map(([k, v]) => `${lang.t(k)}x${v}`).join(' ');
+                    if (activeTask.specialEffect) {
+                        const val = Math.round(activeTask.specialEffect.value * 100) + '%';
+                        const effectStr = lang.t(`effect_${activeTask.specialEffect.type}`, { '0': val });
+                        rewardText += ` + ✨ ${effectStr}`;
+                    }
+                    elActiveReward.textContent = `${lang.t('獎勵')}: ${rewardText}`;
+                }
 
                 const now = Date.now();
                 const total = activeTask.endTime - activeTask.startTime;
@@ -252,6 +329,19 @@ export default class SectPanel {
             elTaskTimer.textContent = Formatter.formatTime(diff / 1000);
         }
 
+        // Update Refresh Cost Display
+        const elRefreshCost = document.getElementById('sect-refresh-cost');
+        if (elRefreshCost) {
+            const isDebug = window.game?.buildingManager?.debugAutoBuildEnabled;
+            if (isDebug) {
+                elRefreshCost.textContent = `${lang.t('金錢')}x1`;
+                elRefreshCost.style.color = '#ffd700';
+            } else {
+                elRefreshCost.textContent = `${lang.t('丹液')}x10`;
+                elRefreshCost.style.color = '#ff9800';
+            }
+        }
+
         if (elTaskList) {
             // Check if needed to clear
             elTaskList.innerHTML = '';
@@ -259,15 +349,29 @@ export default class SectPanel {
             SectManager.state.tasks.forEach((task, index) => {
                 const div = document.createElement('div');
                 div.className = 'task-card';
-                div.style = 'background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; border: 1px solid #444;';
+
+                // Apply rarity color to border and glow
+                const rarityColor = task.rarityColor || '#444';
+                div.style = `background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; border: 2px solid ${rarityColor}; box-shadow: 0 0 8px ${rarityColor}40;`;
 
                 const rewardText = Object.entries(task.reward).map(([k, v]) => `${lang.t(k)}x${v}`).join(' ');
                 const durationMins = Math.floor(task.duration / 60000);
 
+                // Rarity label
+                const rarityLabel = task.rarityName ? `[${lang.t(task.rarityName)}]` : '';
+
+                // Special effect text for legendary tasks
+                let specialText = '';
+                if (task.specialEffect && task.specialEffect.type === 'reduce_training_time') {
+                    const percent = Math.round(task.specialEffect.value * 100);
+                    specialText = `<div style="font-size: 0.8em; color: #ff9800; margin-bottom: 5px;">✨ ${lang.t('effect_reduce_training_time', { '0': percent + '%' })}</div>`;
+                }
+
                 div.innerHTML = `
-                    <div style="font-weight: bold; color: #fff; margin-bottom: 5px;">${lang.t(task.name)}</div>
+                    <div style="font-weight: bold; color: ${rarityColor}; margin-bottom: 5px;">${rarityLabel} ${lang.t(task.name)}</div>
                     <div style="font-size: 0.8em; color: #aaa; margin-bottom: 5px;">${lang.t(task.desc)}</div>
                     <div style="font-size: 0.8em; color: #ffd700; margin-bottom: 5px;">${lang.t('獎勵')}: ${rewardText}</div>
+                    ${specialText}
                     <div style="font-size: 0.8em; color: #999; margin-bottom: 8px;">${lang.t('需時')}: ${durationMins}${lang.t('分鐘')}</div>
                     <button class="btn-start-task btn" style="width: 100%; padding: 2px; font-size: 0.8em;">${lang.t('接受')}</button>
                 `;

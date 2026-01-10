@@ -15,7 +15,7 @@ export default class BuildingPanel {
     init() {
         this.render();
         // Start a loop to update button states (enable/disable)
-        setInterval(() => this.updateButtons(), 500);
+        setInterval(() => this.update(), 500);
     }
 
     render() {
@@ -458,7 +458,7 @@ export default class BuildingPanel {
         }
     }
 
-    updateButtons() {
+    update() {
         // 定期更新所有顯示中的建築（用於刷新 Tooltip 中的時間和狀態）
         const currentEraId = PlayerManager.getEraId();
         let needReRender = false;

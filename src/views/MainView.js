@@ -610,6 +610,37 @@ export default class UIManager {
             }
         }
 
+        // 宗門任務提示 [宗]
+        const surgeContainer = document.getElementById('spirit-surge-info');
+        if (surgeContainer) {
+            let sectNotify = document.getElementById('sect-notify-badge');
+            if (!sectNotify) {
+                sectNotify = document.createElement('span');
+                sectNotify.id = 'sect-notify-badge';
+                sectNotify.style = 'color: #ffd700; margin-left: 10px; font-weight: bold; cursor: pointer;';
+                sectNotify.textContent = '[宗]';
+                sectNotify.onclick = () => {
+                    if (this.tabSystem) this.tabSystem.switchTab('sect');
+                };
+                surgeContainer.appendChild(sectNotify);
+            }
+
+            // Check visibility
+            const hasTasks = SectManager.hasAvailableTasks && SectManager.hasAvailableTasks();
+            const isActive = SectManager.state.activeTask;
+            // Display if tasks available AND no active task (so user knows to go take one)
+            // Or just if tasks available? User request: "Display that Sect Tasks are available"
+            // If active task exists, maybe they are busy, but "Available to pick" usually means "Go pick one".
+            // If active, user can't pick new one. So hide if active?
+            // Let's hide if active task exists, because you can't take another.
+
+            if (hasTasks && !isActive) {
+                sectNotify.style.display = 'inline';
+            } else {
+                sectNotify.style.display = 'none';
+            }
+        }
+
         // 更新渡劫成功率顯示（金丹期及以後）
         const eraId = PlayerManager.getEraId();
         const needsTribulation = eraId >= 3;

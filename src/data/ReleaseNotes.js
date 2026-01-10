@@ -1,6 +1,44 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.251",
+        date: "2026-01-10",
+        notes: {
+            "zh-TW": [
+                "【宗門】任務稀有度：新增五種稀有度（從普通到傳說），傳說任務具備「縮短修練時間」特殊效果。",
+                "【宗門】手動刷新功能：新增任務列表與貢獻次數的手動刷新按鈕，可消耗資源（丹液/金錢）即刻刷新。",
+                "【宗門】任務獎勵平衡：大幅提升高境界任務的稀有資源（秘銀、寒鐵等）獎勵，使其符合實際生產與儲存限制。",
+                "【介面】進行中任務細節：現在會顯示進行中任務的描述、完整獎勵內容與稀有度樣式。",
+                "【修復】修正「洞府建築」分頁切換時可能導致的崩潰問題。",
+                "【優化】宗門貢獻文字顏色：現在資源足夠時會顯示為白色，不足時顯示為紅色。"
+            ],
+            "zh-CN": [
+                "【宗门】任务稀有度：新增五种稀有度（从普通到传说），传说任务具备「缩短修炼时间」特殊效果。",
+                "【宗门】手动刷新功能：新增任务列表与贡献次数的手动刷新按钮，可消耗资源（丹液/金钱）即刻刷新。",
+                "【宗门】任务奖励平衡：大幅提升高境界任务的稀有资源（秘银、寒铁等）奖励，使其符合实际生产与储存限制。",
+                "【界面】进行中任务细节：現在会显示进行中任务的描述、完整奖励内容与稀有度样式。",
+                "【修复】修正「洞府建筑」分页切换時可能导致的崩溃问题。",
+                "【优化】宗门贡献文字颜色：現在资源足够時会显示为白色，不足時显示为红色。"
+            ],
+            "en": [
+                "[Sect] Task Rarity System: Added 5 rarity levels (Common to Legendary) with unique effects like 'Reduce Training Time'.",
+                "[Sect] Manual Refresh: Added buttons to manually refresh task lists and contribution attempts via resources.",
+                "[Sect] Reward Balance: Dramatically increased rare resource rewards (Mithril, Cold Iron, etc.) for high-tier tasks.",
+                "[UI] Active Task Details: Enhanced the active task panel to show descriptions, full rewards, and rarity styling.",
+                "[Fix] Building Panel: Resolved a crash when switching between tabs in the Building info page.",
+                "[I18n] Contribution Cost: Text color now correctly reflects resource sufficiency."
+            ],
+            "ja": [
+                "【宗門】任務レアリティ：5段階のレアリティを追加。伝説任務には「修練時間短縮」の特殊効果を実装。",
+                "【宗門】手動更新機能：任務リストと貢献回数の手動更新ボタンを追加。資源（丹液/金銭）を消費して更新可能。",
+                "【宗門】報酬バランス調整：高貴境界任務の希少資源（ミスリル、寒鉄など）報酬を大幅増量。",
+                "【UI】進行中任務の詳細：進行中任務の説明、報酬内容、レアリティに応じたスタイルを表示。",
+                "【修正】「洞府建築」タブ切り替え時のクラッシュ問題を修正。",
+                "【最適化】宗門貢献の文字色：資源の有無によって文字色が動的に変化するように修正。"
+            ]
+        }
+    },
+    {
         version: "v0.25",
         date: "2026-01-10",
         notes: {

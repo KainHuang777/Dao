@@ -636,6 +636,35 @@ class PlayerManager {
     }
 
     /**
+     * 縮短當前等級的修練時間
+     * 用於宗門任務橘色傳說獎勵
+     * @param {number} reduction - 縮短比例 (0.33 = 33%)
+     */
+    reduceCurrentLevelTime(reduction) {
+        // 獲取當前境界升級所需時間
+        const era = EraManager.getEraById(this.state.eraId);
+        if (!era || !era.levels || !era.levels[this.state.level - 1]) {
+            console.warn('reduceCurrentLevelTime: 無法獲取當前等級資料');
+            return;
+        }
+
+        const levelInfo = era.levels[this.state.level - 1];
+        const totalRequiredMs = levelInfo.time * 1000; // 轉換為毫秒
+
+        // 計算要縮短的時間（基於總需求時間的比例）
+        const reductionMs = Math.floor(totalRequiredMs * reduction);
+
+        // 調整 startTimestamp（往過去推進 = 已經過的時間增加）
+        const beforeStart = this.state.startTimestamp;
+        this.state.startTimestamp -= reductionMs;
+
+        console.log(`%c[縮短修練時間] 減少 ${reduction * 100}% = ${reductionMs}ms`, 'color: #ff9800; font-weight: bold');
+        console.log(`%c[縮短修練時間] startTimestamp: ${beforeStart} → ${this.state.startTimestamp}`, 'color: #ff9800');
+
+        this._saveState(this.state);
+    }
+
+    /**
      * 獲取渡劫成功率
      * @returns {number} 成功率 (0-1)
      */

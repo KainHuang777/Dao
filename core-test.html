@@ -620,6 +620,13 @@
                 const task = sm.state.tasks[0];
                 log(`> 任務0: ${task.name} (時間: ${task.duration / 1000}s)`, 'info');
 
+                // Verify Description Translation
+                const { default: LanguageManager } = await import('./src/utils/LanguageManager.js');
+                await LanguageManager.getInstance().init();
+                const translatedDesc = LanguageManager.getInstance().t(task.desc);
+                log(`  描述Key: ${task.desc}`, 'info');
+                log(`  翻譯內容: ${translatedDesc}`, 'info');
+
                 // 2. Start Task
                 // Force 5 seconds duration for test
                 task.duration = 5000;

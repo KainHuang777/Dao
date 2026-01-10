@@ -1,3 +1,49 @@
+[2026-01-10 19:15] Feature: Manual Contribution Refresh
+1. SectPanel.js: Enabled the 🔄 icon to manual refresh sect contribution attempts.
+2. SectManager.js: Added manualRefreshContribution method. Cost: 10K Liquid (Debug: 1 Money).
+3. UI: Added dynamic tooltip to show refresh cost and integrated logs.
+
+[2026-01-10 19:10] Balance: Sect Task Rewards
+1. Significantly increased Rare/Epic/Legendary task rewards for higher Eras to match production rates and storage caps.
+   - Era 2: Epic Refined Iron 30-50 / Legendary 50-80.
+   - Era 4: Epic Mithril/Cold Iron 40-60 / Legendary 80-100.
+2. Kept Common/Uncommon base resource rewards relatively stable.
+
+[2026-01-10 18:55] Fix: Sect Contribution Cost Color
+1. SectPanel.js: Contribution cost text now turns white (from red) when player has sufficient resources.
+
+[2026-01-10 18:50] Feature: Sect Active Task Detail Display
+1. SectPanel.js: Enhanced "Active Task" card to show Description and Rewards (User Request).
+2. SectPanel.js: Applied rarity styling (color/border/label) to the active task card, consistent with the task list.
+
+[2026-01-10 18:35] Bugfix: BuildingPanel Crash
+1. Fixed `TypeError: this.buildingPanel.update is not a function` when switching to Buildings tab.
+2. Renamed `updateButtons()` to `update()` in `BuildingPanel.js` to match naming convention and interface expected by `MainView.js`.
+
+[2026-01-10 18:25] Feature: Manual Task Refresh Button
+1. SectPanel.js: Added refresh button next to task refresh countdown.
+2. SectManager.js: Added manualRefreshTasks() method with cost: Liquid x10 (Debug mode: Money x1).
+3. UI: Shows dynamic cost based on debug mode status.
+4. i18n: Added translation for "手動刷新任務" in all languages.
+
+[2026-01-10 18:15] Feature: Sect Task Rarity System
+1. SectManager.js: Added 5-tier rarity system (Common/Uncommon/Rare/Epic/Legendary) with weights (40%/30%/18%/10%/2%).
+2. SectManager.js: Defined REWARD_POOLS for each Era (1-5) and rarity, with scaled resource quantities.
+3. SectManager.js: Legendary tasks include special effect "reduce_training_time" (33% reduction).
+4. SectManager.js: Modified refreshTasks() to pick rarity, generate rewards from pool, and scale duration by rarity.
+5. SectManager.js: Modified claimTaskReward() to apply special effects and log rarity in cultivation log.
+6. PlayerManager.js: Added reduceCurrentLevelTime(reduction) method to reduce current level training time.
+7. SectPanel.js: Updated task card UI with rarity-colored borders, glow effects, rarity labels, and special effect descriptions.
+8. i18n: Added rarity translations (rarity_common~legendary, effect_reduce_training_time) to all 4 languages.
+
+[2026-01-10 17:35] Feature: Sect System Improvements
+1. Sect Tasks: Added 5 unique literary descriptions for each task type (Adventure, Crusade, Treasure, Secret Realm) to enhance cultivation atmosphere.
+2. Cultivation Log: Sect availability notifications and accepted task details (Name + Description) are now recorded in the Cultivation Log.
+3. UI: Added a "[宗]" (Sect) notification badge in the Spirit Surge info area (top right) when tasks are available and no task is currently active.
+4. i18n: Optimized Sect Level descriptions to be more literary (e.g., "Commencing Sect, Awaiting Prosperity" instead of simple "Tasks Available").
+5. i18n: Added all new task descriptions and level texts to zh-TW.json.
+
+
 [2026-01-10 15:45] Documentation: Published Release Notes v0.25
 1. Updated `ReleaseNotes.js` with comprehensive notes for Sect System, Log filtering, and balance fixes.
 
