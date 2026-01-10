@@ -449,12 +449,36 @@ export default class BuildingPanel {
             els.itemEl.title = tooltipLines.join('\n');
         }
 
-        // 4. 更新可升級樣式
+        // 4. 更新可升級樣式（三種狀態）
         const canUpgrade = this.buildingManager.canUpgrade(id);
-        if (canUpgrade) {
+        const capForProgress = this.buildingManager.getBuildingLevelCap(id);
+        const stateForProgress = this.buildingManager.getBuilding(id);
+
+        // 已達最高等級不顯示任何進度
+        if (stateForProgress && stateForProgress.level >= capForProgress) {
+            els.itemEl.classList.remove('upgrade-available', 'cap-bottleneck');
+            els.itemEl.style.background = '';
+        } else if (canUpgrade) {
+            // 狀態1：可升級 - 綠框
             els.itemEl.classList.add('upgrade-available');
+            els.itemEl.classList.remove('cap-bottleneck');
+            els.itemEl.style.background = '';
         } else {
-            els.itemEl.classList.remove('upgrade-available');
+            const cost = this.buildingManager.getNextCost(id);
+            const { progress, hasCapBottleneck } = this.calculateUpgradeProgress(id, cost);
+
+            if (hasCapBottleneck) {
+                // 狀態3：上限不足 - 紅框
+                els.itemEl.classList.remove('upgrade-available');
+                els.itemEl.classList.add('cap-bottleneck');
+                els.itemEl.style.background = '';
+            } else {
+                // 狀態2：資源累積中 - 進度條背景
+                els.itemEl.classList.remove('upgrade-available', 'cap-bottleneck');
+                const pct = Math.min(progress * 100, 100);
+                els.itemEl.style.background =
+                    `linear-gradient(to right, rgba(76,175,80,0.25) ${pct}%, transparent ${pct}%)`;
+            }
         }
     }
 
@@ -483,6 +507,35 @@ export default class BuildingPanel {
         if (needReRender) {
             this.render();
         }
+    }
+
+    /**
+     * 計算建築升級進度
+     * @returns {{ progress: number, hasCapBottleneck: boolean }}
+     */
+    calculateUpgradeProgress(id, cost) {
+        const resources = this.resourceManager.getAllResources();
+        let minProgress = 1;
+        let hasCapBottleneck = false;
+
+        for (const [key, amount] of Object.entries(cost)) {
+            const res = resources[key];
+            if (!res) continue;
+
+            const currentVal = res.value;
+            const maxVal = res.max;
+
+            // 檢查上限是否足夠
+            if (maxVal < amount) {
+                hasCapBottleneck = true;
+            }
+
+            // 計算進度 (以當前值 / 需求量)
+            const progress = amount > 0 ? Math.min(currentVal / amount, 1) : 1;
+            minProgress = Math.min(minProgress, progress);
+        }
+
+        return { progress: minProgress, hasCapBottleneck };
     }
 
     getResName(key) {

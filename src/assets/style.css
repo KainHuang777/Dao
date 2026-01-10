@@ -662,6 +662,12 @@ textarea {
     box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
 }
 
+/* 資源上限不足 - 淡紅色邊框 */
+.building-item.cap-bottleneck {
+    border-color: rgba(244, 67, 54, 0.5);
+    box-shadow: 0 0 5px rgba(244, 67, 54, 0.2);
+}
+
 /* 移除升級三角形標記 */
 
 .b-info.compact {

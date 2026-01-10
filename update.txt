@@ -1,3 +1,11 @@
+[2026-01-10 23:08] Balance: Era 4 Requirement Adjustment
+1. Lowered Era 4 (元嬰期) Level 5+ skill requirement from "元嬰孕育 Lv.5 + 元嬰大成 Lv.5" to "元嬰孕育 Lv.1".
+
+[2026-01-10 22:50] Feature: Building Button Progress Indicator
+1. Green border: Can upgrade (existing rule).
+2. Progress bar background: Resources accumulating, fills left-to-right.
+3. Light red border: Resource cap insufficient for upgrade.
+
 [2026-01-10 21:45] Feature: Resource Panel Enhancements
 1. Quick Craft Buttons: Changed to 2 quantity buttons + MAX button. MAX calculates max craftable.
 2. Resource Display Order: Resources now sorted by type (basic → advanced → crafted).
