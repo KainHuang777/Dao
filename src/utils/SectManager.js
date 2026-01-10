@@ -215,7 +215,7 @@ class SectManager {
             resources = {
                 'money': baseMoney,
                 'wood': 100,
-                'stone': 100
+                'stone_low': 100
             };
         } else if (era === 3) {
             // Era 3 (Golden Core): Spirit Stones + Liquid/Monster Core
@@ -509,7 +509,7 @@ class SectManager {
         if (pillId === 'sect_high_golden_pill') {
             return {
                 'money': 50000,
-                'stone': 2000 // Using base stone/spirit stone ID. 'stone' maps to 'stone_low' often or check ID. 'stone_low' is usually 'stone'.
+                'stone_low': 2000
             };
         }
         return {};
