@@ -547,5 +547,7 @@
     "刷新": "Refresh",
     "手動刷新任務": "Refresh Tasks",
     "宗門貢獻次數已刷新": "Sect contributions refreshed",
-    "刷新次數": "Refresh attempts"
+    "刷新次數": "Refresh attempts",
+    "獲取來源": "Production Sources",
+    "上限來源": "Cap Sources"
 }

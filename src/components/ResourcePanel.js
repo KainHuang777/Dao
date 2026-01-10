@@ -6,7 +6,7 @@ export default class ResourcePanel {
         this.resourceManager = resourceManager;
         this.container = document.getElementById('resources-container');
         this.elements = {}; // Cache DOM elements: { key: { el, valueEl } }
-        this.currentCraftCounts = [1, 5, 10];
+        this.currentCraftCounts = [5, 10];
         this.buffBar = null;
     }
 
@@ -102,7 +102,17 @@ export default class ResourcePanel {
         this.container.innerHTML = '';
         const resources = this.resourceManager.getUnlockedResources();
 
-        Object.entries(resources).forEach(([key, res]) => {
+        // 按類型排序：basic → advanced → crafted
+        const typeOrder = { basic: 0, advanced: 1, crafted: 2 };
+        const sortedEntries = Object.entries(resources)
+            .filter(([key]) => this.resourceManager.shouldDisplay(key))
+            .sort((a, b) => {
+                const orderA = typeOrder[a[1].type] ?? 1;
+                const orderB = typeOrder[b[1].type] ?? 1;
+                return orderA - orderB;
+            });
+
+        sortedEntries.forEach(([key, res]) => {
             // 只渲染應該顯示的資源
             if (!this.resourceManager.shouldDisplay(key)) {
                 return;
@@ -140,30 +150,35 @@ export default class ResourcePanel {
                 infoEl: infoDiv
             };
 
-            // 為基礎資源加入點擊採集功能
+            // 為基礎資源加入點擊採集功能 (僅 Era 1)
             if (res.type === 'basic') {
-                nameSpan.classList.add('clickable');
-                item.title = '點擊採集 +' + (this.resourceManager.manualGatherAmount[key] || 1);
-                item.style.cursor = 'pointer';
+                const currentEra = PlayerManager.getEraId();
 
-                // 禁用基礎資源的拖曳，避免干擾點擊
-                item.draggable = false;
+                if (currentEra >= 2) {
+                    // Era 2+: 不可點擊，顯示來源提示框
+                    item.style.cursor = 'default';
+                    item.classList.add('not-clickable');
+                    item.title = this.buildResourceTooltip(key);
+                    this.bindDragEvents(item);
+                } else {
+                    // Era 1: 可點擊採集
+                    nameSpan.classList.add('clickable');
+                    item.title = '點擊採集 +' + (this.resourceManager.manualGatherAmount[key] || 1);
+                    item.style.cursor = 'pointer';
+                    item.draggable = false;
 
-                // 點擊事件綁定到整個 item
-                item.addEventListener('click', (e) => {
-                    const before = this.resourceManager.getResource(key).value;
-                    const result = this.resourceManager.manualGather(key);
+                    item.addEventListener('click', (e) => {
+                        const before = this.resourceManager.getResource(key).value;
+                        const result = this.resourceManager.manualGather(key);
 
-                    if (result) {
-                        const after = this.resourceManager.getResource(key).value;
-                        const translatedName = LanguageManager.getInstance().t(res.name);
-                        console.log(`採集 ${translatedName}: ${before} -> ${after} (+${after - before})`);
-
-
-                        // 添加視覺反饋
-                        this.showGatherEffect(nameSpan);
-                    }
-                });
+                        if (result) {
+                            const after = this.resourceManager.getResource(key).value;
+                            const translatedName = LanguageManager.getInstance().t(res.name);
+                            console.log(`採集 ${translatedName}: ${before} -> ${after} (+${after - before})`);
+                            this.showGatherEffect(nameSpan);
+                        }
+                    });
+                }
             } else if (res.type === 'crafted') {
                 // 合成類資源：顯示快速合成按鈕
                 const btnContainer = document.createElement('div');
@@ -176,10 +191,9 @@ export default class ResourcePanel {
                     btn.title = `快速合成 ${count} 個`;
 
                     btn.addEventListener('click', (e) => {
-                        e.stopPropagation(); // 防止觸發 item 的點擊
+                        e.stopPropagation();
                         if (this.resourceManager.canCraft(key, count)) {
                             this.resourceManager.craft(key, count);
-                            // 觸發更新
                             this.update();
                         }
                     });
@@ -187,8 +201,27 @@ export default class ResourcePanel {
                     btnContainer.appendChild(btn);
                 });
 
+                // MAX 按鈕
+                const maxBtn = document.createElement('button');
+                maxBtn.textContent = 'MAX';
+                maxBtn.className = 'btn-tiny btn-max';
+                maxBtn.dataset.resKey = key;
+                maxBtn.title = '合成最大數量';
+
+                maxBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const maxCount = this.getMaxCraftable(key);
+                    if (maxCount > 0 && this.resourceManager.canCraft(key, maxCount)) {
+                        this.resourceManager.craft(key, maxCount);
+                        this.update();
+                    }
+                });
+
+                btnContainer.appendChild(maxBtn);
+
                 item.appendChild(btnContainer);
                 this.elements[key].craftBtns = btnContainer;
+                this.elements[key].maxBtn = maxBtn;
 
                 // 非基礎資源不可點擊 item 本身
                 item.style.cursor = 'default';
@@ -287,16 +320,97 @@ export default class ResourcePanel {
     }
 
     /**
+     * 計算資源的最大可合成數量
+     */
+    getMaxCraftable(key) {
+        const res = this.resourceManager.getResource(key);
+        if (!res || res.type !== 'crafted' || !res.recipe) return 0;
+
+        // 計算材料能合成的最大數量
+        let maxByMaterials = Number.MAX_SAFE_INTEGER;
+        for (const [ingredientKey, amount] of Object.entries(res.recipe)) {
+            const ingredient = this.resourceManager.getResource(ingredientKey);
+            if (!ingredient || !ingredient.unlocked) return 0;
+            if (amount > 0) {
+                const affordable = Math.floor(ingredient.value / amount);
+                maxByMaterials = Math.min(maxByMaterials, affordable);
+            }
+        }
+
+        // 計算儲存空間能容納的數量
+        const storageSpace = Math.floor(res.max - res.value);
+
+        return Math.min(maxByMaterials, storageSpace);
+    }
+
+
+    /**
+     * 建構資源來源提示框內容 (Era 2+)
+     */
+    buildResourceTooltip(resourceKey) {
+        const lang = LanguageManager.getInstance();
+        const lines = [];
+
+        const productionSources = [];
+        const capSources = [];
+
+        // 查詢建築
+        if (window.game && window.game.buildingManager) {
+            const buildings = window.game.buildingManager.getBuildingDefinitions();
+            const buildingStates = window.game.buildingManager.buildings;
+
+            for (const def of Object.values(buildings)) {
+                const state = buildingStates[def.id];
+                if (!state || state.level <= 0) continue;
+
+                // 檢查產出效果
+                if (def.effects) {
+                    for (const eff of def.effects) {
+                        if (eff.type === resourceKey && eff.amount > 0) {
+                            const buildingName = lang.t(def.name);
+                            productionSources.push(`${buildingName} LV${state.level}`);
+                        }
+                        if (eff.type === `${resourceKey}_max` && eff.amount > 0) {
+                            const buildingName = lang.t(def.name);
+                            capSources.push(`${buildingName} LV${state.level}`);
+                        }
+                        if (eff.type === 'all_rate' && eff.amount > 0) {
+                            const buildingName = lang.t(def.name);
+                            productionSources.push(`${buildingName} LV${state.level}`);
+                        }
+                        if (eff.type === 'all_max' && eff.amount > 0) {
+                            const buildingName = lang.t(def.name);
+                            capSources.push(`${buildingName} LV${state.level}`);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 建構提示框文字
+        if (productionSources.length > 0) {
+            lines.push(lang.t('獲取來源'));
+            productionSources.forEach(src => lines.push(`  ${src}`));
+        }
+        if (capSources.length > 0) {
+            lines.push(lang.t('上限來源'));
+            capSources.forEach(src => lines.push(`  ${src}`));
+        }
+
+        return lines.length > 0 ? lines.join('\n') : '';
+    }
+
+    /**
      * 獲取當前合成按鈕的額度 (基於虛空寶庫等級)
      */
     getCraftCounts() {
-        if (!window.game || !window.game.buildingManager) return [1, 5, 10];
+        if (!window.game || !window.game.buildingManager) return [5, 10];
         const vt = window.game.buildingManager.getBuilding('void_treasury');
-        if (!vt) return [1, 5, 10];
+        if (!vt) return [5, 10];
 
-        if (vt.level >= 10) return [100, 1000, 10000];
-        if (vt.level >= 5) return [10, 100, 1000];
-        return [1, 5, 10];
+        if (vt.level >= 10) return [1000, 10000];
+        if (vt.level >= 5) return [100, 1000];
+        return [5, 10];
     }
 
     showGatherEffect(element) {

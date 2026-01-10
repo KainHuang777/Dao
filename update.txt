@@ -1,3 +1,8 @@
+[2026-01-10 21:45] Feature: Resource Panel Enhancements
+1. Quick Craft Buttons: Changed to 2 quantity buttons + MAX button. MAX calculates max craftable.
+2. Resource Display Order: Resources now sorted by type (basic → advanced → crafted).
+3. Era 2+ Tooltip: Basic resources no longer clickable after Era 1. Hover shows production/cap sources.
+
 [2026-01-10 19:15] Feature: Manual Contribution Refresh
 1. SectPanel.js: Enabled the 🔄 icon to manual refresh sect contribution attempts.
 2. SectManager.js: Added manualRefreshContribution method. Cost: 10K Liquid (Debug: 1 Money).
