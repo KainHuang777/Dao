@@ -103,7 +103,8 @@ class SectManager {
             tasks: [],
             activeTask: null, // { id, name, type, duration, startTime, reward }
             nextTaskRefresh: Date.now(), // Refresh immediately on first load
-            history: [] // Log history for sect
+            history: [], // Log history for sect
+            unlockedRecipes: {} // 已購買的丹方 { recipeId: true }
         };
         this.state = this.loadState();
 
@@ -518,7 +519,7 @@ class SectManager {
     buyPill(pillId) {
         if (this.state.sectLevel < 2) return { success: false, msg: '宗門等級不足' };
 
-        if (!window.game || !window.game.resourceManager || !window.game.playerManager) {
+        if (!window.game || !window.game.resourceManager) {
             return { success: false, msg: 'System Error' };
         }
 
@@ -528,10 +529,6 @@ class SectManager {
         // Check Logic
         for (const [key, val] of Object.entries(cost)) {
             const res = resManager.getResource(key);
-            // Resource 'stone' might be alias. resourceManager handles aliases? No, usually IDs.
-            // Check EraManager _getResName mapping: stone -> 下品靈石 (stone_low?)
-            // Usually 'stone' is the ID in Resources.csv? Or 'stone_low'?
-            // Let's check typical usage. 'stone' is often early game ID.
             if (!res || res.value < val) return { success: false, msg: LanguageManager.getInstance().t('資源不足: {res}', { res: LanguageManager.getInstance().t(key) }) };
         }
 
@@ -540,8 +537,8 @@ class SectManager {
             resManager.getResource(key).value -= val;
         }
 
-        // Grant & Consume
-        const result = window.game.playerManager.adminConsumePill(pillId);
+        // Grant & Consume (使用 import 的 PlayerManager)
+        const result = PlayerManager.adminConsumePill(pillId);
         if (!result.success) {
             // Refund if failed (e.g. max count reached)
             for (const [key, val] of Object.entries(cost)) {
@@ -551,6 +548,72 @@ class SectManager {
         }
 
         return { success: true, msg: '購買並服用成功' };
+    }
+
+    // --- Recipe System (丹方購買) ---
+
+    getRecipeCost(recipeId) {
+        const costs = {
+            spirit_nurt_pill: {
+                'stone_mid': 10000,
+                'spirit_grass_100y': 100
+            }
+        };
+        return costs[recipeId] || {};
+    }
+
+    hasRecipe(recipeId) {
+        return this.state.unlockedRecipes?.[recipeId] === true;
+    }
+
+    buyRecipe(recipeId) {
+        const lang = LanguageManager.getInstance();
+
+        if (this.state.sectLevel < 2) {
+            return { success: false, msg: lang.t('宗門等級不足') };
+        }
+
+        if (this.hasRecipe(recipeId)) {
+            return { success: false, msg: lang.t('已購買此丹方') };
+        }
+
+        if (!window.game || !window.game.resourceManager) {
+            return { success: false, msg: 'System Error' };
+        }
+
+        const cost = this.getRecipeCost(recipeId);
+        if (Object.keys(cost).length === 0) {
+            return { success: false, msg: lang.t('未知丹方') };
+        }
+
+        const resManager = window.game.resourceManager;
+
+        // 檢查資源
+        for (const [key, val] of Object.entries(cost)) {
+            const res = resManager.getResource(key);
+            if (!res || res.value < val) {
+                return { success: false, msg: lang.t('資源不足: {res}', { res: lang.t(key) }) };
+            }
+        }
+
+        // 扣除資源
+        for (const [key, val] of Object.entries(cost)) {
+            resManager.getResource(key).value -= val;
+        }
+
+        // 解鎖丹方
+        if (!this.state.unlockedRecipes) {
+            this.state.unlockedRecipes = {};
+        }
+        this.state.unlockedRecipes[recipeId] = true;
+        this.saveState();
+
+        // 日誌
+        if (window.game && window.game.uiManager) {
+            window.game.uiManager.addLog(`📜 ${lang.t('習得丹方')}: ${lang.t('🧪 蘊靈丹')}`, 'INFO');
+        }
+
+        return { success: true, msg: lang.t('購買丹方成功') };
     }
 }
 

@@ -336,10 +336,16 @@ export default class CSVLoader {
     static convertToResources(csvData) {
         const resources = {};
         csvData.forEach(row => {
+            // 合成資源移除上限（設為極大值）
+            let maxValue = row.max || 0;
+            if (row.type === 'crafted') {
+                maxValue = Number.MAX_SAFE_INTEGER;
+            }
+
             const res = {
                 name: row.name,
                 value: 0,
-                max: row.max || 0,
+                max: maxValue,
                 rate: row.rate || 0,
                 type: row.type,
                 unlocked: row.unlocked === true || row.unlocked === 'TRUE',

@@ -12,7 +12,7 @@ beast_hide_low,初級妖獸皮毛,basic,100,0.03,TRUE,,,
 beast_bone_low,初級獸骨,basic,100,0.03,TRUE,,,
 beast_crystal_low,初級獸晶,basic,80,0.02,TRUE,,,
 foundation_pill,💊 築基丹,crafted,200,0,FALSE,,2,"{""spirit_grass_low"":3,""lingli"":50}"
-spirit_nurt_pill,🧪 蘊靈丹,crafted,200,0,FALSE,,1,"{""spirit_rice"":5,""lingli"":30}"
+spirit_nurt_pill,🧪 蘊靈丹,crafted,200,0,FALSE,,4,"{""stone_mid"":50,""spirit_grass_100y"":30,""lingli"":1000}"
 monster_core_low,🧿 初級妖丹,crafted,150,0,FALSE,,2,"{""beast_crystal_low"":2,""spirit_grass_low"":2}"
 spirit_grass_100y,百年靈草,advance,100,0.02,FALSE,,4,
 spirit_grass_1000y,千年靈草,advance,50,0,FALSE,,5,

@@ -406,8 +406,8 @@ export default class BuildingManager {
                     let finalAmount = amountPerLevel * (1 + buildingEffectBonus);
 
                     if (effectKey === 'all_max') {
-                        // Extended to include synthetic resources
-                        ['lingli', 'money', 'wood', 'stone_low', 'spirit_grass_low', 'stone_mid', 'stone_high', 'liquid', 'talisman'].forEach(resKey => {
+                        // 只影響核心基礎資源
+                        ['lingli', 'money', 'wood', 'stone_low', 'spirit_grass_low'].forEach(resKey => {
                             if (resources[resKey]) resources[resKey].max += finalAmount * b.level;
                         });
                     } else if (effectKey === 'all_rate') {

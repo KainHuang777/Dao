@@ -466,3 +466,64 @@
    If zh-CN, logic does replace params IF translated string has {0}, {1}.
    
    Potential cause: The 'zh-CN.json' file might NOT have the key '建築 <b>{0}</b> 升級至 Lv.{1}' exactly, or it might have different placeholders. I should check zh-CN.json for this specific key.
+# 靈潮爆發丹實作完成
+
+## 實作內容
+
+### 1. 丹藥配置更新
+- 修改 spirit_nurt_pill 配置為靈潮爆發丹
+- 效果類型：spiritBurst
+- 修煉暴擊倍率：+200% (3倍速度)
+- 持續時間：5分鐘
+- 冷卻時間：10分鐘
+
+### 2. BUFF系統
+- 新增 ctivePillBuffs 數據結構
+- 新增 pillCooldowns 冷卻系統
+- 支援修煉暴擊BUFF追蹤
+
+### 3. 核心效果
+- 💥 靈潮爆發：立即獲得5分鐘資源產出
+- 🔄 資源轉化：靈力50% → 修煉進度 (1靈力=10ms)
+- 🎯 修煉暴擊：5分鐘內修煉速度×3
+- ⏳ 冷卻機制：10分鐘冷卻時間
+
+### 4. UI更新
+- CraftingPanel：更新效果描述顯示
+- ResourcePanel：新增修煉暴擊BUFF指示器
+
+### 5. 多語言支援
+- zh-TW/CN：靈潮爆發丹、修煉暴擊、冷卻提示
+- en：Spirit Burst Pill, Training Boost
+- ja：霊潮爆発丹、修練ブースト
+
+## 測試建議
+
+1. 合成靈潮爆發丹
+2. 服用丹藥，觀察：
+   - 資源立即增加
+   - 靈力減少50%
+   - 修煉進度增加
+   - 資源區出現🎯BUFF圖示
+3. 嘗試再次服用，確認冷卻提示
+4. 等待5分鐘，確認BUFF消失
+
+---
+**日期**：2026-01-11
+**版本**：v0.253 (建議)
+# 蘊靈丹開放方式調整
+
+## 修改內容
+1. **Resources.csv**: 蘊靈丹成本調整為中品靈石×50+百年靈草×30+靈力×1000，prereqEra改為4
+2. **SectManager.js**: 新增丹方購買系統（hasRecipe/buyRecipe/getRecipeCost）
+3. **SectPanel.js**: 丹堂新增蘊靈丹丹方購買按鈕和狀態顯示
+4. **Resources.js**: 合成和顯示邏輯新增丹方檢查
+5. **i18n**: 新增丹方相關翻譯
+
+## 驗證步驟
+1. 宗門升至LV2確認丹堂可見
+2. 確認蘊靈丹丹方購買按鈕出現
+3. 購買前合成分頁不顯示蘊靈丹
+4. 購買後合成分頁出現蘊靈丹
+
+**日期**：2026-01-11

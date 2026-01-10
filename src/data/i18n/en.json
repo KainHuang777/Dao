@@ -583,7 +583,21 @@
     "刷新": "Refresh",
     "手動刷新任務": "Refresh Tasks",
     "宗門貢獻次數已刷新": "Sect contributions refreshed",
-    "刷新次數": "Refresh attempts",
+    "刷新次數": "Refresh Count",
     "獲取來源": "Production Sources",
-    "上限來源": "Cap Sources"
+    "上限來源": "Cap Sources",
+    "靈潮爆發丹": "Spirit Burst Pill",
+    "修煉暴擊": "Training Boost",
+    "冷卻中，還需 {0} 分鐘": "Cooldown: {0} min remaining",
+    "spirit_burst_effect_desc": "💥 Instant: 5 min of resource production\n🎯 Training Speed +200% (5 min)\n🔄 Convert 50% Spirit → Training Progress\n⏳ Cooldown: 10 min",
+    "基礎資源": "Basic Resources",
+    "進階資源": "Advanced Resources",
+    "合成資源": "Crafted Resources",
+    "蘊靈丹丹方": "Spirit Pill Recipe",
+    "習得後可合成蘊靈丹": "Unlocks Spirit Pill crafting",
+    "已購買此丹方": "Recipe already purchased",
+    "未知丹方": "Unknown recipe",
+    "習得丹方": "Learned Recipe",
+    "購買丹方成功": "Recipe purchased",
+    "已購買": "Purchased"
 }

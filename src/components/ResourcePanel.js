@@ -61,6 +61,23 @@ export default class ResourcePanel {
             });
         }
 
+        // 修煉暴擊 BUFF（靈潮爆發丹）
+        const trainingBuff = PlayerManager.state?.activePillBuffs?.trainingBoost;
+        if (trainingBuff && Date.now() < trainingBuff.endTime) {
+            const remainingMs = trainingBuff.endTime - Date.now();
+            const seconds = Math.ceil(remainingMs / 1000);
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            const timeStr = mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `${secs}s`;
+            const lang = LanguageManager.getInstance();
+            buffs.push({
+                label: '🎯',
+                time: timeStr,
+                color: '#ff9800',
+                title: `${lang.t('修煉暴擊')} ×${trainingBuff.multiplier.toFixed(1)}`
+            });
+        }
+
         // 劍侍糯美子 (自動建築)
         if (window.game?.buildingManager?.buildings['sword_maid']?.level >= 1 &&
             window.game.buildingManager.autoBuildEnabled) {
@@ -114,10 +131,38 @@ export default class ResourcePanel {
                 return orderA - orderB;
             });
 
+        let lastType = null;
+        const categories = {
+            basic: '基礎資源',
+            advanced: '進階資源',
+            crafted: '合成資源'
+        };
+
         sortedEntries.forEach(([key, res]) => {
             // 只渲染應該顯示的資源
             if (!this.resourceManager.shouldDisplay(key)) {
                 return;
+            }
+
+            // 檢查分類是否變化，若是則插入標題
+            if (res.type !== lastType) {
+                // 如果是第一次出現或是類型改變，且該類型有定義標題
+                if (categories[res.type]) {
+                    const header = document.createElement('div');
+                    header.className = 'res-category-header';
+                    header.textContent = LanguageManager.getInstance().t(categories[res.type]);
+                    header.style.cssText = `
+                        font-size: 0.8em;
+                        color: #888;
+                        margin: 10px 0 5px 0;
+                        padding-bottom: 3px;
+                        border-bottom: 1px solid rgba(255,255,255,0.1);
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                    `;
+                    this.container.appendChild(header);
+                }
+                lastType = res.type;
             }
 
             const item = document.createElement('div');
@@ -152,15 +197,19 @@ export default class ResourcePanel {
                 infoEl: infoDiv
             };
 
+            // 為所有資源配置 Tooltip (來源說明)
+            // 基礎資源在 Era 2+ 顯示，其他資源始終顯示
+            const currentEra = PlayerManager.getEraId();
+            if (res.type !== 'basic' || currentEra >= 2) {
+                item.title = this.buildResourceTooltip(key);
+            }
+
             // 為基礎資源加入點擊採集功能 (僅 Era 1)
             if (res.type === 'basic') {
-                const currentEra = PlayerManager.getEraId();
-
                 if (currentEra >= 2) {
-                    // Era 2+: 不可點擊，顯示來源提示框
+                    // Era 2+: 不可點擊
                     item.style.cursor = 'default';
                     item.classList.add('not-clickable');
-                    item.title = this.buildResourceTooltip(key);
                     this.bindDragEvents(item);
                 } else {
                     // Era 1: 可點擊採集
@@ -287,7 +336,13 @@ export default class ResourcePanel {
 
                 // 顯示產出率（包括負數）
                 const rateText = displayRate !== 0 ? `(${Formatter.formatRate(displayRate)}) ` : "";
-                const valText = `${Formatter.formatBigNumber(res.value)}/${Formatter.formatBigNumber(res.max)}`;
+                // 合成資源不顯示上限
+                let valText;
+                if (res.type === 'crafted') {
+                    valText = Formatter.formatBigNumber(res.value);
+                } else {
+                    valText = `${Formatter.formatBigNumber(res.value)}/${Formatter.formatBigNumber(res.max)}`;
+                }
                 this.elements[key].valueEl.textContent = rateText + valText;
 
                 // 顏色控制：達到上限使用金色/綠色（目前 CSS 定義），未達上限使用白色
@@ -373,7 +428,11 @@ export default class ResourcePanel {
                         if ((effType === resourceKey || effType === 'all_rate') && effAmount > 0) {
                             hasProduction = true;
                         }
-                        if ((effType === `${resourceKey}_max` || effType === 'all_max') && effAmount > 0) {
+                        // all_max 只對核心基礎資源生效
+                        const coreBasicResources = ['lingli', 'money', 'wood', 'stone_low', 'spirit_grass_low'];
+                        if (effType === `${resourceKey}_max` && effAmount > 0) {
+                            hasCap = true;
+                        } else if (effType === 'all_max' && effAmount > 0 && coreBasicResources.includes(resourceKey)) {
                             hasCap = true;
                         }
                     }

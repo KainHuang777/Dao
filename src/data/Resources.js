@@ -184,6 +184,14 @@ export default class ResourceManager {
             return false;
         }
 
+        // 檢查需要丹方的資源
+        if (key === 'spirit_nurt_pill') {
+            // 需要從宗門購買丹方
+            if (!window.game?.sectManager?.hasRecipe(key)) {
+                return false;
+            }
+        }
+
         // 產物空間檢查
         if (res.value + count > res.max) {
             return false;
@@ -343,6 +351,13 @@ export default class ResourceManager {
     shouldDisplay(key) {
         const res = this.resources[key];
         if (!res || !res.unlocked) return false;
+
+        // 檢查需要丹方的資源（蘊靈丹需要購買丹方才顯示）
+        if (key === 'spirit_nurt_pill') {
+            if (!window.game?.sectManager?.hasRecipe(key)) {
+                return false;
+            }
+        }
 
         // 如果曾經獲得過，永遠顯示
         if (this.everObtained.has(key)) return true;

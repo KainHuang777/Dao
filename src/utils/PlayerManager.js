@@ -24,6 +24,11 @@ class PlayerManager {
             isReincarnating: false, // 是否正在輪迴狀態 (壽元已盡)
             consumedPills: {},   // 已服用的丹藥 { pillId: count }
             activeBuffs: [],     // 當前生效的 buff { type, multiplier, endTime }
+            activePillBuffs: {   // 丹藥BUFF系統
+                trainingBoost: null,  // 修煉暴擊 { endTime, multiplier }
+                lingliBoost: null     // 靈力加成（舊蘊靈丹，向後兼容）
+            },
+            pillCooldowns: {},   // 丹藥冷卻 { pillId: endTime }
             hints: {
                 rule1Triggered: false, // 壽元 1/3 提示
                 lastRule2Year: -1,      // 壽元過半後的週期性提示年份
@@ -259,34 +264,81 @@ class PlayerManager {
         // 扣除丹藥
         resource.value -= 1;
 
-        // 特殊處理：蘊靈丹 (lingliBoost)
-        if (pillConfig.effect === 'lingliBoost') {
-            // 添加 buff
+        // 特殊處理：靈潮爆發丹 (spiritBurst)
+        if (pillConfig.effect === 'spiritBurst') {
+            // 檢查冷卻
+            const cooldownEnd = this.state.pillCooldowns[pillId] || 0;
+            if (Date.now() < cooldownEnd) {
+                const remainingTime = Math.ceil((cooldownEnd - Date.now()) / 60000);
+                if (window.game && window.game.uiManager) {
+                    const msg = LanguageManager.getInstance().t('冷卻中，還需 {0} 分鐘', { '0': remainingTime });
+                    window.game.uiManager.addLog(msg);
+                }
+                // 退還丹藥
+                resource.value += 1;
+                return false;
+            }
+
+            // 1. 靈潮爆發：立即獲得 5 分鐘的資源產出
+            const resources = window.game.resourceManager.getAllResources();
+            let burstLog = [];
+            for (const [key, res] of Object.entries(resources)) {
+                if (res.unlocked && res.rate > 0) {
+                    const burstAmount = res.rate * 300; // 5分鐘 = 300秒
+                    window.game.resourceManager.addResource(key, burstAmount);
+                    burstLog.push(`${LanguageManager.getInstance().t(key)}+${Math.floor(burstAmount)}`);
+                }
+            }
+
+            // 2. 資源轉化：靈力 50% → 修煉進度
+            const lingliRes = resources['lingli'];
+            let convertedTime = 0;
+            if (lingliRes && lingliRes.value > 0) {
+                const convertAmount = lingliRes.value * 0.5;
+                lingliRes.value -= convertAmount;
+                // 轉化為修煉時間（1靈力 = 10毫秒修煉時間）
+                convertedTime = convertAmount * 10;
+                this.state.startTimestamp -= convertedTime;
+                this.state.totalStartTimestamp -= convertedTime;
+            }
+
+            // 3. 啟動修煉暴擊 BUFF
+            this.state.activePillBuffs.trainingBoost = {
+                endTime: Date.now() + pillConfig.duration,
+                multiplier: 1 + pillConfig.bonus  // 3.0 (1 + 2.0)
+            };
+
+            // 4. 設定冷卻
+            this.state.pillCooldowns[pillId] = Date.now() + pillConfig.cooldown;
+
+            // 日誌
+            if (window.game && window.game.uiManager) {
+                const lang = LanguageManager.getInstance();
+                window.game.uiManager.addLog(`💥 ${lang.t('靈潮爆發丹')}！`, 'INFO');
+                if (burstLog.length > 0) {
+                    window.game.uiManager.addLog(`  ✨ 資源爆發：${burstLog.slice(0, 3).join('、')}...`, 'INFO');
+                }
+                if (convertedTime > 0) {
+                    window.game.uiManager.addLog(`  🔄 靈力轉化：修煉時間 +${Math.floor(convertedTime / 1000)}秒`, 'INFO');
+                }
+                window.game.uiManager.addLog(`  🎯 修煉暴擊 ×${pillConfig.bonus + 1}（持續5分鐘）`, 'INFO');
+            }
+        } else if (pillConfig.effect === 'lingliBoost') {
+            // 舊蘊靈丹邏輯（向後兼容）
             const endTime = Date.now() + pillConfig.duration;
             this.state.activeBuffs.push({
                 type: 'lingliBoost',
-                multiplier: 1 + pillConfig.bonus, // 2.0 (100% 加成)
+                multiplier: 1 + pillConfig.bonus,
                 endTime: endTime
             });
 
-            // 增加修煉時間（同時影響當前境界和總修煉時間）
             const beforeStart = this.state.startTimestamp;
             const beforeTotal = this.state.totalStartTimestamp;
 
-            this.state.startTimestamp -= pillConfig.trainingBonus;  // 當前境界剩餘時間減少
-            this.state.totalStartTimestamp -= pillConfig.trainingBonus;  // 總修煉時間增加
+            this.state.startTimestamp -= pillConfig.trainingBonus;
+            this.state.totalStartTimestamp -= pillConfig.trainingBonus;
 
-            console.log(`%c[蘊靈丹] startTimestamp: ${beforeStart} → ${this.state.startTimestamp} (減少 ${pillConfig.trainingBonus}ms)`, 'color: #4caf50; font-weight: bold');
-            console.log(`%c[蘊靈丹] totalStartTimestamp: ${beforeTotal} → ${this.state.totalStartTimestamp}`, 'color: #4caf50; font-weight: bold');
-
-            // 立即驗證是否保存成功
-            setTimeout(() => {
-                const saved = JSON.parse(localStorage.getItem(this.storageKey));
-                console.log(`%c[驗證] localStorage 中的 startTimestamp: ${saved.startTimestamp}`, 'color: #2196f3; font-weight: bold');
-                if (saved.startTimestamp !== this.state.startTimestamp) {
-                    console.error(`%c[錯誤] startTimestamp 不一致！內存: ${this.state.startTimestamp}, 存檔: ${saved.startTimestamp}`, 'color: #f44336; font-weight: bold');
-                }
-            }, 100);
+            console.log(`%c[蘊靈丹] startTimestamp: ${beforeStart} → ${this.state.startTimestamp}`, 'color: #4caf50; font-weight: bold');
 
             if (window.game && window.game.uiManager) {
                 const msg = LanguageManager.getInstance().t('服用蘊靈丹效果', {
@@ -424,12 +476,12 @@ class PlayerManager {
                 maxCount: 20
             },
             spirit_nurt_pill: {
-                name: '蘊靈丹',
-                effect: 'lingliBoost',  // 特殊效果：靈力產出2倍持續1年
-                bonus: 1.0,   // 2倍 = 100% 加成
-                duration: 60000,  // 持續時間：60秒 (原1秒太短)
-                trainingBonus: 1000,  // 增加修煉時間 1年 = 1000毫秒
-                maxCount: 20
+                name: '靈潮爆發丹',
+                effect: 'spiritBurst',  // 新效果：靈潮爆發
+                bonus: 2.0,              // 修煉暴擊倍率（+200% = 3倍速度）
+                duration: 300000,        // 持續時間：5分鐘
+                cooldown: 600000,        // 冷卻時間：10分鐘
+                maxCount: 999            // 無服用上限
             },
             golden_core_pill: {
                 name: '金丹',

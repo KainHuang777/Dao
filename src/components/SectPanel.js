@@ -52,15 +52,26 @@ export default class SectPanel {
                     <div id="sect-dev-text" style="position: absolute; width: 100%; top: 0; left: 0; line-height: 12px; font-size: 10px; text-align: center; color: #fff; text-shadow: 1px 1px 2px #000; font-weight: bold;">0/100</div>
                 </div>
             </div>
-
             <!-- Alchemy Hall (Level 2+) -->
             <div id="sect-alchemy-hall" style="display: none; padding: 15px; background: rgba(156, 39, 176, 0.1); border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(156, 39, 176, 0.3);">
                 <h3 style="margin: 0 0 10px 0; color: #e1bee7;">${lang.t('宗門丹堂')}</h3>
+                
+                <!-- 蘊靈丹丹方 -->
+                <div id="sect-recipe-spirit-pill" style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                    <div>
+                        <div style="font-weight: bold; color: #00bcd4;">📜 ${lang.t('蘊靈丹丹方')}</div>
+                        <div style="font-size: 0.8em; color: #aaa;">${lang.t('習得後可合成蘊靈丹')}</div>
+                        <div id="recipe-cost-display" style="font-size: 0.8em;">${lang.t('消耗')}: ${lang.t('stone_mid')} ×10000, ${lang.t('spirit_grass_100y')} ×100</div>
+                    </div>
+                    <button id="btn-buy-recipe-spirit-pill" class="btn" style="font-size: 0.9em;">${lang.t('購買')}</button>
+                </div>
+
+                <!-- 上品金丹 -->
                 <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px;">
                     <div>
                         <div style="font-weight: bold; color: #gold;">${lang.t('上品金丹')}</div>
                         <div style="font-size: 0.8em; color: #aaa;">${lang.t('效果')}: ${lang.t('渡劫成功率')} +5% <span style="color:#666;">(${lang.t('直接服用')})</span></div>
-                        <div style="font-size: 0.8em; color: #e57373;">${lang.t('消耗')}: ${lang.t('金錢')} 50000, ${lang.t('靈石')} 2000</div>
+                        <div id="pill-cost-display" style="font-size: 0.8em;">${lang.t('消耗')}: ${lang.t('金錢')} 50000, ${lang.t('靈石')} 2000</div>
                     </div>
                     <button id="btn-buy-sect-pill" class="btn" style="font-size: 0.9em;">${lang.t('購買')}</button>
                 </div>
@@ -154,15 +165,23 @@ export default class SectPanel {
         const btnBuyPill = document.getElementById('btn-buy-sect-pill');
         if (btnBuyPill) {
             btnBuyPill.onclick = () => {
-                if (window.game && window.game.sectManager) {
-                    const result = window.game.sectManager.buyPill('sect_high_golden_pill');
-                    if (window.game.uiManager) {
-                        // Result msg logic handled in adminConsumePill for success
-                        // But for buy fail (resources), handle here
-                        window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'INFO');
-                    }
-                    if (result.success) this.update();
+                const result = SectManager.buyPill('sect_high_golden_pill');
+                if (window.game && window.game.uiManager) {
+                    window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'INFO');
                 }
+                if (result.success) this.update();
+            };
+        }
+
+        // 購買蘊靈丹丹方
+        const btnBuyRecipe = document.getElementById('btn-buy-recipe-spirit-pill');
+        if (btnBuyRecipe) {
+            btnBuyRecipe.onclick = () => {
+                const result = SectManager.buyRecipe('spirit_nurt_pill');
+                if (window.game && window.game.uiManager) {
+                    window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'INFO');
+                }
+                if (result.success) this.update();
             };
         }
 
@@ -220,6 +239,58 @@ export default class SectPanel {
         const elAlchemy = document.getElementById('sect-alchemy-hall');
         if (elAlchemy) {
             elAlchemy.style.display = (level >= 2) ? 'block' : 'none';
+        }
+
+        // 更新蘊靈丹丹方狀態
+        const elRecipe = document.getElementById('sect-recipe-spirit-pill');
+        const btnBuyRecipe = document.getElementById('btn-buy-recipe-spirit-pill');
+        const recipeCostEl = document.getElementById('recipe-cost-display');
+        if (elRecipe && btnBuyRecipe) {
+            if (SectManager.hasRecipe('spirit_nurt_pill')) {
+                btnBuyRecipe.textContent = lang.t('已購買');
+                btnBuyRecipe.disabled = true;
+                btnBuyRecipe.style.opacity = '0.5';
+                btnBuyRecipe.style.cursor = 'not-allowed';
+                if (recipeCostEl) recipeCostEl.style.color = '#666';
+            } else {
+                // 檢查資源是否足夠
+                const recipeCost = SectManager.getRecipeCost('spirit_nurt_pill');
+                let canAffordRecipe = true;
+                if (window.game && window.game.resourceManager) {
+                    for (const [key, val] of Object.entries(recipeCost)) {
+                        const res = window.game.resourceManager.getResource(key);
+                        if (!res || res.value < val) {
+                            canAffordRecipe = false;
+                            break;
+                        }
+                    }
+                }
+                if (recipeCostEl) recipeCostEl.style.color = canAffordRecipe ? '#4caf50' : '#e57373';
+                btnBuyRecipe.disabled = !canAffordRecipe;
+                btnBuyRecipe.style.opacity = canAffordRecipe ? '1' : '0.5';
+                btnBuyRecipe.style.cursor = canAffordRecipe ? 'pointer' : 'not-allowed';
+            }
+        }
+
+        // 更新上品金丹狀態
+        const pillCostEl = document.getElementById('pill-cost-display');
+        const btnBuyPill = document.getElementById('btn-buy-sect-pill');
+        if (pillCostEl && btnBuyPill) {
+            const pillCost = SectManager.getPillCost('sect_high_golden_pill');
+            let canAffordPill = true;
+            if (window.game && window.game.resourceManager) {
+                for (const [key, val] of Object.entries(pillCost)) {
+                    const res = window.game.resourceManager.getResource(key);
+                    if (!res || res.value < val) {
+                        canAffordPill = false;
+                        break;
+                    }
+                }
+            }
+            pillCostEl.style.color = canAffordPill ? '#4caf50' : '#e57373';
+            btnBuyPill.disabled = !canAffordPill;
+            btnBuyPill.style.opacity = canAffordPill ? '1' : '0.5';
+            btnBuyPill.style.cursor = canAffordPill ? 'pointer' : 'not-allowed';
         }
 
         // Update Contrib

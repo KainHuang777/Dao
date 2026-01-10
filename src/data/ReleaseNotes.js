@@ -1,6 +1,52 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.26",
+        date: "2026-01-11",
+        notes: {
+            "zh-TW": [
+                "【丹藥】蘊靈丹重塑：效果改為「靈潮爆發」。服用後立即獲得 5 分鐘資源產出、+200% 修煉速度（5 分鐘）、50% 靈力轉換為修煉進度，冷卻時間 10 分鐘。",
+                "【丹藥】丹方系統：蘊靈丹需在宗門丹堂（LV2）購買丹方後才能解鎖合成。丹方成本：中品靈石×10,000、百年靈草×100。",
+                "【丹藥】合成成本調整：蘊靈丹合成材料改為中品靈石×50、百年靈草×30、靈力×1,000。",
+                "【介面】資源分類標題：資源面板現在顯示「基礎資源」、「進階資源」、「合成資源」分類標題。",
+                "【介面】合成資源無上限：合成類資源移除儲存上限限制，不再顯示上限數值。",
+                "【修復】虛空寶庫效果修正：現只影響核心基礎資源（靈力、金錢、靈木、下品靈石、低階靈草），描述已更新。",
+                "【修復】資源提示框精確度：修正 all_max 效果的來源判斷，避免誤顯示不相關的建築。",
+                "【介面】丹堂購買狀態：消耗訊息根據資源足夠與否顯示綠色/紅色，按鈕同步更新可用狀態。"
+            ],
+            "zh-CN": [
+                "【丹药】蕴灵丹重塑：效果改为「灵潮爆发」。服用后立即获得 5 分钟资源产出、+200% 修炼速度（5 分钟）、50% 灵力转换为修炼进度，冷却时间 10 分钟。",
+                "【丹药】丹方系统：蕴灵丹需在宗门丹堂（LV2）购买丹方后才能解锁合成。丹方成本：中品灵石×10,000、百年灵草×100。",
+                "【丹药】合成成本调整：蕴灵丹合成材料改为中品灵石×50、百年灵草×30、灵力×1,000。",
+                "【界面】资源分类标题：资源面板现在显示「基础资源」、「进阶资源」、「合成资源」分类标题。",
+                "【界面】合成资源无上限：合成类资源移除存储上限限制，不再显示上限数值。",
+                "【修复】虚空宝库效果修正：现只影响核心基础资源（灵力、金钱、灵木、下品灵石、低阶灵草），描述已更新。",
+                "【修复】资源提示框精确度：修正 all_max 效果的来源判断，避免误显示不相关的建筑。",
+                "【界面】丹堂购买状态：消耗信息根据资源足够与否显示绿色/红色，按钮同步更新可用状态。"
+            ],
+            "en": [
+                "[Pill] Spirit Pill Redesign: Effect changed to 'Spirit Burst'. Grants 5 min resource burst, +200% training speed (5 min), converts 50% Spirit to training progress. 10 min cooldown.",
+                "[Pill] Recipe System: Spirit Pill recipe must be purchased from Sect Alchemy Hall (LV2). Cost: Mid-grade Spirit Stone ×10,000, Century Herb ×100.",
+                "[Pill] Crafting Cost Adjusted: Spirit Pill now costs Mid-grade Spirit Stone ×50, Century Herb ×30, Spirit ×1,000.",
+                "[UI] Resource Categories: Resource panel now displays 'Basic Resources', 'Advanced Resources', 'Crafted Resources' headers.",
+                "[UI] Crafted Resources Unlimited: Crafted resources no longer have storage caps; capacity not displayed.",
+                "[Fix] Void Treasury Effect: Now only affects core basic resources (Spirit, Money, Wood, Low-grade Stone, Low-grade Herb). Description updated.",
+                "[Fix] Tooltip Accuracy: Fixed all_max effect source detection to avoid showing irrelevant buildings.",
+                "[UI] Alchemy Hall Status: Cost text shows green/red based on affordability; buttons update accordingly."
+            ],
+            "ja": [
+                "【丹薬】蕴霊丹再設計：効果を「霊潮爆発」に変更。服用で5分間のリソース即時獲得、+200%修練速度（5分）、霊力50%を修練進度に変換。クールダウン10分。",
+                "【丹薬】丹方システム：蕴霊丹は宗門丹堂（LV2）で丹方を購入後に合成可能。丹方コスト：中品霊石×10,000、百年霊草×100。",
+                "【丹薬】合成コスト調整：蕴霊丹の素材を中品霊石×50、百年霊草×30、霊力×1,000に変更。",
+                "【UI】リソース分類：リソースパネルに「基本リソース」「上級リソース」「合成リソース」のヘッダーを表示。",
+                "【UI】合成リソース上限撤廃：合成リソースの保管上限を撤廃、上限値は非表示に。",
+                "【修正】虚空宝庫効果修正：コア基本リソース（霊力、金銭、霊木、下品霊石、低階霊草）のみに効果。説明を更新。",
+                "【修正】ツールチップ精度：all_max効果のソース判定を修正、無関係な建物の誤表示を防止。",
+                "【UI】丹堂購入状態：消費テキストがリソース条件に応じて緑/赤で表示、ボタン状態も連動。"
+            ]
+        }
+    },
+    {
         version: "v0.252",
         date: "2026-01-10",
         notes: {

@@ -317,7 +317,12 @@ export default class CraftingPanel {
     getPillEffectText(pillConfig) {
         const lang = LanguageManager.getInstance();
 
-        // 特殊處理：蘊靈丹
+        // 特殊處理：靈潮爆發丹
+        if (pillConfig.effect === 'spiritBurst') {
+            return lang.t('spirit_burst_effect_desc');
+        }
+
+        // 特殊處理：蘊靈丹（向後兼容）
         if (pillConfig.effect === 'lingliBoost') {
             return lang.t('spirit_nurt_pill_effect_desc');
         }
