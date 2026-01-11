@@ -1,6 +1,28 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.261",
+        date: "2026-01-11",
+        notes: {
+            "zh-TW": [
+                "【平衡】狩獵營資源消耗：為了解決 Era 1 狩獵營產出堆積問題，木屋升級現需消耗「初級獸皮毛」，鐵礦升級需消耗「初級獸骨」。",
+                "【修復】修正了資源消耗提示可能不如預期準確的問題。"
+            ],
+            "zh-CN": [
+                "【平衡】狩猎营资源消耗：为了解决 Era 1 狩猎营产出堆积问题，木屋升级现需消耗「初级兽皮毛」，铁矿升级需消耗「初级兽骨」。",
+                "【修复】修正了资源消耗提示可能不如预期准确的问题。"
+            ],
+            "en": [
+                "[Balance] Hunter Camp Resources: strict usage added. Wooden House upgrade now requires 'Beast Hide (Low)', Iron Mine requires 'Beast Bone (Low)'.",
+                "[Fix] Fixed potential inaccuracies in resource consumption tooltips."
+            ],
+            "ja": [
+                "【平衡】狩猟キャンプ資源消費：Era 1の狩猟キャンプ産出過剰を解決するため、木造家屋の昇級に「初級獣皮」、鉄鉱山に「初級獣骨」が必要になりました。",
+                "【修正】資源消費のヒントが正確に表示されない問題を修正しました。"
+            ]
+        }
+    },
+    {
         version: "v0.26",
         date: "2026-01-11",
         notes: {
