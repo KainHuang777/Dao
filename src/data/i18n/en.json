@@ -568,8 +568,7 @@
     "下一級: 開放宗門聚靈陣": "Next: Unlock Spirit Array",
     "已開放宗門聚靈陣 (修煉速度+50%)": "Spirit Array Unlocked (Cultivation +50%)",
     "下一級: 宗門圓滿": "Next: Sect Perfection",
-    "已臻圓滿": "Maximum Level Reached",
-    "宗門丹堂": "Sect Alchemy Hall",
+    "已臻圓滿": "Perfected",
     "資源不足: {res}": "Insufficient {res}",
     "rarity_common": "Common",
     "rarity_uncommon": "Uncommon",
@@ -599,5 +598,8 @@
     "未知丹方": "Unknown recipe",
     "習得丹方": "Learned Recipe",
     "購買丹方成功": "Recipe purchased",
-    "已購買": "Purchased"
+    "已購買": "Purchased",
+    "基礎產出/採集": "Basic Production/Gathering",
+    "合成製作": "Crafting",
+    "基礎空間": "Base Storage"
 }

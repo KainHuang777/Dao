@@ -47,7 +47,25 @@ export default class Formatter {
     static formatRate(value) {
         const num = Number(value);
         if (num === 0) return '0';
-        const formatted = this.formatBigNumber(Math.abs(num));
+
+        const absNum = Math.abs(num);
+        let formatted;
+
+        // 對於極小的產率，提供更高精確度
+        if (absNum < 1) {
+            if (absNum < 0.001) {
+                formatted = absNum.toFixed(4);
+            } else if (absNum < 0.1) {
+                formatted = absNum.toFixed(3);
+            } else {
+                formatted = absNum.toFixed(2);
+            }
+            // 去除末尾多餘的 0
+            formatted = formatted.replace(/\.?0+$/, "");
+        } else {
+            formatted = this.formatBigNumber(absNum);
+        }
+
         return (num > 0 ? '+' : '-') + formatted;
     }
 

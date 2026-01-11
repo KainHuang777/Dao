@@ -1,12 +1,12 @@
 ﻿id,name,description,costFactor,maxLevel,era,prereqBuilding,prereqTech,basicCost1_type,basicCost1_amount,basicCost2_type,basicCost2_amount,basicCost3_type,basicCost3_amount,basicCost4_type,basicCost4_amount,advCost1_type,advCost1_amount,advCost2_type,advCost2_amount,effectWeight,effect1_type,effect1_amount,effect2_type,effect2_amount,advEffect1_type,advEffect1_amount,advEffect2_type,advEffect2_amount,advEffect3_type,advEffect3_amount
 hut,🛖 茅屋,簡陋的茅屋，略微提升對天地靈氣的感應。,1.5,100,1,0,0,money,10,0,0,0,0,0,0,0,0,0,0,1,lingli,0.1,0,0,0,0,0,0,0,0
 stone_mine,⛏️ 採石場,簡陋的採石場，尋找靈脈進行採集，可以產出靈石與基礎礦物。,1.5,100,1,hut,0,wood,10,money,10,0,0,0,0,0,0,0,0,0.3,stone_low,0.1,black_copper,0.05,0,0,0,0,0,0
-iron_mine,⛓️ 鐵礦,開採鐵礦石，可以產出精鐵。,1.5,100,1,stone_mine,0,wood,15,money,15,0,0,0,0,0,0,0,0,0.3,refined_iron,0.05,0,0,0,0,0,0,0,0
-wooden_house,🏠 木屋,結實的木屋，可以居住更多凡人，增加金錢收入與儲存。,1.6,100,1,forest_farm,0,money,50,wood,10,0,0,0,0,0,0,0,0,2,money,0.5,money_max,50,0,0,0,0,0,0
+iron_mine,⛓️ 鐵礦,開採鐵礦石，可以產出精鐵。,1.5,100,1,stone_mine,0,wood,15,money,15,beast_bone_low,10,0,0,0,0,0,0,0.3,refined_iron,0.05,0,0,0,0,0,0,0,0
+wooden_house,🏠 木屋,結實的木屋，可以居住更多凡人，增加金錢收入與儲存。,1.6,100,1,forest_farm,0,money,50,wood,10,beast_hide_low,10,0,0,0,0,0,0,2,money,0.5,money_max,50,0,0,0,0,0,0
 forest_farm,🌲 林場,充滿靈氣的森林，可以從此產出靈木。,1.5,100,1,stone_mine,0,stone_low,10,money,10,0,0,0,0,0,0,0,0,0.3,wood,0.1,0,0,0,0,0,0,0,0
 herb_farm,🌿 靈植場,蘊養靈植的場所，可以產出低階靈草。,2,100,1,forest_farm,0,stone_low,10,wood,20,0,0,0,0,0,0,0,0,0.1,spirit_grass_low,0.1,0,0,0,0,0,0,0,0
 rice_field,🌾 靈田,種植靈米的田地，可以產出靈米。,1.8,100,1,herb_farm,0,stone_low,15,wood,25,0,0,0,0,0,0,0,0,0.1,spirit_rice,0.08,0,0,0,0,0,0,0,0
-hunter_camp,🏹 狩獵營,獵殺妖獸的營地，可以產出獸皮與獸骨。,1.7,100,1,forest_farm,0,wood,30,money,20,0,0,0,0,0,0,0,0,0.05,beast_hide_low,0.03,beast_bone_low,0.03,0,0,0,0,0,0,0,0
+hunter_camp,🏹 狩獵營,獵殺妖獸的營地，可以產出獸皮與獸骨。,1.7,100,1,forest_farm,0,wood,30,money,20,0,0,0,0,0,0,0,0,0.05,beast_hide_low,0.03,beast_bone_low,0.03,0,0,0,0,0,0
 library,📚 藏書閣,收藏各類功法典籍，研習可獲得技能點。,1.8,100,2,0,0,money,500,wood,200,stone_low,100,0,0,0,0,0,0,0,skill_point,3,0,0,0,0,0,0,0,0
 scripture_hall,📜 藏經閣,珍藏上古經文，可大幅提升技能點上限。,1.8,100,2,library,0,money,500,wood,500,stone_low,300,0,0,0,0,0,0,0,0,0,skill_point_max,600,0,0,0,0,0,0
 stone_mine_mid,💎 靈石礦脈,深入地底尋找高品質靈石。,1.8,100,2,stone_mine,0,money,1000,stone_low,200,0,0,0,0,0,0,0,0,1,stone_low,0.5,0,0,0,0,0,0,0,0
@@ -20,7 +20,7 @@ spirit_garden,🏡 靈藥園,培育高年份靈草的園地，可以產出百年
 
 deep_mine,🌋 深層礦脈,深入地脈開採稀有礦物，可以產出秘銀與寒鐵。,2,100,4,stone_mine_mid,0,money,8000,stone_mid,100,wood,200,0,0,0,0,0,0,0.3,mithril,0.01,cold_iron,0.01,0,0,0,0,0,0
 beast_cellar,🛖 獸骨窖,存放妖獸皮毛與骨骼的地窖。,1.5,50,4,beast_ranch,0,money,10000,mithril,20,cold_iron,20,0,0,0,0,0,0,0,beast_hide_low_max,3000,beast_bone_low_max,3000,0,0,0,0,0,0
-beast_ranch,🐂 靈獸圈,圈養靈獸獲取材料，可以產出中級獸材。,2.1,100,4,hunter_camp,0,stone_mid,80,wood,150,0,0,0,0,0,0,0,0,0.1,beast_hide_mid,0.01,beast_bone_mid,0.01,0,0,0,0,0,0,0,0
+beast_ranch,🐂 靈獸圈,圈養靈獸獲取材料，可以產出中級獸材。,2.1,100,4,hunter_camp,0,stone_mid,80,wood,150,0,0,0,0,0,0,0,0,0.1,beast_hide_mid,0.01,beast_bone_mid,0.01,0,0,0,0,0,0
 beast_hunt_camp,⚔️ 獵殺營,專門獵殺妖獸取晶的營地，可以產出低階獸晶。,2,100,4,hunter_camp,0,stone_mid,100,wood,100,money,500,0,0,0,0,0,0,0.05,beast_crystal_low,0.02,0,0,0,0,0,0,0,0
 sky_mine,🌌 天外礦場,捕獲天外隕石，可以極緩慢產出星隕鐵。,2.5,50,7,deep_mine,0,stone_high,500,void_crystal,10,0,0,0,0,0,0,0,0,0.05,star_metal,0.001,0,0,0,0,0,0,0,0
 rebirth_lotus,🪷 往生蓮臺,凝聚此生因果，可於大期未至時提前遁入輪迴。,1.1,1,4,0,0,lingli,50000,stone_low,20000,money,10000,0,0,0,0,0,0,0,lingli,-10,0,0,0,0,0,0,0,0
@@ -29,7 +29,7 @@ sword_maid,⚔️ 劍侍糯美子,招募精通劍道的侍女，自動升級建�
 
 storage_mithril,🔒 秘銀庫,專門存放秘銀的堅固倉庫。,1.5,50,4,deep_mine,0,money,5000,stone_mid,100,mithril,10,refined_iron,2000,0,0,0,0,0,mithril_max,100,0,0,0,0,0,0,0,0
 storage_cold_iron,❄️ 寒鐵庫,以寒玉砌成，適合存放寒鐵。,1.5,50,4,deep_mine,0,money,5000,stone_mid,100,cold_iron,10,black_copper,2000,0,0,0,0,0,cold_iron_max,100,0,0,0,0,0,0,0,0
-storage_spirit_herb_100y,🎋 百草架,特製的藥架，能更妥善保存百年靈草。,1.5,50,4,spirit_garden,0,money,5000,stone_mid,500,spirit_grass_100y,10,beast_hide_low,1000,0,0,0,0,0,spirit_grass_100y_max,100,0,0,0,0,0,0,0,0
+storage_spirit_herb_100y,🎋 百草架,特製的藥架，能更妥善保存百年靈草。,1.5,50,4,spirit_garden,0,money,5000,stone_mid,500,spirit_grass_100y,10,beast_hide_low,100,0,0,0,0,0,spirit_grass_100y_max,100,0,0,0,0,0,0,0,0
 storage_spirit_jade,💎 靈玉匣,精緻的玉匣，用於存放靈玉。,1.6,20,5,sky_mine,0,money,20000,stone_mid,500,spirit_jade,5,beast_bone_low,3000,0,0,0,0,0,spirit_jade_max,50,0,0,0,0,0,0,0,0
 storage_beast_mid,🦁 獸材庫,寬敞的倉庫，分類存放各種中級妖獸材料。,1.5,50,5,beast_ranch,0,money,10000,mithril,1000,stone_mid,300,beast_hide_low,3000,0,0,0,0,0,beast_hide_mid_max,100,beast_bone_mid_max,100,beast_crystal_mid_max,80,0,0,0,0
 storage_beast_crystal_low,🥚 獸晶地窖,存放初級獸晶的地下倉庫。,1.5,50,5,beast_hunt_camp,0,money,10000,stone_mid,200,cold_iron,1000,black_copper,3000,0,0,0,0,0,beast_crystal_low_max,200,0,0,0,0,0,0,0,0

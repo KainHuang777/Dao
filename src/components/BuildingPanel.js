@@ -218,7 +218,7 @@ export default class BuildingPanel {
         }
 
         // 檢查前置建築 (假設至少要 1 級)
-        if (def.prereqBuilding && def.prereqBuilding !== '0') {
+        if (def.prereqBuilding && def.prereqBuilding !== '0' && def.prereqBuilding !== 0) {
             const prereqState = this.buildingManager.getBuilding(def.prereqBuilding);
             if (!prereqState || prereqState.level < 1) return false;
         }
@@ -265,14 +265,15 @@ export default class BuildingPanel {
             const tooltipEffectTexts = [];
 
             for (const [resKey, amountPerLevel] of Object.entries(def.effects)) {
-                let currentBonus, nextBonus, nextNextBonus;
+                const buildingEffectBonus = PlayerManager.getTalentBonus('world_child');
+                const finalAmount = amountPerLevel * (1 + buildingEffectBonus);
                 const weight = def.effectWeight || 0;
+                let currentBonus, nextBonus, nextNextBonus;
 
                 if (resKey === 'all_max') {
-                    currentBonus = amountPerLevel * state.level;
-                    nextBonus = amountPerLevel * (state.level + 1);
-                    nextNextBonus = amountPerLevel * (state.level + 2);
-
+                    currentBonus = finalAmount * state.level;
+                    nextBonus = finalAmount * (state.level + 1);
+                    nextNextBonus = finalAmount * (state.level + 2);
 
                     const displayBonus = state.level > 0 ? currentBonus : nextBonus;
                     effectTexts.push(`${lang.t('全資源上限')}: +${Formatter.formatBigNumber(displayBonus)}`);
@@ -281,10 +282,9 @@ export default class BuildingPanel {
                         (state.level < levelCap ? ` → +${Formatter.formatBigNumber(nextBonus)}` : '')
                     );
                 } else if (resKey === 'all_rate') {
-                    currentBonus = amountPerLevel * Math.pow(state.level + weight, 2);
-                    nextBonus = amountPerLevel * Math.pow(state.level + 1 + weight, 2);
-                    nextNextBonus = amountPerLevel * Math.pow(state.level + 2 + weight, 2);
-
+                    currentBonus = finalAmount * Math.pow(state.level + weight, 2);
+                    nextBonus = finalAmount * Math.pow(state.level + 1 + weight, 2);
+                    nextNextBonus = finalAmount * Math.pow(state.level + 2 + weight, 2);
 
                     const displayBonus = state.level > 0 ? currentBonus : nextBonus;
                     effectTexts.push(`${lang.t('全資源產出')}: ${Formatter.formatRate(displayBonus)}/${lang.t('秒')}`);
@@ -294,9 +294,9 @@ export default class BuildingPanel {
                     );
                 } else if (resKey.endsWith('_max')) {
                     const realKey = resKey.replace('_max', '');
-                    const currentMaxVal = amountPerLevel * state.level;
-                    const nextMaxVal = amountPerLevel * (state.level + 1);
-                    const nextNextMaxVal = amountPerLevel * (state.level + 2);
+                    const currentMaxVal = finalAmount * state.level;
+                    const nextMaxVal = finalAmount * (state.level + 1);
+                    const nextNextMaxVal = finalAmount * (state.level + 2);
 
                     const displayMaxVal = state.level > 0 ? currentMaxVal : nextMaxVal;
                     effectTexts.push(`${this.getResName(realKey)}${lang.t('上限')}: +${Formatter.formatBigNumber(displayMaxVal)}`);
@@ -305,9 +305,9 @@ export default class BuildingPanel {
                         (state.level < levelCap ? ` → +${Formatter.formatBigNumber(nextMaxVal)}` : '')
                     );
                 } else if (resKey === 'synthetic_max_mult') {
-                    const currentBonus = Math.round(amountPerLevel * state.level * 100);
-                    const nextBonus = Math.round(amountPerLevel * (state.level + 1) * 100);
-                    const nextNextBonus = Math.round(amountPerLevel * (state.level + 2) * 100);
+                    const currentBonus = Math.round(finalAmount * state.level * 100);
+                    const nextBonus = Math.round(finalAmount * (state.level + 1) * 100);
+                    const nextNextBonus = Math.round(finalAmount * (state.level + 2) * 100);
 
                     const displayBonus = state.level > 0 ? currentBonus : nextBonus;
                     effectTexts.push(`${lang.t('合成資源容量')}: +${displayBonus}%`);
@@ -324,14 +324,13 @@ export default class BuildingPanel {
                         effectTexts.push(text);
                         tooltipEffectTexts.push(text);
                     } else {
-                        // 雖然 tooltipEffectTexts 主要顯示下一級，但這解釋了解鎖了什麼
                         tooltipEffectTexts.push(`${lang.t('解鎖')}: ${text}`);
                     }
                 } else if (resKey === 'maid_craft_boost') {
                     // 侍女合成量加成
-                    const currentBonus = amountPerLevel * state.level;
-                    const nextBonus = amountPerLevel * (state.level + 1);
-                    const nextNextBonus = amountPerLevel * (state.level + 2);
+                    const currentBonus = finalAmount * state.level;
+                    const nextBonus = finalAmount * (state.level + 1);
+                    const nextNextBonus = finalAmount * (state.level + 2);
 
                     const displayBonus = state.level > 0 ? currentBonus : nextBonus;
                     effectTexts.push(`${lang.t('侍女合成量')}: +${displayBonus}`);
@@ -341,9 +340,18 @@ export default class BuildingPanel {
                     );
                 } else {
                     // 產出類效果
-                    const currentRate = amountPerLevel * Math.pow(state.level + weight, 2);
-                    const nextRate = amountPerLevel * Math.pow(state.level + 1 + weight, 2);
-                    const nextNextRate = amountPerLevel * Math.pow(state.level + 2 + weight, 2);
+                    const res = this.resourceManager.getResource(resKey);
+                    let currentRate, nextRate;
+
+                    if (res && res.type !== 'basic') {
+                        // 進階/合成資源採用線性成長
+                        currentRate = finalAmount * (state.level + weight);
+                        nextRate = finalAmount * (state.level + 1 + weight);
+                    } else {
+                        // 基礎資源採用平方成長
+                        currentRate = finalAmount * Math.pow(state.level + weight, 2);
+                        nextRate = finalAmount * Math.pow(state.level + 1 + weight, 2);
+                    }
 
                     const displayRate = state.level > 0 ? currentRate : nextRate;
                     effectTexts.push(`${this.getResName(resKey)}: ${Formatter.formatRate(displayRate)}/${lang.t('秒')}`);

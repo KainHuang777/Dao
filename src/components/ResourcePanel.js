@@ -328,6 +328,12 @@ export default class ResourcePanel {
         // 更新現有資源的數值
         Object.entries(resources).forEach(([key, res]) => {
             if (this.elements[key] && this.resourceManager.shouldDisplay(key)) {
+                // 更新 Tooltip (動態刷新來源資訊)
+                const currentEra = PlayerManager.getEraId();
+                if (res.type !== 'basic' || currentEra >= 2) {
+                    this.elements[key].el.title = this.buildResourceTooltip(key);
+                }
+
                 // 特殊處理靈力：顯示淨產出率（產出 - 消耗）
                 let displayRate = res.rate;
                 if (key === 'lingli') {
@@ -406,10 +412,15 @@ export default class ResourcePanel {
      */
     buildResourceTooltip(resourceKey) {
         const lang = LanguageManager.getInstance();
-        const lines = [];
+        const res = this.resourceManager.getResource(resourceKey);
+        if (!res) return '';
 
+        const lines = [];
         const productionSources = [];
         const capSources = [];
+
+        // 核心基礎資源列表 (與 BuildingManager.js 同步)
+        const coreBasicResources = ['lingli', 'money', 'wood', 'stone_low', 'spirit_grass_low'];
 
         // 查詢建築
         if (window.game && window.game.buildingManager) {
@@ -419,53 +430,64 @@ export default class ResourcePanel {
                 const state = buildingStates[def.id];
                 if (!state || state.level <= 0) continue;
 
-                // 檢查產出效果
                 if (def.effects) {
                     let hasProduction = false;
                     let hasCap = false;
 
                     for (const [effType, effAmount] of Object.entries(def.effects)) {
-                        if ((effType === resourceKey || effType === 'all_rate') && effAmount > 0) {
+                        if (effAmount <= 0) continue;
+
+                        // 產出判定
+                        if (effType === resourceKey) {
+                            hasProduction = true;
+                        } else if (effType === 'all_rate' && coreBasicResources.includes(resourceKey)) {
                             hasProduction = true;
                         }
-                        // all_max 只對核心基礎資源生效
-                        const coreBasicResources = ['lingli', 'money', 'wood', 'stone_low', 'spirit_grass_low'];
-                        if (effType === `${resourceKey}_max` && effAmount > 0) {
+
+                        // 上限判定
+                        if (effType === `${resourceKey}_max`) {
                             hasCap = true;
-                        } else if (effType === 'all_max' && effAmount > 0 && coreBasicResources.includes(resourceKey)) {
+                        } else if (effType === 'all_max' && coreBasicResources.includes(resourceKey)) {
+                            hasCap = true;
+                        } else if (effType === 'synthetic_max_mult' && res.type === 'crafted') {
                             hasCap = true;
                         }
                     }
 
-                    if (hasProduction) {
-                        const buildingName = lang.t(def.name);
-                        const str = `${buildingName} LV${state.level}`;
-                        if (!productionSources.includes(str)) {
-                            productionSources.push(str);
-                        }
+                    const buildingName = lang.t(def.name);
+                    const sourceInfo = `${buildingName} LV${state.level}`;
+
+                    if (hasProduction && !productionSources.includes(sourceInfo)) {
+                        productionSources.push(sourceInfo);
                     }
-                    if (hasCap) {
-                        const buildingName = lang.t(def.name);
-                        const str = `${buildingName} LV${state.level}`;
-                        if (!capSources.includes(str)) {
-                            capSources.push(str);
-                        }
+                    if (hasCap && !capSources.includes(sourceInfo)) {
+                        capSources.push(sourceInfo);
                     }
                 }
             }
         }
-
         // 建構提示框文字
         if (productionSources.length > 0) {
             lines.push(lang.t('獲取來源'));
             productionSources.forEach(src => lines.push(`  ${src}`));
+        } else {
+            // 如果沒有建築產出，區分資源類型顯示
+            if (res.type === 'basic') {
+                lines.push(`${lang.t('獲取來源')}: ${lang.t('基礎產出/採集')}`);
+            } else if (res.type === 'crafted') {
+                lines.push(`${lang.t('獲取來源')}: ${lang.t('合成製作')}`);
+            }
         }
+
         if (capSources.length > 0) {
             lines.push(lang.t('上限來源'));
             capSources.forEach(src => lines.push(`  ${src}`));
+        } else if (res.type !== 'crafted') {
+            // 合成資源目前無上限顯示，其他資源若無建築上限則顯示基礎上限
+            lines.push(`${lang.t('上限來源')}: ${lang.t('基礎空間')}`);
         }
 
-        return lines.length > 0 ? lines.join('\n') : '';
+        return lines.length > 0 ? lines.join('\n') : lang.t(resourceKey);
     }
 
     /**
