@@ -1,3 +1,10 @@
+2026-01-12 Update Log:
+
+[Fix] Sect Task Claim Button Issue
+- Fixed bug where sect task buttons remained disabled (greyed out with "?" tooltip) after claiming reward.
+- Root cause: After claiming, only update() was called, which does not re-render the task list when it has content.
+- Solution: Changed to call renderTasks() after successful claim, which rebuilds the task cards with correct button states.
+
 2026-01-11 Update Log (v0.28 Planning):
 
 [Next]

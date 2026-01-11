@@ -166,7 +166,7 @@ export default class SectPanel {
         if (btnClaim) {
             btnClaim.onclick = () => {
                 const result = SectManager.claimTaskReward();
-                if (result.success) this.update();
+                if (result.success) this.renderTasks(); // Re-render to enable task buttons
             };
         }
 
