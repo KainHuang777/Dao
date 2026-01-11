@@ -104,7 +104,8 @@ class SectManager {
             activeTask: null, // { id, name, type, duration, startTime, reward }
             nextTaskRefresh: Date.now(), // Refresh immediately on first load
             history: [], // Log history for sect
-            unlockedRecipes: {} // 已購買的丹方 { recipeId: true }
+            unlockedRecipes: {}, // 已購買的丹方 { recipeId: true }
+            itemPurchaseCounts: {} // 商店物品購買次數 { itemId: count }
         };
         this.state = this.loadState();
 
@@ -513,7 +514,22 @@ class SectManager {
                 'stone_low': 2000
             };
         }
+        if (pillId === 'monster_core_mid') {
+            return {
+                'beast_hide_mid': 80,
+                'beast_bone_mid': 80
+            };
+        }
         return {};
+    }
+
+    getShopItemLimit(itemId) {
+        if (itemId === 'monster_core_mid') return 10;
+        return 999;
+    }
+
+    getShopItemCount(itemId) {
+        return (this.state.itemPurchaseCounts && this.state.itemPurchaseCounts[itemId]) || 0;
     }
 
     buyPill(pillId) {
@@ -523,13 +539,50 @@ class SectManager {
             return { success: false, msg: 'System Error' };
         }
 
+        const lang = LanguageManager.getInstance();
         const cost = this.getPillCost(pillId);
         const resManager = window.game.resourceManager;
 
         // Check Logic
         for (const [key, val] of Object.entries(cost)) {
             const res = resManager.getResource(key);
-            if (!res || res.value < val) return { success: false, msg: LanguageManager.getInstance().t('資源不足: {res}', { res: LanguageManager.getInstance().t(key) }) };
+            if (!res || res.value < val) return { success: false, msg: lang.t('資源不足: {res}', { res: lang.t(key) }) };
+        }
+
+        // Special handling for resource items (non-pills)
+        if (pillId === 'monster_core_mid') {
+            const limit = this.getShopItemLimit(pillId);
+            const current = this.getShopItemCount(pillId);
+
+            if (current >= limit) {
+                return { success: false, msg: lang.t('{0}已達購買上限（{1}次）', { '0': lang.t('中級妖丹'), '1': limit }) };
+            }
+
+            // Deduct
+            for (const [key, val] of Object.entries(cost)) {
+                resManager.getResource(key).value -= val;
+            }
+
+            // Grant Resource
+            resManager.addResource(pillId, 1);
+
+            // Track Purchase
+            if (!this.state.itemPurchaseCounts) this.state.itemPurchaseCounts = {};
+            this.state.itemPurchaseCounts[pillId] = current + 1;
+            this.saveState();
+
+            return { success: true, msg: lang.t('購買成功') };
+        }
+
+        // Standard Pill Logic (Consumed via PlayerManager)
+
+        // Deduct first (PlayerManager logic usually checks max count but doesn't deduct cost)
+        // Check PlayerManager limit first before deducting cost
+        const pillConfig = PlayerManager.getPillConfig(pillId);
+        if (pillConfig) {
+            const currentConsumed = PlayerManager.getConsumedPillCount(pillId);
+            // Note: Some pills might use different limit logic in PlayerManager, but basic check here is good
+            // PlayerManager.adminConsumePill checks limits again and returns false if failed.
         }
 
         // Deduct

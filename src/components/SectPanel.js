@@ -75,6 +75,16 @@ export default class SectPanel {
                     </div>
                     <button id="btn-buy-sect-pill" class="btn" style="font-size: 0.9em;">${lang.t('購買')}</button>
                 </div>
+
+                <!-- 中級妖丹 (Era 4 Resource) -->
+                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; margin-top: 10px;">
+                    <div>
+                        <div style="font-weight: bold; color: #ff9800;">🧿 ${lang.t('monster_core_mid')}</div>
+                        <div style="font-size: 0.8em; color: #aaa;">${lang.t('已購買')}: <span id="monster-core-count">0</span>/10</div>
+                        <div id="monster-core-cost-display" style="font-size: 0.8em;">${lang.t('消耗')}: ${lang.t('beast_hide_mid')} 80, ${lang.t('beast_bone_mid')} 80</div>
+                    </div>
+                    <button id="btn-buy-monster-core" class="btn" style="font-size: 0.9em;">${lang.t('購買')}</button>
+                </div>
             </div>
 
             <div class="sect-tasks" style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
@@ -166,6 +176,18 @@ export default class SectPanel {
         if (btnBuyPill) {
             btnBuyPill.onclick = () => {
                 const result = SectManager.buyPill('sect_high_golden_pill');
+                if (window.game && window.game.uiManager) {
+                    window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'INFO');
+                }
+                if (result.success) this.update();
+            };
+        }
+
+        // 購買中級妖丹
+        const btnBuyCore = document.getElementById('btn-buy-monster-core');
+        if (btnBuyCore) {
+            btnBuyCore.onclick = () => {
+                const result = SectManager.buyPill('monster_core_mid');
                 if (window.game && window.game.uiManager) {
                     window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'INFO');
                 }
@@ -291,6 +313,43 @@ export default class SectPanel {
             btnBuyPill.disabled = !canAffordPill;
             btnBuyPill.style.opacity = canAffordPill ? '1' : '0.5';
             btnBuyPill.style.cursor = canAffordPill ? 'pointer' : 'not-allowed';
+            btnBuyPill.style.cursor = canAffordPill ? 'pointer' : 'not-allowed';
+        }
+
+        // 更新中級妖丹狀態
+        const coreCostEl = document.getElementById('monster-core-cost-display');
+        const coreCountEl = document.getElementById('monster-core-count');
+        const btnBuyCore = document.getElementById('btn-buy-monster-core');
+
+        if (coreCostEl && btnBuyCore && coreCountEl) {
+            const limit = SectManager.getShopItemLimit('monster_core_mid');
+            const count = SectManager.getShopItemCount('monster_core_mid');
+            coreCountEl.textContent = count;
+
+            if (count >= limit) {
+                btnBuyCore.textContent = lang.t('已售罄');
+                btnBuyCore.disabled = true;
+                btnBuyCore.style.opacity = '0.5';
+                btnBuyCore.style.cursor = 'not-allowed';
+                coreCostEl.style.color = '#666';
+            } else {
+                btnBuyCore.textContent = lang.t('購買');
+                const cost = SectManager.getPillCost('monster_core_mid');
+                let canAfford = true;
+                if (window.game && window.game.resourceManager) {
+                    for (const [key, val] of Object.entries(cost)) {
+                        const res = window.game.resourceManager.getResource(key);
+                        if (!res || res.value < val) {
+                            canAfford = false;
+                            break;
+                        }
+                    }
+                }
+                coreCostEl.style.color = canAfford ? '#4caf50' : '#e57373';
+                btnBuyCore.disabled = !canAfford;
+                btnBuyCore.style.opacity = canAfford ? '1' : '0.5';
+                btnBuyCore.style.cursor = canAfford ? 'pointer' : 'not-allowed';
+            }
         }
 
         // Update Contrib

@@ -1,6 +1,28 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.262",
+        date: "2026-01-11",
+        notes: {
+            "zh-TW": [
+                "【宗門】丹堂商店：新增「中級妖丹」販售。消耗：中級獸皮毛 x80、中級獸骨 x80。限購 10 次。",
+                "【平衡】元嬰期進程：提供 Era 4 獲取中級妖丹的途徑，以滿足 LV9 升級需求。"
+            ],
+            "zh-CN": [
+                "【宗门】丹堂商店：新增「中级妖丹」贩售。消耗：中级兽皮毛 x80、中级兽骨 x80。限购 10 次。",
+                "【平衡】元婴期进程：提供 Era 4 获取中级妖丹的途径，以满足 LV9 升级需求。"
+            ],
+            "en": [
+                "[Sect] Alchemy Hall Shop: Added 'Monster Core (Mid)' for purchase. Cost: Beast Hide (Mid) x80, Beast Bone (Mid) x80. Limit: 10.",
+                "[Balance] Era 4 Progression: Added a way to obtain Monster Core (Mid) in Era 4 for LV9 upgrade."
+            ],
+            "ja": [
+                "【宗門】丹堂商店：「中級妖丹」の販売を追加。消費：中級獣皮 x80、中級獣骨 x80。購入制限 10 回。",
+                "【平衡】元嬰期進行：Era 4 で中級妖丹を入手する手段を提供し、LV9 昇級要件を満たせるようにしました。"
+            ]
+        }
+    },
+    {
         version: "v0.261",
         date: "2026-01-11",
         notes: {
