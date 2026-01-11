@@ -1,0 +1,32 @@
+2026-01-11 Update Log (v0.28 Planning):
+
+[Next]
+- ...
+
+[Fix] Sect Task Refresh UI
+- Fixed an issue where the Sect Task list would not visually update immediately after manual refresh or accepting a task.
+- The task list now properly re-renders instantly without needing to switch tabs.
+
+2026-01-11 Update Log (Hotfix):
+
+[Balance] Era 3 resource availability adjustments
+- Significantly increased 'spirit_grass_100y' rewards in Era 3 Sect Tasks based on user feedback.
+  - Rare Task: Increased from 1-2 to 40-60.
+  - Epic Task: Increased from 3-5 to 80-120.
+  - Reason: To match the consumption needs for Alchemy and compensate for the lack of passive production buildings in this Era.
+
+2026-01-11 Update Log:
+
+[Feature] Cloud Sea Market Improvements
+- Implemented item purchase logging with cost visibility in SectManager.
+- Added localization for market exchange logs.
+- Added batch production/exchange support (e.g., x50 for basic items) to reduce click fatigue.
+- Implemented purchase limits (daily/periodic) for event items to maintain balance.
+- Updated SectPanel UI to show requested item quantity (x1, x50) and remaining purchase limit.
+
+[Balance] Era 3 resource availability
+- Added 'spirit_grass_100y' (Century Spirit Grass) to rare and epic Sect Task reward pools in Era 3.
+- Lowered 'spirit_grass_100y' market availability requirement from Era 4 to Era 3 to enable Golden Core Pill crafting.
+
+[Fix] Core Test
+- Fixed LanguageManager initialization in core-test environment to ensure localized logs are correctly verified.

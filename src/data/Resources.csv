@@ -14,7 +14,7 @@ beast_crystal_low,初級獸晶,basic,80,0.02,TRUE,,,
 foundation_pill,💊 築基丹,crafted,200,0,FALSE,,2,"{""spirit_grass_low"":3,""lingli"":50}"
 spirit_nurt_pill,🧪 蘊靈丹,crafted,200,0,FALSE,,4,"{""stone_mid"":50,""spirit_grass_100y"":30,""lingli"":1000}"
 monster_core_low,🧿 初級妖丹,crafted,150,0,FALSE,,2,"{""beast_crystal_low"":2,""spirit_grass_low"":2}"
-spirit_grass_100y,百年靈草,advance,100,0.02,FALSE,,4,
+spirit_grass_100y,百年靈草,advance,100,0.02,FALSE,,3,
 spirit_grass_1000y,千年靈草,advance,50,0,FALSE,,5,
 stone_mid,💎 中品靈石,crafted,1000,0,FALSE,,3,"{""stone_low"":5,""lingli"":10}"
 mithril,秘銀,advance,80,0.01,FALSE,,4,

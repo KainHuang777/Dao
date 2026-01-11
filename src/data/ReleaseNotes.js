@@ -1,6 +1,66 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.27",
+        date: "2026-01-11",
+        notes: {
+            "zh-TW": [
+                "【中後期平衡】核心內容更新：全面實裝「雲海天市」與「天機事件」，旨在優化金丹期(Era 3)至元嬰期(Era 4)的資源獲取體驗。",
+                "【新玩法】雲海天市：全新高階交易市場上線。提供週期性(6小時)刷新的稀有資源兌換，並支援消耗丹液進行「手動刷新」。",
+                "【新玩法】天機事件：宗門現已出現「雲遊商隊」、「丹道盛會」等隨機事件，支援大量資源的「批量提交」以換取豐厚貢獻。",
+                "【數值】金丹期補給：針對中期煉丹瓶頸，大幅提升 Era 3 宗門任務的「百年靈草」獎勵（稀有 40~60 / 史詩 80~120）。",
+                "【體驗】明細與日誌：新增了詳細的市場兌換履歷，以及針對資源解鎖與任務列表刷新的多項修復。",
+                "【修復】資源解鎖：修正了 Era 3 玩家在市場購買百年靈草時無法正確獲取物品的問題。"
+            ],
+            "zh-CN": [
+                "【中后期平衡】核心内容更新：全面实装「云海天市」与「天机事件」，旨在优化金丹期(Era 3)至元婴期(Era 4)的资源获取体验。",
+                "【新玩法】云海天市：全新高阶交易市场上线。提供周期性(6小时)刷新的稀有资源兑换，并支持消耗丹液进行「手动刷新」。",
+                "【新玩法】天机事件：宗门现已出现「云游商队」、「丹道盛会」等随机事件，支持大量资源的「批量提交」以换取丰厚贡献。",
+                "【数值】金丹期补给：针对中期炼丹瓶颈，大幅提升 Era 3 宗门任务的「百年灵草」奖励（稀有 40~60 / 史诗 80~120）。",
+                "【体验】明细与日志：新增了详细的市场兑换履历，以及针对资源解锁与任务列表刷新的多项修复。",
+                "【修复】资源解锁：修正了 Era 3 玩家在市场购买百年灵草时无法正确获取物品的问题。"
+            ],
+            "en": [
+                "[Mid-Late Balance] Major Update: Implemented 'Cloud Sea Market' and 'Heavenly Secrets Events' to optimize Era 3-4 progression.",
+                "[New Feature] Cloud Sea Market: High-tier trading hub. Auto-refreshes every 6h, limits purchases, and supports 'Manual Refresh' via Liquid.",
+                "[New Feature] Sect Events: Dynamic events like 'Cloud Caravans' & 'Alchemy Symposium' added. Supports 'Batch Submission' for massive contribution gains.",
+                "[Balance] Golden Core Supply: Drastically increased 'Century Spirit Grass' rewards in Era 3 Sect Tasks (40~120) to ease alchemy bottlenecks.",
+                "[UX] Logs & Fixes: Added detailed exchange logs and fixed issues with resource unlocking and task list refreshing.",
+                "[Fix] Resource Unlock: Fixed an issue where Era 3 players couldn't receive Century Spirit Grass purchased from the market."
+            ],
+            "ja": [
+                "【中後期バランス】コア更新：「雲海天市」と「天機イベント」を実装し、金丹期(Era 3)から元嬰期(Era 4)の資源体験を最適化。",
+                "【新機能】雲海天市：新たな高級取引市場。6時間ごとの自動更新に加え、丹液を消費する「手動更新」機能をサポート。",
+                "【新機能】天機イベント：「雲遊商隊」や「丹道盛会」などのランダムイベントが登場。大量の資源を「一括提出」して貢献を獲得可能。",
+                "【数値】金丹期補給：中期の錬丹ボトルネックを解消するため、Era 3 宗門任務の「百年霊草」報酬を大幅増量（40~120）。",
+                "【体験】ログと修正：詳細な交換履歴ログを追加し、リソース解禁や任務リスト更新に関する問題を修正。",
+                "【修正】リソース解禁：Era 3 プレイヤーが市場で百年霊草を購入しても受け取れない問題を修正。"
+            ]
+        }
+    },
+    {
+        version: "v0.263",
+        date: "2026-01-11",
+        notes: {
+            "zh-TW": [
+                "【平衡】早期資源優化：調整建築升級成本，使 Era 1 資源更有價值。",
+                "【建築】藏書閣、靈石礦脈：升級現在需要消耗「精鐵」（部分取代下品靈石需求）。"
+            ],
+            "zh-CN": [
+                "【平衡】早期资源优化：调整建筑升级成本，使 Era 1 资源更有价值。",
+                "【建筑】藏书阁、灵石矿脉：升级现在需要消耗「精铁」（部分取代下品灵石需求）。"
+            ],
+            "en": [
+                "[Balance] Early Game Optimization: Adjusted building costs to utilize Era 1 resources.",
+                "[Building] Library, Spirit Stone Mine: Upgrade now consumes 'Refined Iron' (partially replacing Low Grade Spirit Stone)."
+            ],
+            "ja": [
+                "【平衡】早期資源最適化：Era 1 資源を活用するように建築コストを調整しました。",
+                "【建築】蔵書閣、霊石鉱脈：アップグレードに「精鉄」を消費するようになりました（下品霊石の一部を代替）。"
+            ]
+        }
+    },
+    {
         version: "v0.262",
         date: "2026-01-11",
         notes: {

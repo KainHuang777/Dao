@@ -51,42 +51,86 @@ export default class SectPanel {
                     <div id="sect-dev-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #4caf50, #81c784); border-radius: 6px; transition: width 0.3s; box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);"></div>
                     <div id="sect-dev-text" style="position: absolute; width: 100%; top: 0; left: 0; line-height: 12px; font-size: 10px; text-align: center; color: #fff; text-shadow: 1px 1px 2px #000; font-weight: bold;">0/100</div>
                 </div>
-            </div>
-            <!-- Alchemy Hall (Level 2+) -->
-            <div id="sect-alchemy-hall" style="display: none; padding: 15px; background: rgba(156, 39, 176, 0.1); border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(156, 39, 176, 0.3);">
-                <h3 style="margin: 0 0 10px 0; color: #e1bee7;">${lang.t('宗門丹堂')}</h3>
-                
-                <!-- 蘊靈丹丹方 -->
-                <div id="sect-recipe-spirit-pill" style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-                    <div>
-                        <div style="font-weight: bold; color: #00bcd4;">📜 ${lang.t('蘊靈丹丹方')}</div>
-                        <div style="font-size: 0.8em; color: #aaa;">${lang.t('習得後可合成蘊靈丹')}</div>
-                        <div id="recipe-cost-display" style="font-size: 0.8em;">${lang.t('消耗')}: ${lang.t('stone_mid')} ×10000, ${lang.t('spirit_grass_100y')} ×100</div>
-                    </div>
-                    <button id="btn-buy-recipe-spirit-pill" class="btn" style="font-size: 0.9em;">${lang.t('購買')}</button>
-                </div>
-
-                <!-- 上品金丹 -->
-                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px;">
-                    <div>
-                        <div style="font-weight: bold; color: #gold;">${lang.t('上品金丹')}</div>
-                        <div style="font-size: 0.8em; color: #aaa;">${lang.t('效果')}: ${lang.t('渡劫成功率')} +5% <span style="color:#666;">(${lang.t('直接服用')})</span></div>
-                        <div id="pill-cost-display" style="font-size: 0.8em;">${lang.t('消耗')}: ${lang.t('金錢')} 50000, ${lang.t('靈石')} 2000</div>
-                    </div>
-                    <button id="btn-buy-sect-pill" class="btn" style="font-size: 0.9em;">${lang.t('購買')}</button>
-                </div>
-
-                <!-- 中級妖丹 (Era 4 Resource) -->
-                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; margin-top: 10px;">
-                    <div>
-                        <div style="font-weight: bold; color: #ff9800;">🧿 ${lang.t('monster_core_mid')}</div>
-                        <div style="font-size: 0.8em; color: #aaa;">${lang.t('已購買')}: <span id="monster-core-count">0</span>/10</div>
-                        <div id="monster-core-cost-display" style="font-size: 0.8em;">${lang.t('消耗')}: ${lang.t('beast_hide_mid')} 80, ${lang.t('beast_bone_mid')} 80</div>
-                    </div>
-                    <button id="btn-buy-monster-core" class="btn" style="font-size: 0.9em;">${lang.t('購買')}</button>
+                <!-- Contribution Money Display -->
+                <div style="margin-top: 8px; font-size: 0.9em; text-align: right; color: #ffd700;">
+                    ${lang.t('個人貢獻')}: <span id="player-contribution">0</span>
                 </div>
             </div>
 
+            <!-- Tabs -->
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button id="tab-sect-tasks" class="btn active-tab" style="flex: 1; padding: 8px; background: #4caf50;">${lang.t('任務')}</button>
+                <button id="tab-sect-market" class="btn" style="flex: 1; padding: 8px; background: #333;">${lang.t('雲海天市')}</button>
+                <button id="tab-sect-events" class="btn" style="flex: 1; padding: 8px; background: #333;">${lang.t('天機事件')}</button>
+            </div>
+
+            <!-- Content Container -->
+            <div id="sect-content-area">
+                <!-- Content will be injected by render methods -->
+            </div>
+        `;
+
+        this.bindHeaderEvents();
+        this.renderTasks(); // Default view
+
+        // --- Opportunities Panel ---
+        if (this.oppContainer) {
+            this.oppContainer.innerHTML = `
+                <div style="text-align: center; padding: 50px;">
+                    <h2 style="color: #9c27b0;">${lang.t('機緣')}</h2>
+                    <p>${lang.t('宗門大比即將開啟...')}</p>
+                    <div style="font-size: 3em; margin: 20px;">🎲</div>
+                </div>
+            `;
+        }
+    }
+
+    // Helper to switch tabs
+    switchTab(tabId) {
+        document.querySelectorAll('.active-tab').forEach(el => {
+            el.classList.remove('active-tab');
+            el.style.background = '#333';
+        });
+        document.getElementById(`tab-${tabId}`).classList.add('active-tab');
+        document.getElementById(`tab-${tabId}`).style.background = '#4caf50';
+
+        if (tabId === 'sect-tasks') this.renderTasks();
+        else if (tabId === 'sect-market') this.renderMarket();
+        else if (tabId === 'sect-events') this.renderEvents();
+    }
+
+    bindHeaderEvents() {
+        const btnContrib = document.getElementById('btn-sect-contribute');
+        if (btnContrib) {
+            btnContrib.onclick = () => {
+                const result = SectManager.contribute();
+                if (!result.success) {
+                    if (window.game && window.game.uiManager) window.game.uiManager.addLog(result.msg, 'INFO');
+                } else {
+                    this.update();
+                }
+            };
+        }
+
+        const btnRefreshContrib = document.getElementById('btn-sect-refresh-contribution');
+        if (btnRefreshContrib) {
+            btnRefreshContrib.onclick = () => {
+                const result = SectManager.manualRefreshContribution();
+                if (window.game && window.game.uiManager) window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'SYSTEM');
+                if (result.success) this.update();
+            };
+        }
+
+        // Tabs
+        ['sect-tasks', 'sect-market', 'sect-events'].forEach(id => {
+            document.getElementById(`tab-${id}`).onclick = () => this.switchTab(id);
+        });
+    }
+
+    renderTasks() {
+        const lang = LanguageManager.getInstance();
+        const container = document.getElementById('sect-content-area');
+        container.innerHTML = `
             <div class="sect-tasks" style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
                     <h3 style="margin: 0; font-size: 1.1em;">${lang.t('宗門任務')}</h3>
@@ -113,110 +157,160 @@ export default class SectPanel {
                 </div>
 
                 <!-- Task List -->
-                <div id="sect-task-list" class="grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
-                    <!-- Tasks rendered here -->
-                </div>
+                <div id="sect-task-list" class="grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;"></div>
             </div>
         `;
 
-        // --- Opportunities Panel ---
-        if (this.oppContainer) {
-            this.oppContainer.innerHTML = `
-                <div style="text-align: center; padding: 50px;">
-                    <h2 style="color: #9c27b0;">${lang.t('機緣')}</h2>
-                    <p>${lang.t('宗門大比即將開啟...')}</p>
-                    <div style="font-size: 3em; margin: 20px;">🎲</div>
-                </div>
-            `;
-        }
-
-        // Bind Events
-        const btnContrib = document.getElementById('btn-sect-contribute');
-        if (btnContrib) {
-            btnContrib.onclick = () => {
-                const result = SectManager.contribute();
-                // Add Log is handled inside contrib if success, or we do it here?
-                // SectManager adds success log. We should alert error logic or log it?
-                if (!result.success) {
-                    if (window.game && window.game.uiManager) {
-                        window.game.uiManager.addLog(result.msg, 'INFO');
-                    } else {
-                        console.warn('UIManager not found', result.msg);
-                    }
-                } else {
-                    this.update();
-                }
-            };
-        }
-
+        // Bind Task Events (Refresh, Claim, Start) - done in update() often, but initial bind needed for Refresh & Claim
         const btnClaim = document.getElementById('btn-sect-claim');
         if (btnClaim) {
             btnClaim.onclick = () => {
                 const result = SectManager.claimTaskReward();
-                if (result.success) {
-                    this.update();
-                }
-            };
-        }
-
-        const btnRefreshContrib = document.getElementById('btn-sect-refresh-contribution');
-        if (btnRefreshContrib) {
-            btnRefreshContrib.onclick = () => {
-                const result = SectManager.manualRefreshContribution();
-                if (window.game && window.game.uiManager) {
-                    window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'SYSTEM');
-                }
-                if (result.success) {
-                    this.update();
-                }
-            };
-        }
-
-        const btnBuyPill = document.getElementById('btn-buy-sect-pill');
-        if (btnBuyPill) {
-            btnBuyPill.onclick = () => {
-                const result = SectManager.buyPill('sect_high_golden_pill');
-                if (window.game && window.game.uiManager) {
-                    window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'INFO');
-                }
                 if (result.success) this.update();
             };
         }
 
-        // 購買中級妖丹
-        const btnBuyCore = document.getElementById('btn-buy-monster-core');
-        if (btnBuyCore) {
-            btnBuyCore.onclick = () => {
-                const result = SectManager.buyPill('monster_core_mid');
-                if (window.game && window.game.uiManager) {
-                    window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'INFO');
-                }
-                if (result.success) this.update();
-            };
-        }
-
-        // 購買蘊靈丹丹方
-        const btnBuyRecipe = document.getElementById('btn-buy-recipe-spirit-pill');
-        if (btnBuyRecipe) {
-            btnBuyRecipe.onclick = () => {
-                const result = SectManager.buyRecipe('spirit_nurt_pill');
-                if (window.game && window.game.uiManager) {
-                    window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'INFO');
-                }
-                if (result.success) this.update();
-            };
-        }
-
-        // Manual Refresh Tasks Button
         const btnRefresh = document.getElementById('btn-sect-refresh-tasks');
         if (btnRefresh) {
             btnRefresh.onclick = () => {
                 const result = SectManager.manualRefreshTasks();
-                if (window.game && window.game.uiManager) {
-                    window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'INFO');
-                }
-                if (result.success) this.update();
+                if (window.game && window.game.uiManager) window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'INFO');
+                if (result.success) this.renderTasks();
             };
+        }
+
+        this.update(); // Trigger update to fill list
+    }
+
+    renderMarket() {
+        const lang = LanguageManager.getInstance();
+        const container = document.getElementById('sect-content-area');
+
+        // Timer calculation
+        const diff = Math.max(0, SectManager.state.nextMarketReset - Date.now());
+        const timerText = Formatter.formatTime(diff / 1000);
+
+        container.innerHTML = `
+            <div style="padding: 15px; background: rgba(156, 39, 176, 0.1); border-radius: 8px; border: 1px solid rgba(156, 39, 176, 0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="margin: 0; color: #e1bee7;">${lang.t('雲海天市')} <span style="font-size:0.7em; color:#aaa;">(${lang.t('消耗宗門貢獻')})</span></h3>
+                    <div style="font-size: 0.8em; color: #ddd;">
+                        ${lang.t('刷新')}: <span id="market-reset-timer" style="color: #fff; margin-right: 10px;">${timerText}</span>
+                        <button id="btn-refresh-market" class="btn" style="padding: 2px 8px; font-size: 0.8em; background: #ab47bc;">${lang.t('刷新')}</button>
+                    </div>
+                </div>
+                <div id="market-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <!-- Market Items -->
+                </div>
+            </div>
+        `;
+
+        // Refresh Button
+        const btnRefresh = document.getElementById('btn-refresh-market');
+        if (btnRefresh) {
+            const isDebug = window.game?.buildingManager?.debugAutoBuildEnabled;
+            // Tooltip
+            const costName = isDebug ? lang.t('金錢') : lang.t('丹液');
+            const costAmount = isDebug ? 1 : 50;
+            btnRefresh.title = `${lang.t('立即刷新')} (${costName}x${costAmount})`;
+
+            btnRefresh.onclick = () => {
+                const result = SectManager.manualRefreshMarket();
+                if (window.game && window.game.uiManager) window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'SYSTEM');
+                if (result.success) this.renderMarket();
+                this.update();
+            };
+        }
+
+        const list = document.getElementById('market-list');
+        const items = SectManager.getMarketItems();
+
+        Object.values(items).forEach(item => {
+            const div = document.createElement('div');
+            div.style = 'background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;';
+
+            const currentCount = SectManager.state.marketPurchaseCounts ? (SectManager.state.marketPurchaseCounts[item.id] || 0) : 0;
+            const isSoldOut = currentCount >= item.limit;
+
+            div.innerHTML = `
+                <div>
+                    <div style="font-weight: bold; color: #ce93d8;">${lang.t(item.id)}</div>
+                    <div style="font-size: 0.8em; color: #aaa;">${lang.t('消耗')}: <span style="color: #ffd700;">${item.cost} ${lang.t('貢獻')}</span></div>
+                    <div style="font-size: 0.75em; color: #666;">${lang.t('限購')}: ${currentCount}/${item.limit}</div>
+                </div>
+                <button class="btn-buy-market btn" data-id="${item.id}" style="padding: 4px 12px; font-size: 0.8em;" ${isSoldOut ? 'disabled' : ''}>
+                    ${isSoldOut ? lang.t('售罄') : lang.t('兌換')}
+                </button>
+            `;
+
+            div.querySelector('.btn-buy-market').onclick = () => {
+                const result = SectManager.buyMarketItem(item.id);
+                if (window.game && window.game.uiManager) window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'SYSTEM');
+                if (result.success) this.renderMarket(); // Re-render to update counts
+                this.update(); // Update header currency
+            };
+
+            list.appendChild(div);
+        });
+    }
+
+    renderEvents() {
+        const lang = LanguageManager.getInstance();
+        const container = document.getElementById('sect-content-area');
+        const activeEvent = SectManager.state.activeEvent;
+        const nextTime = SectManager.state.nextEventTime;
+
+        if (activeEvent) {
+            const isFull = activeEvent.currentCompletions >= activeEvent.limit;
+
+            container.innerHTML = `
+                <div style="padding: 20px; background: rgba(33, 150, 243, 0.1); border-radius: 8px; text-align: center; border: 1px solid #2196f3;">
+                    <h2 style="color: #64b5f6; margin-bottom: 5px;">${lang.t(activeEvent.name)}</h2>
+                    <p style="color: #ccc; margin-bottom: 15px;">${lang.t(activeEvent.desc)}</p>
+                    
+                    <div style="margin: 20px 0; font-size: 1.2em;">
+                        ${lang.t('求購')}: <span style="color: #ffd700;">${lang.t(activeEvent.target)} x${activeEvent.batchSize || 1}</span>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px; font-size: 0.9em; color: #aaa;">
+                        ${lang.t('剩餘次數')}: <span style="color: #fff;">${activeEvent.limit - activeEvent.currentCompletions}/${activeEvent.limit}</span>
+                    </div>
+
+                    <div style="margin-bottom: 20px; font-size: 0.9em; color: #888;">
+                        ${lang.t('剩餘時間')}: <span id="event-timer">00:00</span>
+                    </div>
+
+                    <button id="btn-submit-event" class="btn" style="padding: 10px 30px; background: ${isFull ? '#666' : '#2196f3'}; font-weight: bold;" ${isFull ? 'disabled' : ''}>
+                        ${isFull ? lang.t('已達上限') : lang.t('提交物品')}
+                    </button>
+                </div>
+            `;
+
+            const btnSubmit = document.getElementById('btn-submit-event');
+            if (btnSubmit && !isFull) {
+                btnSubmit.onclick = () => {
+                    const result = SectManager.submitEventItem();
+                    if (window.game && window.game.uiManager) window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'SYSTEM');
+                    this.update(); // Re-render to update counts
+                };
+            }
+        } else {
+            const diff = Math.max(0, nextTime - Date.now());
+            const minutes = Math.ceil(diff / 60000);
+            container.innerHTML = `
+                <div style="padding: 40px; text-align: center; color: #666;">
+                    <h3>${lang.t('暫無事件')}</h3>
+                    <p>${lang.t('下一次天機顯現')}: ${minutes}${lang.t('分鐘後')}</p>
+                    <button id="btn-force-event" class="btn" style="margin-top:20px; font-size:0.8em; opacity:0.5;">(Debug) 觸發事件</button>
+                </div>
+            `;
+            const btnForce = document.getElementById('btn-force-event');
+            if (btnForce) {
+                btnForce.onclick = () => {
+                    SectManager.triggerRandomEvent();
+                    this.renderEvents();
+                };
+            }
         }
     }
 
@@ -226,13 +320,16 @@ export default class SectPanel {
         const dev = SectManager.state.developmentPoints;
         const req = SectManager.getRequiredDevelopment();
         const contribCount = SectManager.state.contributionCount;
+        const playerContrib = SectManager.state.playerContribution || 0;
 
         // Update Info
         const elLevel = document.getElementById('sect-level');
         const elDevText = document.getElementById('sect-dev-text');
         const elDevBar = document.getElementById('sect-dev-bar');
         const elLevelDesc = document.getElementById('sect-level-desc');
+        const elPlayerContrib = document.getElementById('player-contribution');
 
+        if (elPlayerContrib) elPlayerContrib.textContent = playerContrib;
         if (elLevel) elLevel.textContent = level;
         if (elDevText) elDevText.textContent = `${dev}/${req}`;
         if (elDevBar) elDevBar.style.width = `${Math.min(100, (dev / req) * 100)}%`;
@@ -240,116 +337,37 @@ export default class SectPanel {
         // Level Description
         if (elLevelDesc) {
             let descKey = `宗門_desc_${level}`;
-            let nextKey = '';
-
-            if (level === 1) nextKey = '下一級: 開放宗門丹堂';
-            else if (level === 2) nextKey = '下一級: 增加任務獎勵';
-            else if (level === 3) nextKey = '下一級: 開放宗門聚靈陣';
-            else if (level >= 4 && level < 5) nextKey = '下一級: 宗門圓滿';
-            else if (level === 5) nextKey = '已臻圓滿';
-
             const descText = lang.t(descKey);
-            const nextText = nextKey ? lang.t(nextKey) : '';
-
-            // Fallback if key missing (for dev safety)
-            const finalDesc = (descText === descKey) ? lang.t('可接取宗門任務') : descText;
-
-            elLevelDesc.innerHTML = `${finalDesc} <span style="color:#666; margin-left:5px;">(${nextText})</span>`;
+            elLevelDesc.innerText = descText === descKey ? lang.t('可接取宗門任務') : descText;
         }
 
-        // Alchemy Hall Visibility
-        const elAlchemy = document.getElementById('sect-alchemy-hall');
-        if (elAlchemy) {
-            elAlchemy.style.display = (level >= 2) ? 'block' : 'none';
-        }
+        // Active Task Update (If visible)
+        const activeTask = SectManager.state.activeTask;
+        const elActiveBox = document.getElementById('sect-active-task');
+        if (elActiveBox && elActiveBox.style.display !== 'none') {
+            const elActiveTimer = document.getElementById('active-task-timer');
+            const elActiveBar = document.getElementById('active-task-bar');
+            const btnClaim = document.getElementById('btn-sect-claim');
 
-        // 更新蘊靈丹丹方狀態
-        const elRecipe = document.getElementById('sect-recipe-spirit-pill');
-        const btnBuyRecipe = document.getElementById('btn-buy-recipe-spirit-pill');
-        const recipeCostEl = document.getElementById('recipe-cost-display');
-        if (elRecipe && btnBuyRecipe) {
-            if (SectManager.hasRecipe('spirit_nurt_pill')) {
-                btnBuyRecipe.textContent = lang.t('已購買');
-                btnBuyRecipe.disabled = true;
-                btnBuyRecipe.style.opacity = '0.5';
-                btnBuyRecipe.style.cursor = 'not-allowed';
-                if (recipeCostEl) recipeCostEl.style.color = '#666';
-            } else {
-                // 檢查資源是否足夠
-                const recipeCost = SectManager.getRecipeCost('spirit_nurt_pill');
-                let canAffordRecipe = true;
-                if (window.game && window.game.resourceManager) {
-                    for (const [key, val] of Object.entries(recipeCost)) {
-                        const res = window.game.resourceManager.getResource(key);
-                        if (!res || res.value < val) {
-                            canAffordRecipe = false;
-                            break;
-                        }
-                    }
-                }
-                if (recipeCostEl) recipeCostEl.style.color = canAffordRecipe ? '#4caf50' : '#e57373';
-                btnBuyRecipe.disabled = !canAffordRecipe;
-                btnBuyRecipe.style.opacity = canAffordRecipe ? '1' : '0.5';
-                btnBuyRecipe.style.cursor = canAffordRecipe ? 'pointer' : 'not-allowed';
-            }
-        }
-
-        // 更新上品金丹狀態
-        const pillCostEl = document.getElementById('pill-cost-display');
-        const btnBuyPill = document.getElementById('btn-buy-sect-pill');
-        if (pillCostEl && btnBuyPill) {
-            const pillCost = SectManager.getPillCost('sect_high_golden_pill');
-            let canAffordPill = true;
-            if (window.game && window.game.resourceManager) {
-                for (const [key, val] of Object.entries(pillCost)) {
-                    const res = window.game.resourceManager.getResource(key);
-                    if (!res || res.value < val) {
-                        canAffordPill = false;
-                        break;
-                    }
+            if (activeTask && elActiveTimer && elActiveBar) {
+                const now = Date.now();
+                if (now >= activeTask.endTime) {
+                    elActiveTimer.textContent = lang.t('已完成');
+                    if (btnClaim) btnClaim.style.display = 'block';
+                    elActiveBar.style.width = '100%';
+                    elActiveBar.style.background = '#4caf50';
+                } else {
+                    const remain = Math.max(0, (activeTask.endTime - now) / 1000);
+                    elActiveTimer.textContent = Formatter.formatTime(remain);
                 }
             }
-            pillCostEl.style.color = canAffordPill ? '#4caf50' : '#e57373';
-            btnBuyPill.disabled = !canAffordPill;
-            btnBuyPill.style.opacity = canAffordPill ? '1' : '0.5';
-            btnBuyPill.style.cursor = canAffordPill ? 'pointer' : 'not-allowed';
-            btnBuyPill.style.cursor = canAffordPill ? 'pointer' : 'not-allowed';
         }
 
-        // 更新中級妖丹狀態
-        const coreCostEl = document.getElementById('monster-core-cost-display');
-        const coreCountEl = document.getElementById('monster-core-count');
-        const btnBuyCore = document.getElementById('btn-buy-monster-core');
-
-        if (coreCostEl && btnBuyCore && coreCountEl) {
-            const limit = SectManager.getShopItemLimit('monster_core_mid');
-            const count = SectManager.getShopItemCount('monster_core_mid');
-            coreCountEl.textContent = count;
-
-            if (count >= limit) {
-                btnBuyCore.textContent = lang.t('已售罄');
-                btnBuyCore.disabled = true;
-                btnBuyCore.style.opacity = '0.5';
-                btnBuyCore.style.cursor = 'not-allowed';
-                coreCostEl.style.color = '#666';
-            } else {
-                btnBuyCore.textContent = lang.t('購買');
-                const cost = SectManager.getPillCost('monster_core_mid');
-                let canAfford = true;
-                if (window.game && window.game.resourceManager) {
-                    for (const [key, val] of Object.entries(cost)) {
-                        const res = window.game.resourceManager.getResource(key);
-                        if (!res || res.value < val) {
-                            canAfford = false;
-                            break;
-                        }
-                    }
-                }
-                coreCostEl.style.color = canAfford ? '#4caf50' : '#e57373';
-                btnBuyCore.disabled = !canAfford;
-                btnBuyCore.style.opacity = canAfford ? '1' : '0.5';
-                btnBuyCore.style.cursor = canAfford ? 'pointer' : 'not-allowed';
-            }
+        // Event Timer Update
+        const elEventTimer = document.getElementById('event-timer');
+        if (elEventTimer && SectManager.state.activeEvent) {
+            const diff = Math.max(0, SectManager.state.activeEvent.endTime - Date.now());
+            elEventTimer.textContent = Formatter.formatTime(diff / 1000);
         }
 
         // Update Contrib
@@ -361,6 +379,13 @@ export default class SectPanel {
         if (elContribTimer) {
             const diff = Math.max(0, SectManager.state.nextContributionReset - Date.now());
             elContribTimer.textContent = Formatter.formatTime(diff / 1000);
+        }
+
+        // Market Timer Update
+        const elMarketTimer = document.getElementById('market-reset-timer');
+        if (elMarketTimer && SectManager.state.nextMarketReset) {
+            const diff = Math.max(0, SectManager.state.nextMarketReset - Date.now());
+            elMarketTimer.textContent = Formatter.formatTime(diff / 1000);
         }
 
         // Update Refresh Contrib Tooltip
@@ -392,9 +417,8 @@ export default class SectPanel {
             elCost.style.color = affordable ? '#ffffff' : '#e57373';
         }
 
-        // Update Active Task
-        const activeTask = SectManager.state.activeTask;
-        const elActiveBox = document.getElementById('sect-active-task');
+        // Update Active Task Display Logic from previous structure 
+        // (Re-using logic elements defined within renderTasks or querying them)
         const elActiveName = document.getElementById('active-task-name');
         const elActiveDesc = document.getElementById('active-task-desc');
         const elActiveReward = document.getElementById('active-task-reward');
@@ -410,11 +434,11 @@ export default class SectPanel {
                 const rarityColor = activeTask.rarityColor || '#4fc3f7';
                 elActiveBox.style.borderColor = rarityColor;
                 elActiveBox.style.background = `${rarityColor}1a`; // Low opacity background
-                elActiveName.style.color = rarityColor;
+                if (elActiveName) elActiveName.style.color = rarityColor;
 
                 // Name & Descripton & Reward
                 const rarityName = activeTask.rarityName ? `[${lang.t(activeTask.rarityName)}] ` : '';
-                elActiveName.textContent = rarityName + lang.t(activeTask.name);
+                if (elActiveName) elActiveName.textContent = rarityName + lang.t(activeTask.name);
 
                 if (elActiveDesc) elActiveDesc.textContent = lang.t(activeTask.desc);
 
@@ -433,24 +457,24 @@ export default class SectPanel {
                 const elapsed = now - activeTask.startTime;
                 const pct = Math.min(100, (elapsed / total) * 100);
 
-                elActiveBar.style.width = `${pct}%`;
+                if (elActiveBar) elActiveBar.style.width = `${pct}%`;
 
                 if (now >= activeTask.endTime) {
-                    elActiveTimer.textContent = lang.t('已完成');
-                    btnClaim.style.display = 'block';
-                    elActiveBar.style.background = '#4caf50';
+                    if (elActiveTimer) elActiveTimer.textContent = lang.t('已完成');
+                    if (btnClaim) btnClaim.style.display = 'block';
+                    if (elActiveBar) elActiveBar.style.background = '#4caf50';
                 } else {
                     const remain = Math.max(0, (activeTask.endTime - now) / 1000);
-                    elActiveTimer.textContent = Formatter.formatTime(remain);
-                    btnClaim.style.display = 'none';
-                    elActiveBar.style.background = '#2196f3';
+                    if (elActiveTimer) elActiveTimer.textContent = Formatter.formatTime(remain);
+                    if (btnClaim) btnClaim.style.display = 'none';
+                    if (elActiveBar) elActiveBar.style.background = '#2196f3';
                 }
             } else {
                 elActiveBox.style.display = 'none';
             }
         }
 
-        // Update Task List (Only if changed? Ideally diff, but full render for simplicity first)
+        // Update Task List
         const elTaskList = document.getElementById('sect-task-list');
         const elTaskTimer = document.getElementById('sect-task-timer');
 
@@ -472,10 +496,12 @@ export default class SectPanel {
             }
         }
 
-        if (elTaskList) {
-            // Check if needed to clear
+        if (elTaskList && elTaskList.innerHTML === '') {
+            // Initial render of tasks if empty (optional safety)
+            // But usually renderTasks handles this. 
+            // We should iterate tasks here only if we want dynamic updates without full re-render
+            // For now, let's just clear and rebuild for simplicity as in original code
             elTaskList.innerHTML = '';
-
             SectManager.state.tasks.forEach((task, index) => {
                 const div = document.createElement('div');
                 div.className = 'task-card';
@@ -490,7 +516,6 @@ export default class SectPanel {
                 // Rarity label
                 const rarityLabel = task.rarityName ? `[${lang.t(task.rarityName)}]` : '';
 
-                // Special effect text for legendary tasks
                 let specialText = '';
                 if (task.specialEffect && task.specialEffect.type === 'reduce_training_time') {
                     const percent = Math.round(task.specialEffect.value * 100);
@@ -506,7 +531,6 @@ export default class SectPanel {
                     <button class="btn-start-task btn" style="width: 100%; padding: 2px; font-size: 0.8em;">${lang.t('接受')}</button>
                 `;
 
-                // Disable if active task exists
                 if (activeTask) {
                     div.querySelector('button').disabled = true;
                     div.querySelector('button').classList.add('btn-disabled');
@@ -515,9 +539,8 @@ export default class SectPanel {
                 div.querySelector('.btn-start-task').onclick = () => {
                     const res = SectManager.startTask(index);
                     if (res.success) {
-                        this.update();
+                        this.renderTasks();
                     } else {
-                        // Alert -> Log
                         if (window.game && window.game.uiManager) {
                             window.game.uiManager.addLog(res.msg, 'INFO');
                         }

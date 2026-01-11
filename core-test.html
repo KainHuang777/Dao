@@ -68,6 +68,8 @@
         <button id="sectContribute" style="background: #7b1fa2;">3. 執行貢獻</button>
         <button id="sectMaxLevel" style="background: #ab47bc;">4. 宗門滿級 (LV5)</button>
         <button id="sectTaskTest" style="background: #8e24aa;">5. 任務流程測試 (刷新/接受/領取)</button>
+        <button id="sectMarketTest" style="background: #2196f3;">6. 雲海天市測試 (兌換日志驗證)</button>
+        <button id="sectRewardTest" style="background: #ff9800;">7. Era 3 獎勵測試 (百年靈草)</button>
     </div>
     <div style="margin-top: 20px; padding: 10px; border: 1px solid #444; border-radius: 8px;">
         <h3>存檔功能測試</h3>
@@ -115,6 +117,10 @@
                 const { loadBuildings } = await import('./src/data/Buildings.js');
                 const { default: EraManager } = await import('./src/utils/EraManager.js');
                 const { default: SkillManager } = await import('./src/utils/SkillManager.js');
+                const { default: LanguageManager } = await import('./src/utils/LanguageManager.js');
+
+                // 0. 語言系統初始化 (最優先)
+                await LanguageManager.getInstance().init();
 
                 // 1. 資源初始化
                 resourceManager = new ResourceManager();
@@ -651,6 +657,95 @@
                 }
             } else {
                 log('✗ 任務列表為空', 'error');
+            }
+        });
+
+        document.getElementById('sectMarketTest').addEventListener('click', async () => {
+            const sm = await getSectManager();
+            log('\n=== 雲海天市測試 ===', 'info');
+
+            // Force reload language to ensure latest keys are present (Hotfix for test env)
+            const { default: LanguageManager } = await import('./src/utils/LanguageManager.js');
+            await LanguageManager.getInstance().loadLanguage('zh-TW');
+            log('已強制刷新語言數據', 'info');
+
+            // 1. Give money
+            sm.state.playerContribution = 1000;
+            log('已設置玩家貢獻: 1000', 'info');
+
+            // 2. Mock Logger to intercept message
+            const originalLog = window.game.uiManager.addLog;
+            let lastLogMsg = '';
+            window.game.uiManager.addLog = (msg, type) => {
+                lastLogMsg = msg;
+                log(`[拦截日志] ${msg}`, 'info');
+            };
+
+            // 3. Buy Item
+            const itemId = 'spirit_jade'; // Cost 200 (Era 5) or similar
+            // Force item availability just in case logic depends on Era
+            // Market Items are hardcoded in SectManager, check if era restriction applies?
+            // getMarketItem doens't check era, buyMarketItem doesn't check era explicitly (only validates cost).
+            // Actually config has 'era' property but buy function doesn't seem to enforce it strictly, assuming UI filters it.
+            // Let's use 'foundation_pill' which is Era 4. Or just force buy.
+
+            const result = sm.buyMarketItem('foundation_pill'); // Cost 100
+
+            // Restore logger
+            window.game.uiManager.addLog = originalLog;
+
+            if (result.success) {
+                log('兌換操作成功', 'success');
+                // Verify log content
+                // "🛒 在雲海天市兌換了 築基丹 x1，消耗 100 宗門貢獻"
+                if (lastLogMsg.includes('消耗') && lastLogMsg.includes('100')) {
+                    log('✓ 日誌內容驗證通過 (包含物品與消耗)', 'success');
+                } else {
+                    log(`✗ 日誌內容缺乏消耗信息: ${lastLogMsg}`, 'error');
+                }
+            } else {
+                log(`✗ 兌換失敗: ${result.msg}`, 'error');
+            }
+        });
+
+        document.getElementById('sectRewardTest').addEventListener('click', async () => {
+            const sm = await getSectManager();
+            const { default: PlayerManager } = await import('./src/utils/PlayerManager.js');
+            log('\n=== Era 3 獎勵數值測試 ===', 'info');
+
+            // 1. Force Era 3
+            PlayerManager.state.eraId = 3;
+            log('已將境界設為 3 (金丹期)', 'info');
+
+            // 2. Refresh until we find spirit_grass_100y
+            let found = false;
+            let checks = 0;
+            const target = 'spirit_grass_100y';
+
+            log('開始隨機刷新任務尋找百年靈草...', 'info');
+
+            while (!found && checks < 20) {
+                sm.refreshTasks();
+                const tasks = sm.state.tasks;
+                for (const t of tasks) {
+                    if (t.reward[target]) {
+                        const amount = t.reward[target];
+                        const rarity = t.rarity;
+                        log(`找到任務 [${t.rarity}]: ${target} x${amount}`, 'info');
+
+                        if ((rarity === 'rare' || rarity === 'epic') && amount >= 40) {
+                            log(`✓ 數值符合預期 (>= 40)`, 'success');
+                            found = true;
+                        } else if (rarity === 'rare' || rarity === 'epic') {
+                            log(`✗ 數值過低 (< 40)`, 'error');
+                        }
+                    }
+                }
+                checks++;
+            }
+
+            if (!found) {
+                log('⚠ 嘗試 20 次刷新仍未隨機到目標獎勵，建議重試', 'warning');
             }
         });
 
