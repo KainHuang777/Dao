@@ -437,13 +437,11 @@ export default class UIManager {
             ${tribulationDisplay}
             <div class="player-info-line">
                 <span>${LanguageManager.getInstance().t('境界')}: <b style="color:var(--gold-color)">${era ? LanguageManager.getInstance().t(era.eraName) : '...'}</b> <span style="font-size:0.8em; color:#aaa;">(Era ${eraId})</span></span>
-                <button id="upgrade-btn" class="mini-btn ${upgradeCheck.canUpgrade ? 'btn-active' : 'btn-disabled'}" 
-                    title="${upgradeTooltip}">${LanguageManager.getInstance().t(upgradeButtonText.replace('⚡ ', '').replace('✨ ', ''))}</button>
+                <button id="upgrade-btn" class="mini-btn ${upgradeCheck.canUpgrade ? 'btn-active' : 'btn-disabled'}">${LanguageManager.getInstance().t(upgradeButtonText.replace('⚡ ', '').replace('✨ ', ''))}</button>
             </div>
             <div class="player-info-line">
                 <span>${LanguageManager.getInstance().t('等級')}: <b style="color:#fff">${level}</b></span>
-                <button id="level-up-btn" class="mini-btn ${levelUpCheck.canLevelUp ? 'btn-active' : 'btn-disabled'}" 
-                    title="${levelUpTooltip}">📈 ${LanguageManager.getInstance().t('提升')}</button>
+                <button id="level-up-btn" class="mini-btn ${levelUpCheck.canLevelUp ? 'btn-active' : 'btn-disabled'}">📈 ${LanguageManager.getInstance().t('提升')}</button>
             </div>
             <!-- 修煉進度條 -->
             <div id="training-progress-container" style="width: 75%; margin: 5px 0 8px 0;">
@@ -660,26 +658,12 @@ export default class UIManager {
                 tribulationSpan.textContent = `${LanguageManager.getInstance().t('渡劫成功率')}: ${(tribulationRate * 100).toFixed(1)}%`;
             }
 
-            // 更新升階按鈕的 tooltip
-            const upBtn = document.getElementById('upgrade-btn');
-            if (upBtn) {
-                const check = PlayerManager.canUpgrade(currentResources);
-                if (check.canUpgrade) {
-                    upBtn.title = `${LanguageManager.getInstance().t('渡劫成功率')}: ${(tribulationRate * 100).toFixed(1)}%\n${check.reason}`;
-                } else {
-                    upBtn.title = check.reason;
-                }
-            }
         }
 
         const upBtn = document.getElementById('upgrade-btn');
         if (upBtn) {
             const check = PlayerManager.canUpgrade(currentResources);
             upBtn.className = `mini-btn ${check.canUpgrade ? 'btn-active' : 'btn-disabled'}`;
-            // 無論是否渡劫階段，都需要即時更新 tooltip
-            if (!needsTribulation) {
-                upBtn.title = check.reason;
-            }
         }
 
         const lvlBtn = document.getElementById('level-up-btn');
@@ -808,6 +792,15 @@ export default class UIManager {
         if (upgradeBtn) {
             upgradeBtn.onclick = () => {
                 const currentResources = this.game.resourceManager.getUnlockedResources();
+                const check = PlayerManager.canUpgrade(currentResources);
+
+                if (!check.canUpgrade) {
+                    // 無法升階：顯示 SYSTEM 級別 LOG
+                    const msg = `<span style="color:#ff9800">⚠️ ${LanguageManager.getInstance().t('無法升階')}: ${check.reason}</span>`;
+                    this.addLog(msg, 'SYSTEM');
+                    return;
+                }
+
                 PlayerManager.upgrade(currentResources);
                 // 無論成功失敗（如渡劫失敗導致掉級），都需要更新 UI
                 this.updatePlayerInfo();
@@ -818,6 +811,15 @@ export default class UIManager {
         if (levelUpBtn) {
             levelUpBtn.onclick = () => {
                 const currentResources = this.game.resourceManager.getUnlockedResources();
+                const check = PlayerManager.canLevelUp(currentResources);
+
+                if (!check.canLevelUp) {
+                    // 無法提升等級：顯示 SYSTEM 級別 LOG
+                    const msg = `<span style="color:#ff9800">⚠️ ${LanguageManager.getInstance().t('無法提升等級')}: ${check.reason}</span>`;
+                    this.addLog(msg, 'SYSTEM');
+                    return;
+                }
+
                 if (PlayerManager.increaseLevel(currentResources)) {
                     this.updatePlayerInfo();
                     window.game.buildingManager.recalculateRates();

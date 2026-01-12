@@ -1,3 +1,13 @@
+2026-01-12 Update Log (v0.29):
+
+[UX] Realm Upgrade Button Feedback Improvement
+- Removed tooltip (title) from Ascend and Level Up buttons to fix delayed state detection issue.
+- Button click now displays immediate SYSTEM-level LOG feedback when upgrade is not possible.
+- Failure messages shown in orange (#ff9800) color for visibility.
+- Files changed: MainView.js, zh-TW.json, en.json
+
+---
+
 2026-01-12 Update Log:
 
 [Fix] Sect Task Claim Button Issue

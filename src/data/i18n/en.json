@@ -601,5 +601,7 @@
     "已購買": "Purchased",
     "基礎產出/採集": "Basic Production/Gathering",
     "合成製作": "Crafting",
-    "基礎空間": "Base Storage"
+    "基礎空間": "Base Storage",
+    "無法升階": "Cannot Ascend",
+    "無法提升等級": "Cannot Level Up"
 }
