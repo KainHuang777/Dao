@@ -1,6 +1,62 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.272",
+        date: "2026-01-13",
+        notes: {
+            "zh-TW": [
+                "【平衡】元嬰孕育：調整「元嬰孕育」技能效果，由固定增加上限改為提升基礎資源上限 10% (x1.10)。",
+                "【功能】天機事件提示：當天機事件開啟時，資源區會顯示 [天] 字提示（與宗門任務提示 [宗] 並列）。"
+            ],
+            "zh-CN": [
+                "【平衡】元婴孕育：调整「元婴孕育」技能效果，由固定增加上限改为提升基础资源上限 10% (x1.10)。",
+                "【功能】天机事件提示：当天机事件开启时，资源区会显示 [天] 字提示（与宗门任务提示 [宗] 并列）。"
+            ],
+            "en": [
+                "[Balance] Nascent Soul Incubation: Changed effect from flat cap increase to +10% Basic Resource Cap (x1.10).",
+                "[Feature] Event Notification: Added [天] notification in resource area when Heavenly Mystery Event is active."
+            ],
+            "ja": [
+                "【バランス】元嬰孕育：スキルの効果を固定値上限増加から基礎資源上限+10% (x1.10) に調整しました。",
+                "【機能】天機イベント通知：天機イベント開催中、資源エリアに [天] の通知を表示するようにしました。"
+            ]
+        }
+    },
+    {
+        version: "v0.271",
+        date: "2026-01-12",
+        notes: {
+            "zh-TW": [
+                "【體驗】境界升階反饋：移除「升階」與「提升」按鈕的 Tooltip，改為點擊時在日誌中即時顯示 SYSTEM 級反饋。失敗訊息使用橘色高亮。",
+                "【修復】天機事件刷新：修復了天機事件提交後剩餘次數不會即時刷新的 UI 問題。",
+                "【介面】雲海天市說明：在市場物品列表中直接顯示物品說明，方便玩家了解物品用途。",
+                "【功能】天機事件提示：當天機事件開啟時，資源區會顯示 [天] 字提示（與宗門任務提示 [宗] 並列）。",
+                "【平衡】元嬰孕育：調整「元嬰孕育」技能效果，由固定增加上限改為提升基礎資源上限 10% (x1.10)。"
+            ],
+            "zh-CN": [
+                "【体验】境界升阶反馈：移除「升阶」与「提升」按钮的 Tooltip，改为点击时在日志中即时显示 SYSTEM 级反馈。失败信息使用橘色高亮。",
+                "【修复】天机事件刷新：修复了天机事件提交后剩余次数不会即时刷新的 UI 问题。",
+                "【界面】云海天市说明：在市场物品列表中直接显示物品说明，方便玩家了解物品用途。",
+                "【功能】天机事件提示：当天机事件开启时，资源区会显示 [天] 字提示（与宗门任务提示 [宗] 并列）。",
+                "【平衡】元婴孕育：调整「元婴孕育」技能效果，由固定增加上限改为提升基础资源上限 10% (x1.10)。"
+            ],
+            "en": [
+                "[UX] Realm Upgrade Feedback: Removed button tooltips; added immediate SYSTEM log feedback upon click with failure reasons. Failure messages are highlighted in orange.",
+                "[Fix] Sect Event Refresh: Fixed a UI bug where remaining attempts for 'Heavenly Mystery Events' did not update immediately after submission.",
+                "[UI] Market Descriptions: Added direct item descriptions in the Cloud Sea Market list for better clarity.",
+                "[Feature] Event Notification: Added [天] notification in resource area when Heavenly Mystery Event is active.",
+                "[Balance] Nascent Soul Incubation: Changed effect from flat cap increase to +10% Basic Resource Cap (x1.10)."
+            ],
+            "ja": [
+                "【体験】境界昇格フィードバック：ボタンのツールチップを削除し、クリック時にログへSYSTEM級の即時にフィードバックを表示するように変更。失敗メッセージはオレンジ色でハイライト。",
+                "【修正】天機イベント更新：天機イベント提出後に残り回数が即座に更新されないUIの問題を修正。",
+                "【UI】市場説明：雲海天市のアイテムリストに直接説明文を表示し、アイテムの用途を確認しやすくしました。",
+                "【機能】天機イベント通知：天機イベント開催中、資源エリアに [天] の通知を表示するようにしました。",
+                "【バランス】元嬰孕育：スキルの効果を固定値上限増加から基礎資源上限+10% (x1.10) に調整しました。"
+            ]
+        }
+    },
+    {
         version: "v0.27",
         date: "2026-01-11",
         notes: {

@@ -456,6 +456,7 @@ export default class BuildingManager {
         const learnedSkills = PlayerManager.getLearnedSkills();
         const skillMultipliers = {}; // 儲存倍率效果
         let advanceMaxSkillMult = 1; // 進階資源上限倍率
+        let basicMaxSkillMult = 1; // 基礎資源上限倍率
 
         Object.entries(learnedSkills).forEach(([skillId, level]) => {
             const skill = SkillManager.getSkill(skillId);
@@ -478,7 +479,10 @@ export default class BuildingManager {
                 else {
                     const finalAmount = amount * level;
 
-                    if (type === 'all_max') {
+                    if (type === 'all_max_multiplier') {
+                        // 基礎資源上限倍率
+                        basicMaxSkillMult *= Math.pow(amount, level);
+                    } else if (type === 'all_max') {
                         ['lingli', 'money', 'wood', 'stone_low', 'spirit_grass_low'].forEach(resKey => {
                             if (resources[resKey]) resources[resKey].max += finalAmount;
                         });
@@ -545,6 +549,11 @@ export default class BuildingManager {
             if (res.type === 'advance') {
                 res.max *= (1 + advanceMaxTalentBonus);
                 res.max *= advanceMaxSkillMult;
+            }
+
+            // 基礎資源上限加成 (技能)
+            if (res.type === 'basic') {
+                res.max *= basicMaxSkillMult;
             }
 
             // 道心與道證加成 (Request 3)

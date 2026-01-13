@@ -603,5 +603,9 @@
     "合成製作": "Crafting",
     "基礎空間": "Base Storage",
     "無法升階": "Cannot Ascend",
-    "無法提升等級": "Cannot Level Up"
+    "無法提升等級": "Cannot Level Up",
+    "foundation_pill_desc": "Effect: Increases Tribulation Success Rate by 2% (Max 20).",
+    "spirit_grass_100y_desc": "Use: Vital material for mid-grade alchemy and breakthroughs.",
+    "spirit_jade_desc": "Use: Rare jade for advanced buildings and crafting.",
+    "monster_core_mid_desc": "Use: Rich in spiritual power, used for mid-grade items."
 }

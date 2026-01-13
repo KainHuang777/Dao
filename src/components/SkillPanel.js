@@ -179,6 +179,7 @@ export default class SkillPanel {
         const lang = LanguageManager.getInstance();
 
         if (type === 'all_max') return `${lang.t('所有基礎資源上限')} +${Formatter.formatBigNumber(finalAmount)}`;
+        if (type === 'all_max_multiplier') return `${lang.t('所有基礎資源上限')} x${finalAmount.toFixed(2)}`;
         if (type === 'time_reduction') {
             const reduction = (1 - amount) * displayLevel;
             const targetPercent = Math.max(10, (1 - reduction) * 100);

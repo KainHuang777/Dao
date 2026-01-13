@@ -18,7 +18,7 @@ building_mastery_3,🏗️ 建築精通·高階,融會貫通建築之道，所�
 building_mastery_4,🏗️ 建築精通·宗師,建築造詣登峰造極，所有建築等級上限 +10,1,passive,building_level_cap,10,7,building_mastery_3,skill_point,30600
 building_mastery_5,🏗️ 建築精通·大帝,踏入仙道建築領域，所有建築等級上限 +20,1,passive,building_level_cap,20,9,building_mastery_4,skill_point,51000
 building_mastery_6,🏗️ 建築精通·仙級,參透天地建築玄機，所有建築等級上限 +40,1,passive,building_level_cap,40,11,building_mastery_5,skill_point,85000
-nascent_soul_incubation,👼 元嬰孕育,孕育純陽元嬰，大幅提升各類資源上限。,5,passive,all_max,20000,4,golden_core_formation,skill_point,21250
+nascent_soul_incubation,👼 元嬰孕育,孕育純陽元嬰，大幅提升各類資源上限。,5,passive,all_max_multiplier,1.1,4,golden_core_formation,skill_point,21250
 nascent_soul_mastery,🔱 元嬰大成,元嬰圓滿，神通自現，進一步縮短修煉時間。,5,passive,time_reduction,0.8,4,nascent_soul_incubation:1,skill_point,21000
 void_expansion,🌌 虛空擴展,感悟虛空之力，擴充自身容納萬物的能力。,5,passive,advance_max_multiplier,1.285,5,nascent_soul_mastery:5,skill_point,30000
 

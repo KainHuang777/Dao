@@ -235,6 +235,7 @@ export default class SectPanel {
             div.innerHTML = `
                 <div>
                     <div style="font-weight: bold; color: #ce93d8;">${lang.t(item.id)}</div>
+                    <div style="font-size: 0.8em; color: #bbb; margin: 2px 0;">${lang.t(item.id + '_desc')}</div>
                     <div style="font-size: 0.8em; color: #aaa;">${lang.t('消耗')}: <span style="color: #ffd700;">${item.cost} ${lang.t('貢獻')}</span></div>
                     <div style="font-size: 0.75em; color: #666;">${lang.t('限購')}: ${currentCount}/${item.limit}</div>
                 </div>
@@ -291,7 +292,7 @@ export default class SectPanel {
                 btnSubmit.onclick = () => {
                     const result = SectManager.submitEventItem();
                     if (window.game && window.game.uiManager) window.game.uiManager.addLog(result.msg, result.success ? 'INFO' : 'SYSTEM');
-                    this.update(); // Re-render to update counts
+                    this.renderEvents(); // Re-render to update counts
                 };
             }
         } else {

@@ -625,14 +625,21 @@ export default class UIManager {
 
             // Check visibility
             const hasTasks = SectManager.hasAvailableTasks && SectManager.hasAvailableTasks();
-            const isActive = SectManager.state.activeTask;
-            // Display if tasks available AND no active task (so user knows to go take one)
-            // Or just if tasks available? User request: "Display that Sect Tasks are available"
-            // If active task exists, maybe they are busy, but "Available to pick" usually means "Go pick one".
-            // If active, user can't pick new one. So hide if active?
-            // Let's hide if active task exists, because you can't take another.
+            const activeTask = SectManager.state.activeTask;
+            const activeEvent = SectManager.state.activeEvent;
 
-            if (hasTasks && !isActive) {
+            let notifyText = '';
+            // 宗門任務提示：有可用任務且目前沒在做任務
+            if (hasTasks && !activeTask) {
+                notifyText += '[宗]';
+            }
+            // 天機事件提示：有活動進行中
+            if (activeEvent) {
+                notifyText += '[天]';
+            }
+
+            if (notifyText) {
+                sectNotify.textContent = notifyText;
                 sectNotify.style.display = 'inline';
             } else {
                 sectNotify.style.display = 'none';

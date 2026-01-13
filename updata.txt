@@ -6,6 +6,28 @@
 - Failure messages shown in orange (#ff9800) color for visibility.
 - Files changed: MainView.js, zh-TW.json, en.json
 
+[Fix] Sect Event Attempt Refresh
+- Fixed issue where "Heavenly Mystery Event" remaining attempts did not update immediately after submission.
+- Changed to call renderEvents() after submission to ensure UI reflects current state.
+- Files changed: SectPanel.js
+
+[UI] Cloud Sea Market Item Descriptions
+- Added direct display of item descriptions in the Cloud Sea Market (next to/below names).
+- Added description translations for market items (foundation_pill, spirit_grass_100y, etc.).
+- Files changed: SectPanel.js, zh-TW.json, en.json
+
+2026-01-13 Update Log (v0.272):
+- [Feature] Heavenly Mystery Event notification [天] added.
+- [Balance] Nascent Soul Incubation: Changed to +10% Basic Res Cap (x1.10).
+- [System] Updated ReleaseNotes to v0.272.
+
+---
+
+- [UX] Realm Upgrade Feedback: Removed Tooltip, added immediate SYSTEM log feedback.
+- [Fix] Sect Event UI: Fixed Heavenly Mystery Event attempts delay refresh.
+- [UI] Cloud Sea Market: Added direct item descriptions in market list.
+- [System] Updated ReleaseNotes to v0.271.
+
 ---
 
 2026-01-12 Update Log:
