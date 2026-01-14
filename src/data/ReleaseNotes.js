@@ -1,6 +1,32 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.281",
+        date: "2026-01-15",
+        notes: {
+            "zh-TW": [
+                "【修復】雲海天市崩潰：修復了購買「上品金丹」等非資源類物品時導致的遊戲崩潰問題。",
+                "【修復】購買刷新：修復了在雲海天市購買物品後，資源與介面未即時刷新的問題。",
+                "【穩定】防禦性檢查：在因物品數據異常時增加檢查機制，避免直接報錯卡死。"
+            ],
+            "zh-CN": [
+                "【修复】云海天市崩溃：修复了购买「上品金丹」等非资源类物品时导致的游戏崩溃问题。",
+                "【修复】购买刷新：修复了在云海天市购买物品后，资源与界面未即时刷新的问题。",
+                "【稳定】防御性检查：在因物品数据异常时增加检查机制，避免直接报错卡死。"
+            ],
+            "en": [
+                "[Fix] Market Crash: Fixed a crash issue when purchasing non-resource items (e.g., Sect High Golden Pill).",
+                "[Fix] Purchase Refresh: Fixed an issue where resources and UI were not immediately updated after purchasing items.",
+                "[Stability] Robustness Check: Added safe-guards to prevent game freeze when encountering invalid item data."
+            ],
+            "ja": [
+                "【修正】雲海天市クラッシュ：「上品金丹」などの非リソースアイテム購入時に発生するクラッシュを修正しました。",
+                "【修正】購入更新：アイテム購入後、リソースとUIが即座に更新されない問題を修正しました。",
+                "【安定】防御的チェック：アイテムデータ異常時にゲームがフリーズしないようチェック機構を追加しました。"
+            ]
+        }
+    },
+    {
         version: "v0.28",
         date: "2026-01-15",
         notes: {

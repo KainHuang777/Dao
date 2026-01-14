@@ -605,7 +605,14 @@ class SectManager {
         this.state.playerContribution -= cost;
 
         // Grant Item
-        window.game.resourceManager.addResource(itemId, 1);
+        // Ensure resource is unlocked before adding
+        const resource = window.game.resourceManager.getResource(itemId);
+        if (resource) {
+            if (!resource.unlocked) {
+                window.game.resourceManager.unlockResource(itemId);
+            }
+            window.game.resourceManager.addResource(itemId, 1);
+        }
 
         // If it's a pill, we might want to "consume" it instantly if that was the old logic, 
         // but Market usually puts it in inventory. The old 'buyPill' did adminConsumePill.
@@ -620,7 +627,9 @@ class SectManager {
                 // Refund
                 this.state.playerContribution += cost;
                 // Remove resource that was just added (since we added it above, we take it back)
-                window.game.resourceManager.addResource(itemId, -1);
+                if (resource) {
+                    window.game.resourceManager.addResource(itemId, -1);
+                }
                 return result;
             }
         }

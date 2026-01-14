@@ -1,3 +1,8 @@
+2026-01-15 Update Log (Fix Cloud Sea Market):
+- [Fix] Market Purchase Crash: Resolved `TypeError: Cannot read properties of undefined` in `buyMarketItem` when purchasing non-resource items (e.g., Sect High Golden Pill).
+- [Fix] Robustness: Added checks to ensure resource exists before attempting to unlock or modify it in `SectManager.js`.
+- [Fix] UI Refresh: Fixed an issue where resources and UI were not immediately updated after purchasing items in Cloud Sea Market.
+
 2026-01-15 Update Log (Release V0.28):
 - [Release] Updated game version to V0.28.
 - [Release] Added multilingual release notes for all recent changes.
