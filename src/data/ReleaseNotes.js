@@ -1,6 +1,36 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.28",
+        date: "2026-01-15",
+        notes: {
+            "zh-TW": [
+                "【介面】幫助面板重構：重製為雙欄佈局，新增完整的「宗門系統」詳解（宗門任務、雲海天市、天機任務）。",
+                "【體驗】視覺特效優化：新增「等級提升」、「突破成功」與宗門事件的專屬飄字特效（Pixi.js）。",
+                "【多語化】宗門內容在地化：宗門系統說明與特效文字現已支援全語言（繁/簡/英/日）。",
+                "【介面】圖示優化：為導航分頁與幫助章節添加了 Emoji 圖示，提升視覺辨識度。"
+            ],
+            "zh-CN": [
+                "【界面】帮助面板重构：重制为双栏布局，新增完整的「宗门系统」详解（宗门任务、云海天市、天机任务）。",
+                "【体验】视觉特效优化：新增「等级提升」、「突破成功」与宗门事件的专属飘字特效（Pixi.js）。",
+                "【多语化】宗门内容在地化：宗门系统说明与特效文字现已支持全语言（繁/简/英/日）。",
+                "【界面】图标优化：为导航分页与帮助章节添加了 Emoji 图标，提升视觉辨识度。"
+            ],
+            "en": [
+                "[UI] Help Panel Redesign: Revamped to 2-column layout; added detailed 'Sect System' guide (Tasks, Cloud Market, Events).",
+                "[UX] VFX Improvements: Added dedicated floating text effects for 'Level Up', 'Breakthrough', and Sect Events (Pixi.js).",
+                "[I18n] Sect Localization: Full multilingual support (ZH/EN/JP) for Sect System help content and VFX text.",
+                "[UI] Visual Icons: Added Emoji icons to navigation tabs and help sections for better visibility."
+            ],
+            "ja": [
+                "【UI】ヘルプパネル刷新：2列レイアウトに変更、「宗門システム」の詳細ガイド（任務、雲海天市、天機イベント）を追加。",
+                "【体験】視覚効果の改善：「レベルアップ」「突破成功」および宗門イベントの専用フローティングテキスト効果を追加（Pixi.js）。",
+                "【多言語化】宗門コンテンツのローカライズ：宗門システムの説明とエフェクトテキストが全言語（繁/簡/英/日）に対応しました。",
+                "【UI】アイコン最適化：ナビゲーションタブとヘルプセクションに絵文字アイコンを追加し、視認性を向上。"
+            ]
+        }
+    },
+    {
         version: "v0.272",
         date: "2026-01-13",
         notes: {

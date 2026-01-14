@@ -1,3 +1,26 @@
+2026-01-15 Update Log (Release V0.28):
+- [Release] Updated game version to V0.28.
+- [Release] Added multilingual release notes for all recent changes.
+- [UX] Layout: Redesigned "Game Help" panel layout to a 2-column grid.
+- [UX] Help Content: Added detailed "Sect System" section (Sect Tasks, Cloud Market, Heavenly Events).
+- [UX] Localization: Added multilingual support (ZH/EN/JP) for Sect Panel tabs ("Sect Tasks", "Heavenly Events", "No Events").
+- [UX] Localization: Added multilingual support for floating text VFX (Level Up, Breakthrough, Sect Events).
+- [UX] Localization: Added multilingual support (ZH/EN/JP) for Sect System help content.
+- [UX] Icons: Added emoji icons to all Help sections and main navigation tabs.
+- [UX] Debug Tab: Hidden by default. Added secret toggle by clicking "Developer Contact: ..." 3 times in Help Panel.
+
+2026-01-14 Update Log (Pixi Fixes & Tests):
+- [Fix] PixiApp Error: Resolved `TypeError: Cannot read properties of undefined` in `removeButtonEffect` by adding robustness checks.
+- [Fix] Pixi v8 Text Crash: Removed unsupported array syntax for `fill` in `TextStyle` (used solid color instead) to prevent `_normalize` error.
+- [Fix] Pixi Animation Error: Fixed `Assignment to constant variable` in `playCenterTextEffect` (changed `const t` to `let t` for easing calculation).
+- [Fix] Button Effect Init: Ensured `updatePlayerInfo` runs after Pixi initialization to correctly apply start-up effects.
+- [Test] Core Test Suite: Integrated Pixi.js environment into `core-test.html` and added manual triggers for all visual effects (Level Up, Breakdown, etc.).
+
+2026-01-14 Update Log (Fix Tribulation Rate Reset):
+- [Fix] Tribulation Success Rate: Reset consumed tribulation pills (e.g., foundation_pill) upon successful rank upgrade.
+- [Code] PlayerManager.js: Added logic to clear 'tribulationSuccess' pills in upgrade() on success.
+- [Test] core-test.html: Added 'testTribulationReset' to verify success rate reset.
+
 2026-01-12 Update Log (v0.29):
 
 [UX] Realm Upgrade Button Feedback Improvement
@@ -15,6 +38,26 @@
 - Added direct display of item descriptions in the Cloud Sea Market (next to/below names).
 - Added description translations for market items (foundation_pill, spirit_grass_100y, etc.).
 - Files changed: SectPanel.js, zh-TW.json, en.json
+
+2026-01-14 Update Log (Pixi.js Effects):
+- [Effect] Level Up: Green particles from button position.
+- [Effect] Breakthrough Success: Full-screen golden burst with rings.
+- [Effect] Breakthrough Failed: Full-screen red shards falling with red flash.
+- [Effect] Reincarnation: Full-screen purple-gold vortex with final light burst.
+- Files changed: PixiApp.js, PlayerManager.js
+
+---
+
+2026-01-13 Update Log (Pixi.js Integration):
+- [Architecture] Added hybrid HTML + Pixi.js rendering architecture.
+- [New] Created `src/renderers/IRenderer.js` - renderer abstraction interface.
+- [New] Created `src/views/pixi/PixiApp.js` - Pixi.js application with floating text and particle effects.
+- [System] Added Pixi.js v8 CDN to `index.html`.
+- [System] Integrated PixiApp into `main.js`.
+- API: `window.game.pixiApp.playResourceGainEffect(resId, amount, x, y)`
+- API: `window.game.pixiApp.playUpgradeEffect('levelUp' | 'breakthrough' | 'tribulation')`
+
+---
 
 2026-01-13 Update Log (v0.272):
 - [Feature] Heavenly Mystery Event notification [天] added.

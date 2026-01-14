@@ -236,6 +236,19 @@
             強制刷新頁面清除緩存。
         </div>
 
+        <!-- 功法配置 -->
+        <div class="tool-section">
+            <h2>📜 F. 功法配置 (Skill Configuration)</h2>
+            <p class="info-text">勾選已學習的功法並設定等級，以模擬其對數值的影響</p>
+            <div class="input-group">
+                <button id="toggleAllSkills">全選/全取消</button>
+                <button id="maxAllSkills">全部設為滿級</button>
+            </div>
+            <div id="skillConfig" class="grid-2">
+                <!-- 這裡將由 JavaScript 自動生成功法選項 -->
+            </div>
+        </div>
+
         <!-- 時期進度模擬 -->
         <div class="tool-section">
             <h2>📊 A. 時期進度模擬（第1-12時期）</h2>
@@ -336,10 +349,103 @@
                 await SkillManager.init();
 
                 console.log('✓ 所有模組載入完成');
+
+                // 初始化功法配置介面
+                renderSkillConfig();
             } catch (e) {
                 console.error('模組載入失敗:', e);
                 alert('模組載入失敗，請確認伺服器正在運行');
             }
+        }
+
+        // 渲染功法配置介面
+        function renderSkillConfig() {
+            if (!SkillManager) return;
+            const skills = SkillManager.getSkills();
+            const container = document.getElementById('skillConfig');
+            let html = '';
+
+            // 按時期排序
+            const sortedSkills = Object.values(skills).sort((a, b) => {
+                const eraA = a.requirements?.era || 1;
+                const eraB = b.requirements?.era || 1;
+                return eraA - eraB || a.id.localeCompare(b.id);
+            });
+
+            sortedSkills.forEach(skill => {
+                if (!skill.effects) return; // 只顯示有效果的功法
+
+                const skillId = skill.id;
+                const maxLevel = skill.maxLevel || 5;
+                const effectDesc = getSkillEffectDescription(skill);
+
+                html += `
+                <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="skill_enable_${skillId}" class="skill-checkbox" 
+                           style="width: 20px; height: 20px; min-width: 20px;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: bold; color: #ffd700;">${skill.name}</div>
+                        <div style="font-size: 0.8em; color: #a0d8ff;">${effectDesc}</div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <label style="font-size: 0.8em;">Lv.</label>
+                        <input type="number" id="skill_level_${skillId}" class="skill-level" 
+                               value="${maxLevel}" min="1" max="${maxLevel}" 
+                               style="width: 60px; padding: 5px; min-width: 60px;">
+                    </div>
+                </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // 綁定全選按鈕
+            document.getElementById('toggleAllSkills').onclick = () => {
+                const checkboxes = document.querySelectorAll('.skill-checkbox');
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                checkboxes.forEach(cb => cb.checked = !allChecked);
+            };
+
+            // 綁定滿級按鈕
+            document.getElementById('maxAllSkills').onclick = () => {
+                const skills = SkillManager.getSkills();
+                Object.values(skills).forEach(skill => {
+                    const input = document.getElementById(`skill_level_${skill.id}`);
+                    if (input) input.value = skill.maxLevel || 5;
+                });
+            };
+        }
+
+        function getSkillEffectDescription(skill) {
+            if (!skill.effects) return '';
+            const type = skill.effects.type;
+            const amount = skill.effects.amount;
+
+            if (type === 'time_reduction') return `修煉時間 -${Math.round((1 - amount) * 100)}%/級`;
+            if (type === 'lingli_rate') return `靈氣效率 x${amount}`;
+            if (type === 'all_production') return `全產出 +${amount * 100}%`;
+            if (type.endsWith('_max')) return `${type.replace('_max', '')}上限 +${amount}`;
+            if (type === 'all_max_multiplier') return `全資源上限 x${amount}`;
+            if (type === 'advance_max_multiplier') return `高階資源上限 x${amount}`;
+
+            return `${type}: ${amount}`;
+        }
+
+        // 獲取當前配置的功法效果
+        function getConfiguredSkills() {
+            const learnedSkills = {};
+            if (!SkillManager) return learnedSkills;
+
+            const skills = SkillManager.getSkills();
+            Object.values(skills).forEach(skill => {
+                const checkbox = document.getElementById(`skill_enable_${skill.id}`);
+                const levelInput = document.getElementById(`skill_level_${skill.id}`);
+
+                if (checkbox && checkbox.checked && levelInput) {
+                    learnedSkills[skill.id] = parseInt(levelInput.value) || 1;
+                }
+            });
+            return learnedSkills;
         }
 
         // A. 時期進度模擬
@@ -350,10 +456,13 @@
             }
 
             const eras = EraManager.getAllEras();
-            console.log('載入的時期數據:', eras); // 調試用
+            const learnedSkills = getConfiguredSkills(); // 獲取用戶配置的功法
+
+            console.log('載入的時期數據:', eras);
+            console.log('配置的功法:', learnedSkills);
 
             let html = '<table>';
-            html += '<tr><th>時期</th><th>名稱</th><th>最大等級</th><th>該時期壽元(年)</th><th>累計壽元(年)</th><th>該時期真實時間</th><th>累計真實時間</th><th>等級升級時間</th></tr>';
+            html += '<tr><th>時期</th><th>名稱</th><th>最大等級</th><th>該時期壽元(年)</th><th>累計壽元(年)</th><th>該時期真實時間</th><th>累計真實時間</th><th>等級升級時間 (功法加成)</th></tr>';
 
             let totalYears = 0;
             let totalMinutes = 0;
@@ -373,9 +482,26 @@
                 const baseTime = era.levelUpRequirements?.baseTime || 60;
                 const timeMult = era.levelUpRequirements?.timeMultiplier || 1.2;
                 let levelUpTime = 0; // 秒
+
+                // 計算此時期的功法加成
+                let skillTimeMult = 1;
+                Object.entries(learnedSkills).forEach(([skillId, level]) => {
+                    // 只計算符合時期要求的功法 (簡化：假設學會了就是符合)
+                    // 更精確邏輯：如果 skill.requirements.era <= era.eraId，則生效
+                    const skill = SkillManager.getSkill(skillId);
+                    if (skill && skill.requirements.era <= era.eraId && skill.effects && skill.effects.type === 'time_reduction') {
+                        skillTimeMult *= (1 - (1 - skill.effects.amount) * level);
+                    }
+                });
+                skillTimeMult = Math.max(0.1, skillTimeMult); // 上限 90% 減免
+
                 for (let lv = 1; lv <= era.maxLevel; lv++) {
                     levelUpTime += baseTime * Math.pow(timeMult, lv - 1);
                 }
+
+                // 應用 累積修煉時間公式其實需要考慮每級的縮減，但這裡簡化為總時間縮減
+                // EraManager Logic: requiredTime *= skillTimeMult
+                levelUpTime *= skillTimeMult;
 
                 // 應用速度加成
                 levelUpTime /= (1 + speedBonus);
@@ -387,6 +513,8 @@
                 if (parseFloat(ratio) > 100) ratioClass = 'error';
                 else if (parseFloat(ratio) > 80) ratioClass = 'warning';
 
+                const skillBonusText = skillTimeMult < 1 ? ` <span style="font-size:0.8em; color:#4caf50;">(-${Math.round((1 - skillTimeMult) * 100)}%)</span>` : '';
+
                 html += `<tr>
                     <td>${era.eraId}</td>
                     <td><strong>${era.eraName}</strong></td>
@@ -395,7 +523,7 @@
                     <td>${totalYears.toFixed(0)}</td>
                     <td class="highlight">${formatTime(thisEraYears)}</td>
                     <td>${formatTime(totalMinutes)}</td>
-                    <td class="${ratioClass}">${formatTime(timeInMinutes)} (${ratio}%)</td>
+                    <td class="${ratioClass}">${formatTime(timeInMinutes)} (${ratio}%)${skillBonusText}</td>
                 </tr>`;
             });
 
@@ -417,8 +545,8 @@
                     <span class="summary-value">+${(speedBonus * 100).toFixed(1)}% 修煉速度</span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">平均每時期壽元：</span>
-                    <span class="summary-value">${(totalYears / 12).toFixed(0)} 年</span>
+                    <span class="summary-label">功法影響：</span>
+                    <span class="summary-value">已計入各時期已解鎖的減時功法</span>
                 </div>
             </div>`;
 
@@ -467,6 +595,7 @@
             // 計算加成
             const daoHeartBonus = daoHeart * 0.001; // 0.1% per point
             const daoProofBonus = daoProof * 0.01;  // 1% per point
+            const configuredSkills = getConfiguredSkills(); // 獲取用戶配置的功法
 
             // 載入資源數據
             const resourceManager = new ResourceManager();
@@ -478,6 +607,7 @@
             // 調試輸出
             console.log('=== 資源上限計算器調試 ===');
             console.log('目標時期:', targetEra, era?.eraName);
+            console.log('配置功法:', configuredSkills);
 
             // 計算該時期可達到的最大資源上限
             const maxCapacity = {};
@@ -493,6 +623,7 @@
                         fromBuildings: 0,
                         fromSkills: 0,
                         beforeBonus: 0,
+                        multiplierBonus: 0,
                         final: 0
                     };
                 }
@@ -514,37 +645,79 @@
                 }
             });
 
-            // 3. 計算功法提供的上限加成
-            const allSkills = SkillManager.getSkills();
-            Object.entries(allSkills).forEach(([id, skill]) => {
-                if (skill.requirements.era <= targetEra && skill.effects) {
+            // 3. 計算功法提供的上限加成 (包括固定值和倍率)
+            let globalMaxMultiplier = 0; // all_max_multiplier
+            let advanceMaxMultiplier = 0; // advance_max_multiplier (如果有的話)
+
+            Object.entries(configuredSkills).forEach(([skillId, level]) => {
+                const skill = SkillManager.getSkill(skillId);
+                // 只有當功法要求時期小於等於目標時期才生效
+                if (skill && skill.requirements.era <= targetEra && skill.effects) {
                     const effectType = skill.effects.type;
                     const effectAmount = skill.effects.amount;
 
-                    if (effectType === 'all_max') {
+                    // 乘法加成 (Multiplier) 
+                    if (effectType === 'all_max_multiplier') {
+                        // effectAmount 1.1 means +10%. We sum up the bonuses? Or multiply?
+                        // Usually in this game multipliers are additive to the base 100% or multiplicative?
+                        // Based on description "大幅提升各類資源上限", let's assume it's a multiplier bonus.
+                        // But if level > 1? "passive" skills usually don't scale with level unless `level` is part of it.
+                        // skills.csv says `maxLevel: 5` for `nascent_soul_incubation`.
+                        // Let's assume (amount - 1) * level for additive multiplier percentage. i.e. 1.1 at lv1 -> +10%. Lv5 -> +50%.
+                        // Or 1.1^level? 
+                        // Check EraManager logic? It wasn't there.
+                        // Let's assume simple Additive Percentage: TotalMult = 1 + Sum((Rate-1)*Level)
+                        globalMaxMultiplier += (effectAmount - 1) * level;
+
+                    } else if (effectType === 'advance_max_multiplier') {
+                        advanceMaxMultiplier += (effectAmount - 1) * level;
+
+                    } else if (effectType === 'all_max') {
+                        // 固定值全加
+                        const totalAdd = effectAmount * level;
                         basicResources.forEach(key => {
                             if (maxCapacity[key]) {
-                                maxCapacity[key].fromSkills += effectAmount;
+                                maxCapacity[key].fromSkills += totalAdd;
                             }
                         });
+
                     } else if (effectType.endsWith('_max')) {
+                        // 固定值單項加
                         const resourceKey = effectType.replace('_max', '');
                         if (maxCapacity[resourceKey]) {
-                            maxCapacity[resourceKey].fromSkills += effectAmount;
+                            maxCapacity[resourceKey].fromSkills += effectAmount * level; // 假設每級都加
                         }
                     }
                 }
             });
 
-            // 4. 應用道心道證加成
+            // 4. 應用加成與計算最終值
             basicResources.forEach(key => {
                 if (maxCapacity[key]) {
+                    // 基礎 + 建築 + 功法固定值
                     const beforeBonus = maxCapacity[key].base +
                         maxCapacity[key].fromBuildings +
                         maxCapacity[key].fromSkills;
+
                     maxCapacity[key].beforeBonus = beforeBonus;
-                    const withDaoHeart = beforeBonus * (1 + daoHeartBonus);
-                    const final = withDaoHeart * (1 + daoProofBonus);
+
+                    // 倍率計算: 
+                    // 基礎倍率 = 1
+                    // 道心道證 = daoHeartBonus + daoProofBonus
+                    // 功法倍率 = globalMaxMultiplier
+                    // 特定資源倍率? 暫無
+
+                    // 假設所有倍率是加算的 (Additive Percentage)
+                    let totalMultiplier = 1 + daoHeartBonus + daoProofBonus + globalMaxMultiplier;
+
+                    // 如果是高級資源(目前 basicResources 都是基礎資源嗎? skill_point 算基礎嗎? 
+                    // basicResources list: lingli, money, wood, stone, herb, skill_point.
+                    // advance_max_multiplier usually applies to generic storage or specifically tagged.
+                    // Let's assume global applies to all here.
+
+                    maxCapacity[key].multiplierBonus = totalMultiplier;
+
+                    const final = beforeBonus * totalMultiplier;
                     maxCapacity[key].final = Math.floor(final);
                 }
             });
@@ -557,7 +730,7 @@
 
             // 6. 生成表格
             let html = '<table>';
-            html += '<tr><th>資源名稱</th><th>基礎上限</th><th>建築加成</th><th>功法加成</th><th>小計</th><th>道心道證</th><th>最終上限</th><th>時期要求</th><th>達標</th></tr>';
+            html += '<tr><th>資源名稱</th><th>基礎+建築</th><th>功法(固定)</th><th>小計</th><th>總倍率(道心/證/功法)</th><th>最終上限</th><th>時期要求</th><th>達標</th></tr>';
 
             basicResources.forEach(key => {
                 const cap = maxCapacity[key];
@@ -577,15 +750,15 @@
                         meetsRequirement = '-';
                     }
 
-                    const bonusPercent = (((1 + daoHeartBonus) * (1 + daoProofBonus) - 1) * 100).toFixed(1);
+                    const basePlusBuild = cap.base + cap.fromBuildings;
+                    const totalMultPercent = ((cap.multiplierBonus - 1) * 100).toFixed(1);
 
                     html += `<tr>
                         <td><strong>${cap.name}</strong></td>
-                        <td>${formatNumber(cap.base)}</td>
-                        <td class="${cap.fromBuildings > 0 ? 'highlight' : ''}">${cap.fromBuildings > 0 ? '+' + formatNumber(cap.fromBuildings) : '-'}</td>
+                        <td>${formatNumber(basePlusBuild)}</td>
                         <td class="${cap.fromSkills > 0 ? 'highlight' : ''}">${cap.fromSkills > 0 ? '+' + formatNumber(cap.fromSkills) : '-'}</td>
                         <td>${formatNumber(cap.beforeBonus)}</td>
-                        <td>+${bonusPercent}%</td>
+                        <td>x${cap.multiplierBonus.toFixed(2)} (+${totalMultPercent}%)</td>
                         <td class="highlight"><strong>${formatNumber(cap.final)}</strong></td>
                         <td>${eraRequirement > 0 ? formatNumber(eraRequirement) : '-'}</td>
                         <td class="${requirementClass}">${meetsRequirement}</td>
@@ -595,39 +768,44 @@
 
             html += '</table>';
 
-            // 計算滿足時期要求所需的最小道心/道證
+            // 計算滿足時期要求所需的最小道心/道證 (Update with new formula)
+            // Final = Before * (1 + DH + DP + SkillMult) >= Req
+            // 1 + DH + DP + SkillMult >= Req / Before
+            // DH + DP >= (Req / Before) - 1 - SkillMult
+
             let requiredDaoHeart = 0;
             let requiredDaoProof = 0;
             let hasRequirements = false;
 
             // 找出最嚴格的資源要求
-            let maxRequiredRatio = 0;
+            let maxRequiredRatio = 0; // This is (Req / Before)
             basicResources.forEach(key => {
                 const cap = maxCapacity[key];
                 const requirement = eraCapacityRequirements[key] || 0;
                 if (requirement > 0 && cap) {
                     hasRequirements = true;
-                    // 計算需要的倍率：要求值 / 小計值
-                    const requiredRatio = requirement / cap.beforeBonus;
-                    if (requiredRatio > maxRequiredRatio) {
-                        maxRequiredRatio = requiredRatio;
-                    }
+                    const ratio = requirement / cap.beforeBonus;
+                    if (ratio > maxRequiredRatio) maxRequiredRatio = ratio;
                 }
             });
 
-            // 計算所需的道心/道證組合
-            if (hasRequirements && maxRequiredRatio > 1) {
-                // 需要的總加成倍率
-                const neededMultiplier = maxRequiredRatio;
+            // 計算剩餘需要的加成
+            // Current Total Mult defined above includes current DH/DP. 
+            // We want to find *additional* or *total* needed? "建議的道心/道證需求" usually implies total needed.
+            // Needed (DH+DP) = MaxRatio - 1 - GlobalSkillMult
 
-                // 假設只用道證（1% per point）
-                requiredDaoProof = Math.ceil((neededMultiplier - 1) * 100);
+            const neededDaoAdd = Math.max(0, maxRequiredRatio - 1 - globalMaxMultiplier);
 
-                // 假設只用道心（0.1% per point）
-                requiredDaoHeart = Math.ceil((neededMultiplier - 1) * 1000);
+            if (hasRequirements && neededDaoAdd > 0) {
+                // 1% per point for Proof
+                requiredDaoProof = Math.ceil(neededDaoAdd * 100);
+                // 0.1% per point for Heart
+                requiredDaoHeart = Math.ceil(neededDaoAdd * 1000);
             }
 
             // 添加總結
+            const skillMultPercent = (globalMaxMultiplier * 100).toFixed(1);
+
             html += `<div class="summary-box">
                 <h3>💡 分析結果</h3>
                 <div class="summary-item">
@@ -635,20 +813,20 @@
                     <span class="summary-value">${era ? era.eraName : '未知'} (第${targetEra}時期)</span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">計算方式：</span>
-                    <span class="summary-value">基礎上限 + 所有可用建築(滿級) + 所有可用功法</span>
+                    <span class="summary-label">計算公式：</span>
+                    <span class="summary-value">(基礎+建築+功法固定) x (1 + 道心 + 道證 + 功法倍率)</span>
+                </div>
+                 <div class="summary-item">
+                    <span class="summary-label">功法固定加成：</span>
+                    <span class="summary-value">已計入上方表格</span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">當前道心：</span>
-                    <span class="summary-value">${daoHeart} (加成 +${(daoHeartBonus * 100).toFixed(1)}%)</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">當前道證：</span>
-                    <span class="summary-value">${daoProof} (加成 +${(daoProofBonus * 100).toFixed(1)}%)</span>
+                    <span class="summary-label">功法倍率加成：</span>
+                    <span class="summary-value">+${skillMultPercent}% (所有資源)</span>
                 </div>
                 <div class="summary-item">
                     <span class="summary-label">綜合加成：</span>
-                    <span class="summary-value">+${(((1 + daoHeartBonus) * (1 + daoProofBonus) - 1) * 100).toFixed(1)}%</span>
+                    <span class="summary-value">+${((1 + daoHeartBonus + daoProofBonus + globalMaxMultiplier - 1) * 100).toFixed(1)}%</span>
                 </div>
             </div>`;
 
@@ -669,7 +847,7 @@
                     </p>`;
                 } else {
                     html += `<p style="color: #ff9800; margin: 10px 0;">
-                        當前配置尚未滿足升階條件。以下是建議的道心/道證需求：
+                        當前配置尚未滿足升階條件。在當前功法/建築配置下，建議的總道心/道證需求：
                     </p>
                     <div class="summary-item">
                         <span class="summary-label">方案A（僅用道心）：</span>
@@ -679,13 +857,7 @@
                         <span class="summary-label">方案B（僅用道證）：</span>
                         <span class="summary-value" style="color: #a0d8ff;">至少需要 ${requiredDaoProof} 道證</span>
                     </div>
-                    <div class="summary-item">
-                        <span class="summary-label">方案C（混合使用）：</span>
-                        <span class="summary-value" style="color: #a0d8ff;">例如 ${Math.ceil(requiredDaoHeart / 2)} 道心 + ${Math.ceil(requiredDaoProof / 2)} 道證</span>
-                    </div>
-                    <p style="color: #a0d8ff; margin: 10px 0; font-size: 0.9em; font-style: italic;">
-                        💡 提示：道證效率更高（1%/點 vs 0.1%/點），建議優先提升道證。
-                    </p>`;
+                </div>`;
                 }
 
                 html += `</div>`;

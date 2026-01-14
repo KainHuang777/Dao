@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/pixi.js@8.6.6/dist/pixi.min.js"></script>
     <title>核心功能測試</title>
     <style>
         body {
@@ -50,6 +51,8 @@
 </head>
 
 <body>
+    <div id="pixi-container"
+        style="position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:9999;"></div>
     <h1>遊戲核心功能測試</h1>
     <div>
         <button id="testResources">測試資源系統</button>
@@ -60,6 +63,7 @@
         <button id="testMaidSystem">測試侍女自動合成</button>
         <button id="testTrainingTime">測試修煉時間顯示</button>
         <button id="testHintSystem">測試提示系統狀態</button>
+        <button id="testTribulationReset">測試渡劫重置</button>
     </div>
     <div style="margin-top: 20px; padding: 10px; border: 1px solid #9c27b0; border-radius: 8px;">
         <h3 style="color: #ba68c8;">宗門系統測試</h3>
@@ -70,6 +74,15 @@
         <button id="sectTaskTest" style="background: #8e24aa;">5. 任務流程測試 (刷新/接受/領取)</button>
         <button id="sectMarketTest" style="background: #2196f3;">6. 雲海天市測試 (兌換日志驗證)</button>
         <button id="sectRewardTest" style="background: #ff9800;">7. Era 3 獎勵測試 (百年靈草)</button>
+    </div>
+    <div style="margin-top: 20px; padding: 10px; border: 1px solid #FFD700; border-radius: 8px;">
+        <h3 style="color: #FFD700;">視覺特效測試 (Pixi.js)</h3>
+        <button id="testPixiLevelUp" style="background: #4CAF50;">升級特效 (局部)</button>
+        <button id="testPixiBreakthrough" style="background: #FFD700; color: black;">突破成功 (全屏)</button>
+        <button id="testPixiBreakthroughFail" style="background: #F44336;">突破失敗 (全屏)</button>
+        <button id="testPixiReincarnation" style="background: #9C27B0;">輪迴特效 (全屏)</button>
+        <button id="testPixiText" style="background: #03A9F4;">飄字通知特效</button>
+        <button id="testPixiBg" style="background: #607D8B;">切換背景 (Era 1-6)</button>
     </div>
     <div style="margin-top: 20px; padding: 10px; border: 1px solid #444; border-radius: 8px;">
         <h3>存檔功能測試</h3>
@@ -141,6 +154,14 @@
                 window.game.buildingManager = buildingManager;
                 // uiManager is already set in pre-define.
                 window.game.saveSystem = null; // Set later if needed
+
+                // 4. Pixi 初始化
+                log('初始化 Pixi.js...', 'info');
+                const { default: PixiApp } = await import('./src/views/pixi/PixiApp.js');
+                const pixiApp = new PixiApp();
+                await pixiApp.init(document.getElementById('pixi-container'));
+                window.game.pixiApp = pixiApp;
+                log('✓ Pixi.js 初始化完成', 'success');
 
                 log('✓ 模組載入成功', 'success');
 
@@ -525,6 +546,86 @@
             }
         });
 
+        // 測試渡劫重置
+        document.getElementById('testTribulationReset').addEventListener('click', async () => {
+            log('\n=== 測試渡劫重置機制 ===', 'info');
+            const { default: PlayerManager } = await import('./src/utils/PlayerManager.js');
+            const { default: EraManager } = await import('./src/utils/EraManager.js');
+            await EraManager.init();
+
+            // 1. 備份狀態
+            const stateBackup = JSON.parse(JSON.stringify(PlayerManager.state));
+
+            try {
+                // 2. 設置初始狀態：金丹期滿級 (Era 3, Lv 10)
+                PlayerManager.state.eraId = 3;
+                PlayerManager.state.level = 10;
+                // 確保 consumedPills 存在
+                PlayerManager.state.consumedPills = PlayerManager.state.consumedPills || {};
+
+                // 3. 服用丹藥直至 100% 成功率 (Base 0.5 + 0.5)
+                // tribulation_pill: +0.05 * 10 = +0.5
+                PlayerManager.state.consumedPills['tribulation_pill'] = 10;
+
+                const rateBefore = PlayerManager.getTribulationSuccessRate();
+                log(`初始狀態 (Era 3):`, 'info');
+                log(`服用渡劫丹: 10顆`, 'info');
+                log(`渡劫成功率: ${(rateBefore * 100).toFixed(1)}%`, 'info');
+
+                if (rateBefore < 1.0) {
+                    log('⚠ 警告: 成功率未達 100%，測試可能失敗', 'warning');
+                }
+
+                // 4. Mock canUpgrade (避免資源檢查)
+                const originalCanUpgrade = PlayerManager.canUpgrade;
+                PlayerManager.canUpgrade = () => ({ canUpgrade: true, reason: 'Test Override' });
+
+                // 5. 執行升階
+                log('執行 upgrade()...', 'info');
+                // upgrade 內部會調用 attemptTribulation -> 100% 成功率應必過
+                const success = PlayerManager.upgrade({});
+
+                if (success) {
+                    log('渡劫成功!', 'success');
+                    log(`新境界: Era ${PlayerManager.state.eraId}`, 'info');
+
+                    // 6. 驗證重置
+                    const countAfter = PlayerManager.state.consumedPills['tribulation_pill'] || 0;
+                    const rateAfter = PlayerManager.getTribulationSuccessRate();
+
+                    if (countAfter === 0) {
+                        log(`重置後渡劫丹數量: ${countAfter} (預期 0)`, 'success');
+                    } else {
+                        log(`重置後渡劫丹數量: ${countAfter} (預期 0)`, 'error');
+                    }
+
+                    const expectedRate = 0.5;
+                    const diff = Math.abs(rateAfter - expectedRate);
+                    if (diff < 0.01) {
+                        log(`重置後成功率: ${(rateAfter * 100).toFixed(1)}% (預期 50.0%)`, 'success');
+                        log('✓ 測試通過：成功率已正確重置', 'success');
+                    } else {
+                        log(`重置後成功率: ${(rateAfter * 100).toFixed(1)}% (預期 50.0%)`, 'error');
+                        log('✗ 測試失敗：未重置成功率', 'error');
+                    }
+
+                } else {
+                    log('✗ 渡劫失敗 (預期應成功)', 'error');
+                }
+
+                // Restore method
+                PlayerManager.canUpgrade = originalCanUpgrade;
+
+            } catch (e) {
+                log(`✗ 測試出錯: ${e.message}`, 'error');
+                console.error(e);
+            } finally {
+                // 7. 恢復狀態
+                PlayerManager.state = stateBackup;
+                log('✓ 已恢復原始狀態', 'info');
+            }
+        });
+
         // --- 宗門系統測試邏輯 ---
         let SectManager = null;
 
@@ -711,9 +812,6 @@
         document.getElementById('sectRewardTest').addEventListener('click', async () => {
             const sm = await getSectManager();
             const { default: PlayerManager } = await import('./src/utils/PlayerManager.js');
-            log('\n=== Era 3 獎勵數值測試 ===', 'info');
-
-            // 1. Force Era 3
             PlayerManager.state.eraId = 3;
             log('已將境界設為 3 (金丹期)', 'info');
 
@@ -746,6 +844,47 @@
 
             if (!found) {
                 log('⚠ 嘗試 20 次刷新仍未隨機到目標獎勵，建議重試', 'warning');
+            }
+        });
+
+        // --- Pixi 特效測試 ---
+        document.getElementById('testPixiLevelUp').addEventListener('click', () => {
+            if (window.game.pixiApp) {
+                log('播放升級特效', 'info');
+                window.game.pixiApp.playLevelUpEffect(window.innerWidth / 2, window.innerHeight / 2);
+            }
+        });
+        document.getElementById('testPixiBreakthrough').addEventListener('click', () => {
+            if (window.game.pixiApp) {
+                log('播放突破成功特效', 'info');
+                window.game.pixiApp.playBreakthroughEffect();
+            }
+        });
+        document.getElementById('testPixiBreakthroughFail').addEventListener('click', () => {
+            if (window.game.pixiApp) {
+                log('播放突破失敗特效', 'info');
+                window.game.pixiApp.playBreakthroughFailedEffect();
+            }
+        });
+        document.getElementById('testPixiReincarnation').addEventListener('click', () => {
+            if (window.game.pixiApp) {
+                log('播放輪迴特效', 'info');
+                window.game.pixiApp.playReincarnationEffect();
+            }
+        });
+        document.getElementById('testPixiText').addEventListener('click', () => {
+            if (window.game.pixiApp) {
+                log('播放飄字通知', 'info');
+                window.game.pixiApp.playCenterTextEffect("測試通知：天道酬勤", { color: 0x00BCD4 });
+            }
+        });
+        let currentEraBg = 1;
+        document.getElementById('testPixiBg').addEventListener('click', () => {
+            if (window.game.pixiApp) {
+                currentEraBg++;
+                if (currentEraBg > 6) currentEraBg = 1;
+                log(`切換背景至 Era ${currentEraBg}`, 'info');
+                window.game.pixiApp.updateBackground(currentEraBg);
             }
         });
 

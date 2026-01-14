@@ -8,6 +8,7 @@ import { loadBuildings } from './data/Buildings.js';
 import EraManager from './utils/EraManager.js';
 import SkillManager from './utils/SkillManager.js';
 import SectManager from './utils/SectManager.js';
+import PixiApp from './views/pixi/PixiApp.js';
 
 class Game {
     constructor() {
@@ -15,6 +16,7 @@ class Game {
         this.buildingManager = new BuildingManager(this.resourceManager);
         this.saveSystem = new SaveSystem(this);
         this.uiManager = new UIManager(this);
+        this.pixiApp = new PixiApp(); // Pixi.js 特效渲染器
         this.gameLoop = new GameLoop(this.update.bind(this));
 
         this.lastTime = Date.now();
@@ -60,6 +62,14 @@ class Game {
         }
 
         await this.uiManager.init();
+
+        // 初始化 Pixi.js 特效層
+        const appContainer = document.getElementById('app');
+        if (appContainer) {
+            await this.pixiApp.init(appContainer);
+            this.uiManager.updatePlayerInfo();
+        }
+
         this.gameLoop.start();
 
         // Initialize header contact info

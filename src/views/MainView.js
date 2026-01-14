@@ -176,29 +176,39 @@ export default class UIManager {
     updateTabNames() {
         const tabs = document.querySelectorAll('.tab-btn');
         tabs.forEach(tab => {
-            const key = tab.textContent.trim();
-            // 嘗試翻譯，如果 key 本身就是中文，可以直接用 LanguageManager.t
-            // 但因為 tab.textContent 可能已經被翻譯過（如果我們多次調用），這依賴於初始 HTML 是中文
-            // 更好的做法是給 tab 一個 data-i18n-key
-            // 這裡我們先假設 tab.textContent 是預設中文
-
-            // 由於 tab 的文本是寫死在 index.html 中的，我們需要一個映射或者直接翻譯
-            // 為了避免重複翻譯問題，我們可以用 data-tab 作為 key 前綴，或者我們手動維護一個映射
-
+            // Default mapping with emojis
             const tabKeyMap = {
-                'buildings': '洞府建築',
-                'crafting': '煉製合成',
-                'skills': '功法修煉',
-                'talents': '輪迴天賦',
-                'sect': '宗門',
-                'opportunities': '機緣',
-                'help': '遊戲說明',
-                'debug': 'Debug' // Debug 通常不翻譯
+                'buildings': '🏠 洞府建築',
+                'crafting': '⚒️ 煉製合成',
+                'skills': '🧘 功法修煉',
+                'talents': '☯️ 輪迴天賦',
+                'sect': '⛩️ 宗門',
+                'opportunities': '🎲 機緣',
+                'help': '📘 遊戲說明',
+                'debug': '🔧 Debug'
             };
 
-            const originalText = tabKeyMap[tab.dataset.tab];
-            if (originalText) {
-                tab.textContent = LanguageManager.getInstance().t(originalText);
+            const key = tab.dataset.tab;
+            let displayText = tabKeyMap[key];
+
+            // Try to translate if LanguageManager is available
+            // Note: We need to translate the text part. 
+            // Ideally, we should have keys like 'tab_buildings' in json files.
+            // For now, we will assume keys in json match the text part (e.g. "洞府建築").
+            // To simplify, we'll keep the icon and translate the mapped text.
+
+            if (displayText) {
+                // Split icon and text for translation
+                const parts = displayText.split(' ');
+                if (parts.length >= 2) {
+                    const icon = parts[0];
+                    const textKey = parts.slice(1).join(' '); // In case text has spaces
+                    const translatedText = LanguageManager.getInstance().t(textKey);
+                    tab.textContent = `${icon} ${translatedText}`;
+                } else {
+                    // Fallback if no split
+                    tab.textContent = displayText;
+                }
             }
         });
     }
@@ -646,8 +656,15 @@ export default class UIManager {
             }
         }
 
+
         // 更新渡劫成功率顯示（金丹期及以後）
         const eraId = PlayerManager.getEraId();
+
+        // [Pixi] 更新動態背景
+        if (window.game && window.game.pixiApp) {
+            window.game.pixiApp.updateBackground(eraId);
+        }
+
         const needsTribulation = eraId >= 3;
         if (needsTribulation) {
             const tribulationRate = PlayerManager.getTribulationSuccessRate();
@@ -664,7 +681,17 @@ export default class UIManager {
                 tribulationSpan.style.color = tribulationColor;
                 tribulationSpan.textContent = `${LanguageManager.getInstance().t('渡劫成功率')}: ${(tribulationRate * 100).toFixed(1)}%`;
             }
+        }
 
+        // [Pixi] 更新升級按鈕特效
+        const upgradeBtn = document.getElementById('upgrade-btn');
+        if (upgradeBtn && window.game && window.game.pixiApp) {
+            const canUpgrade = PlayerManager.canUpgrade(currentResources).canUpgrade;
+            if (canUpgrade) {
+                window.game.pixiApp.addButtonEffect(upgradeBtn, 'charge');
+            } else {
+                window.game.pixiApp.removeButtonEffect(upgradeBtn);
+            }
         }
 
         const upBtn = document.getElementById('upgrade-btn');
@@ -808,7 +835,31 @@ export default class UIManager {
                     return;
                 }
 
-                PlayerManager.upgrade(currentResources);
+
+                // 記錄舊的 Era ID 以便比較
+                const oldEraId = PlayerManager.getEraId();
+                const success = PlayerManager.upgrade(currentResources);
+
+                if (success) {
+                    // [Pixi] 突破成功特效
+                    if (window.game && window.game.pixiApp) {
+                        const newEra = EraManager.getEraById(PlayerManager.getEraId());
+                        const eraName = newEra ? LanguageManager.getInstance().t(newEra.eraName) : '';
+                        const msg = `${LanguageManager.getInstance().t('突破成功！')} ${eraName}`;
+
+                        window.game.pixiApp.playCenterTextEffect(msg, { color: 0xFFD700 });
+                        window.game.pixiApp.playBreakthroughEffect(); // 播放全螢幕特效
+                    }
+                } else {
+                    // [Pixi] 突破失敗特效 (如果是渡劫失敗)
+                    // 需要判斷是因為條件不足還是渡劫失敗? PlayerManager.upgrade 內部如果判定渡劫失敗會返回 false?
+                    // 根據代碼邏輯，upgrade 內部調用 attemptTribulation，如果失敗返回 false。
+                    // 這裡簡單處理：如果是金丹期以上且失敗，播放碎裂特效
+                    if (oldEraId >= 3 && window.game && window.game.pixiApp) {
+                        window.game.pixiApp.playBreakthroughFailedEffect();
+                    }
+                }
+
                 // 無論成功失敗（如渡劫失敗導致掉級），都需要更新 UI
                 this.updatePlayerInfo();
                 window.game.buildingManager.recalculateRates();
@@ -828,6 +879,21 @@ export default class UIManager {
                 }
 
                 if (PlayerManager.increaseLevel(currentResources)) {
+                    // [Pixi] 升級特效
+                    if (window.game && window.game.pixiApp) {
+                        const newLevel = PlayerManager.getLevel();
+                        const msg = `${LanguageManager.getInstance().t('等級提升')} ${newLevel}`;
+                        window.game.pixiApp.playCenterTextEffect(msg, { color: 0x4CAF50 });
+
+                        // 局部粒子 (從按鈕發出)
+                        const rect = levelUpBtn.getBoundingClientRect();
+                        const canvasRect = window.game.pixiApp.app.canvas.getBoundingClientRect();
+                        window.game.pixiApp.playLevelUpEffect(
+                            (rect.left - canvasRect.left) + rect.width / 2,
+                            (rect.top - canvasRect.top) + rect.height / 2
+                        );
+                    }
+
                     this.updatePlayerInfo();
                     window.game.buildingManager.recalculateRates();
                 }

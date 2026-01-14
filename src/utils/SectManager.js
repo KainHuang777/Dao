@@ -404,6 +404,12 @@ class SectManager {
         }
         this.state.tasks = tasks;
         this.saveState();
+
+        // [Pixi] 宗門任務刷新特效
+        if (window.game && window.game.pixiApp) {
+            const lang = LanguageManager.getInstance();
+            window.game.pixiApp.playCenterTextEffect(lang.t('宗門任務已刷新'), { color: 0xFFD700 });
+        }
     }
 
     /**
@@ -701,6 +707,11 @@ class SectManager {
         if (window.game && window.game.uiManager) {
             const lang = LanguageManager.getInstance();
             window.game.uiManager.addLog(`📢 ${lang.t(eventConfig.name)}: ${lang.t('求購')} ${lang.t(target)}`, 'INFO');
+
+            // [Pixi] 天機事件特效
+            if (window.game.pixiApp) {
+                window.game.pixiApp.playCenterTextEffect(`${lang.t('天機顯現')}：${lang.t(eventConfig.name)}`, { color: 0x9C27B0 });
+            }
         }
 
         this.saveState();
