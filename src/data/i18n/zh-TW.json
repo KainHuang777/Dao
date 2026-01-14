@@ -649,5 +649,9 @@
     "等級提升": "等級提升",
     "突破成功！": "突破成功！",
     "宗門任務已刷新": "宗門任務已刷新",
-    "天機顯現": "天機顯現"
+    "天機顯現": "天機顯現",
+    "migration_warning": "⚠️ 重要通知！\n\n遊戲預計於 1/23 從 GitHub 轉移至 Vercel 新網址。\n請記得保存進度，並轉移至新網址：\nhttps://dao-sooty-nine.vercel.app/",
+    "migration_banner_text": "1/23 將遷移至",
+    "migration_banner_link": "Vercel 新網址",
+    "migration_banner_save": "請保存進度！"
 }

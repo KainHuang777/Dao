@@ -614,5 +614,9 @@
     "宗門任務已刷新": "宗門任務更新済み",
     "天機事件": "天機事件",
     "暫無事件": "イベントなし",
-    "天機顯現": "天機顕現"
+    "天機顯現": "天機顕現",
+    "migration_warning": "⚠️ 重要なお知らせ！\n\nゲームは1/23にGitHubからVercelへ移行予定です。\n進捗を保存し、新しいURLへ移行してください：\nhttps://dao-sooty-nine.vercel.app/",
+    "migration_banner_text": "1/23 に移行予定:",
+    "migration_banner_link": "新しい Vercel URL",
+    "migration_banner_save": "進捗を保存してください！"
 }

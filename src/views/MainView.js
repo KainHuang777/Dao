@@ -85,6 +85,30 @@ export default class UIManager {
         this.initLanguageSwitcher(); // 初始化語言切換器
         this.updateTabNames();       // 初始化頁籤名稱
         this.updateStaticText();     // 初始化靜態文本
+        this.checkMigrationWarning(); // 檢查遷移警告
+    }
+
+    /** 檢查是否需要顯示遷移警告（輪迴後） */
+    checkMigrationWarning() {
+        const eraId = PlayerManager.getEraId();
+        const rebirthCount = PlayerManager.state?.rebirthCount || 0;
+
+        // 輪迴次數 >= 1 且回到 Era 1 時顯示警告
+        if (rebirthCount >= 1 && eraId === 1) {
+            // 避免重複顯示（使用 sessionStorage）
+            const shownKey = 'migration_warning_shown';
+            if (sessionStorage.getItem(shownKey)) return;
+            sessionStorage.setItem(shownKey, 'true');
+
+            const lang = LanguageManager.getInstance();
+            const warningMsg = lang.t('migration_warning') ||
+                '⚠️ 重要通知！\n\n遊戲預計於 1/23 從 GitHub 轉移至 Vercel 新網址。\n請記得保存進度，並轉移至新網址：\nhttps://dao-sooty-nine.vercel.app/';
+
+            // 使用 setTimeout 延遲顯示，確保頁面已完全載入
+            setTimeout(() => {
+                alert(warningMsg);
+            }, 500);
+        }
     }
 
     updateStaticText() {
@@ -170,6 +194,15 @@ export default class UIManager {
             const currentVerId = document.getElementById('current-version-id');
             if (currentVerId) currentVerId.textContent = latestVer;
             if (this.versionBtn) this.versionBtn.textContent = latestVer;
+        }
+
+        // 遷移警告 (多語言)
+        const migrationWarning = document.getElementById('migration-warning');
+        if (migrationWarning) {
+            const warningText = lang.t('migration_banner_text') || '1/23 將遷移至';
+            const linkText = lang.t('migration_banner_link') || 'Vercel 新網址';
+            const saveText = lang.t('migration_banner_save') || '請保存進度！';
+            migrationWarning.innerHTML = `⚠️ ${warningText} <a href="https://dao-sooty-nine.vercel.app/" target="_blank" style="color: #4fc3f7; text-decoration: underline;">${linkText}</a>，${saveText}`;
         }
     }
 

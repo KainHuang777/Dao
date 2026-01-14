@@ -1,3 +1,9 @@
+[2026-01-15] Feature: Migration Warning Notification
+1. UI: Added migration warning banner next to "修仙問道" title in index.html.
+2. Logic: Added checkMigrationWarning() in MainView.js to show alert popup after reincarnation (rebirthCount >= 1 && eraId === 1).
+3. Localization: Added "migration_warning" key to all i18n files (zh-TW, zh-CN, en, ja).
+4. UX: Warning only shows once per session (uses sessionStorage to prevent duplicates).
+
 2026-01-15 Update Log (Fix Cloud Sea Market):
 - [Fix] Market Purchase Crash: Resolved `TypeError: Cannot read properties of undefined` in `buyMarketItem` when purchasing non-resource items (e.g., Sect High Golden Pill).
 - [Fix] Robustness: Added checks to ensure resource exists before attempting to unlock or modify it in `SectManager.js`.

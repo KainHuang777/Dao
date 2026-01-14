@@ -614,5 +614,9 @@
     "宗門任務已刷新": "宗门任务已刷新",
     "天機事件": "天机事件",
     "暫無事件": "暂无事件",
-    "天機顯現": "天机显现"
+    "天機顯現": "天机显现",
+    "migration_warning": "⚠️ 重要通知！\n\n游戏预计于 1/23 从 GitHub 迁移至 Vercel 新网址。\n请记得保存进度，并转移至新网址：\nhttps://dao-sooty-nine.vercel.app/",
+    "migration_banner_text": "1/23 将迁移至",
+    "migration_banner_link": "Vercel 新网址",
+    "migration_banner_save": "请保存进度！"
 }

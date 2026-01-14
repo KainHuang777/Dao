@@ -620,5 +620,9 @@
     "宗門任務已刷新": "Sect Tasks Refreshed",
     "天機事件": "Heavenly Events",
     "暫無事件": "No Events",
-    "天機顯現": "Heavenly Secret Revealed"
+    "天機顯現": "Heavenly Secret Revealed",
+    "migration_warning": "⚠️ Important Notice!\n\nThe game will migrate from GitHub to Vercel on 1/23.\nPlease remember to save your progress and transfer to the new URL:\nhttps://dao-sooty-nine.vercel.app/",
+    "migration_banner_text": "1/23 Migrating to",
+    "migration_banner_link": "New Vercel URL",
+    "migration_banner_save": "Please save your progress!"
 }
