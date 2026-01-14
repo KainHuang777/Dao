@@ -59,7 +59,7 @@ export default class SectPanel {
 
             <!-- Tabs -->
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button id="tab-sect-tasks" class="btn active-tab" style="flex: 1; padding: 8px; background: #4caf50;">${lang.t('任務')}</button>
+                <button id="tab-sect-tasks" class="btn active-tab" style="flex: 1; padding: 8px; background: #4caf50;">${lang.t('宗門任務')}</button>
                 <button id="tab-sect-market" class="btn" style="flex: 1; padding: 8px; background: #333;">${lang.t('雲海天市')}</button>
                 <button id="tab-sect-events" class="btn" style="flex: 1; padding: 8px; background: #333;">${lang.t('天機事件')}</button>
             </div>

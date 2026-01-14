@@ -47,7 +47,7 @@
                 </div>
                 <div class="game-controls">
                     <button id="version-btn" class="btn"
-                        style="background: #37474f; border-color: #546e7a;">v0.272</button>
+                        style="background: #37474f; border-color: #546e7a;">v0.28</button>
                     <button id="save-btn" class="btn">保存進度</button>
                     <button id="load-btn" class="btn">讀取進度</button>
                 </div>
@@ -62,8 +62,8 @@
                 <button class="tab-btn" data-tab="sect" style="display:none;">宗門</button>
                 <button class="tab-btn" data-tab="opportunities" style="display:none;">機緣</button>
                 <button class="tab-btn" data-tab="help">遊戲說明</button>
-                <button class="tab-btn" data-tab="debug"
-                    style="background: rgba(255, 152, 0, 0.2); border: 1px solid #ff9800;">Debug</button>
+                <button class="tab-btn" data-tab="debug" id="debug-tab-btn"
+                    style="background: rgba(255, 152, 0, 0.2); border: 1px solid #ff9800; display: none;">Debug</button>
             </nav>
 
             <!-- 分頁內容 -->
@@ -107,7 +107,7 @@
         </aside>
         <footer id="version-info"
             style="position:fixed; bottom:10px; right:10px; font-size:12px; color:rgba(255,255,255,0.5); pointer-events:none;">
-            Build: 2026-01-13 21:00:00
+            Build: 2026-01-15 00:30:00
         </footer>
     </div>
 
@@ -122,7 +122,7 @@
                 <!-- 內容由 JS 動態生成 -->
             </div>
             <div style="margin-top: 20px; text-align: right; font-size: 12px; color: #666;">
-                當前版本：<span id="current-version-id">v0.272</span>
+                當前版本：<span id="current-version-id">v0.28</span>
             </div>
         </div>
     </div>
@@ -139,7 +139,9 @@
         </div>
     </div>
 
-    <script type="module" src="./src/main.js?v=202601132100"></script>
+    <!-- Pixi.js v8 (載入於主程式之前) -->
+    <script src="https://unpkg.com/pixi.js@8.6.6/dist/pixi.min.js"></script>
+    <script type="module" src="./src/main.js?v=202601140001"></script>
 </body>
 
 </html>

@@ -854,6 +854,11 @@ class PlayerManager {
             window.game.saveSystem.saveToStorage();
         }
 
+        // 播放輪迴飛升特效
+        if (window.game && window.game.pixiApp) {
+            window.game.pixiApp.playReincarnationEffect();
+        }
+
         return { daoHeart: newDaoHeart, daoProof: newDaoProof };
     }
 
@@ -995,6 +1000,17 @@ class PlayerManager {
                 this.state.eraId = result.newEra;
                 this.state.level = result.newLevel;
                 this.state.startTimestamp = Date.now();
+
+                // 升階成功，重置渡劫相關丹藥服用記錄
+                if (this.state.consumedPills) {
+                    Object.keys(this.state.consumedPills).forEach(pillId => {
+                        const config = this.getPillConfig(pillId);
+                        if (config && config.effect === 'tribulationSuccess') {
+                            this.state.consumedPills[pillId] = 0;
+                        }
+                    });
+                }
+
                 this._saveState(this.state);
 
                 if (window.game && window.game.uiManager) {
@@ -1013,6 +1029,10 @@ class PlayerManager {
                         }
                     );
                     window.game.uiManager.addLog(msgSuccess, 'SYSTEM');
+                    // 播放升階成功特效
+                    if (window.game.pixiApp) {
+                        window.game.pixiApp.playBreakthroughEffect();
+                    }
                 }
                 return true;
             } else {
@@ -1036,6 +1056,10 @@ class PlayerManager {
                         }
                     );
                     window.game.uiManager.addLog(msgFail, 'SYSTEM');
+                    // 播放升階失敗特效
+                    if (window.game.pixiApp) {
+                        window.game.pixiApp.playBreakthroughFailedEffect();
+                    }
                 }
                 return false;
             }
@@ -1051,6 +1075,10 @@ class PlayerManager {
                 const eraName = newEra ? LanguageManager.getInstance().t(newEra.eraName) : this.state.eraId;
                 const msg = LanguageManager.getInstance().t('境界突破！晉升至 <b>{0}</b>', { '0': eraName });
                 window.game.uiManager.addLog(msg, 'SYSTEM');
+                // 播放升階成功特效 (練氣/築基期)
+                if (window.game.pixiApp) {
+                    window.game.pixiApp.playBreakthroughEffect();
+                }
             }
             return true;
         }
@@ -1155,6 +1183,14 @@ class PlayerManager {
             if (window.game && window.game.uiManager) {
                 const msg = LanguageManager.getInstance().t('突破成功！當前等級提升至 <b>{0}</b>', { '0': this.state.level });
                 window.game.uiManager.addLog(msg);
+                // 播放升級特效 (局部)
+                if (window.game.pixiApp) {
+                    const btn = document.getElementById('level-up-btn');
+                    if (btn) {
+                        const rect = btn.getBoundingClientRect();
+                        window.game.pixiApp.playLevelUpEffect(rect.left + rect.width / 2, rect.top + rect.height / 2);
+                    }
+                }
 
                 // 顯示資源消耗日誌 (DEV TAG)
                 if (costLogParts.length > 0) {

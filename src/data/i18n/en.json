@@ -607,5 +607,18 @@
     "foundation_pill_desc": "Effect: Increases Tribulation Success Rate by 2% (Max 20).",
     "spirit_grass_100y_desc": "Use: Vital material for mid-grade alchemy and breakthroughs.",
     "spirit_jade_desc": "Use: Rare jade for advanced buildings and crafting.",
-    "monster_core_mid_desc": "Use: Rich in spiritual power, used for mid-grade items."
+    "monster_core_mid_desc": "Use: Rich in spiritual power, used for mid-grade items.",
+    "宗門系統": "Sect System",
+    "宗門系統_desc": "Join a sect for protection and resources. Accumulate contribution points to promote your rank and unlock more privileges.",
+    "宗門任務_desc": "Take on various daily tasks to earn Sector Contribution and Spirit Stones. Higher quality tasks yield richer rewards.",
+    "雲海天市": "Cloud Sea Market",
+    "雲海天市_desc": "Exchange Sect Contribution for rare cultivation materials, recipes, and techniques. Some rare items require specific sect ranks.",
+    "天機任務": "Heavenly Secret Tasks",
+    "天機任務_desc": "Random special events that consume significant time or resources but offer massive returns or unique opportunities.",
+    "等級提升": "Level Up!",
+    "突破成功！": "Breakthrough!",
+    "宗門任務已刷新": "Sect Tasks Refreshed",
+    "天機事件": "Heavenly Events",
+    "暫無事件": "No Events",
+    "天機顯現": "Heavenly Secret Revealed"
 }
