@@ -305,6 +305,10 @@ export default class UIManager {
                     if (data.player) PlayerManager.loadData(data.player);
                     this.game.resourceManager.loadData(data.resources);
                     if (data.buildings) this.game.buildingManager.loadData(data.buildings);
+                    if (data.sect) SectManager.loadData(data.sect);
+
+                    // 將載入的資料立即寫入 localStorage，確保 reload 後能正確讀取
+                    this.game.saveSystem.saveToStorage();
 
                     this.saveModal.classList.add('hidden');
                     alert('讀取成功！');

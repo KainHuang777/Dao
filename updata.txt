@@ -1,3 +1,10 @@
+[2026-01-15] Fix: Save/Load Cross-Page Issue
+1. Bug: When importing save code from another page, rebirthCount and building levels were not correctly preserved.
+2. Root Cause: ResourceManager.loadData() and BuildingManager.loadData() only update in-memory state but do NOT write to localStorage.
+   After window.location.reload(), the game reads stale localStorage data instead of the newly imported save.
+3. Fix: In MainView.js confirmLoadBtn handler, added `this.game.saveSystem.saveToStorage()` BEFORE reload to persist imported data.
+4. Fix: Added missing `SectManager.loadData(data.sect)` call to properly load sect-related data.
+
 [2026-01-15] Feature: Migration Warning Notification
 1. UI: Added migration warning banner next to "修仙問道" title in index.html.
 2. Logic: Added checkMigrationWarning() in MainView.js to show alert popup after reincarnation (rebirthCount >= 1 && eraId === 1).

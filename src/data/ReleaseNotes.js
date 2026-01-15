@@ -1,6 +1,28 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.282",
+        date: "2026-01-15",
+        notes: {
+            "zh-TW": [
+                "【修復】跨網頁存檔：修復了從其他網頁複製存檔代碼貼上後，輪迴次數、天賦等級與建築等級沒有正確繼承的問題。",
+                "【修復】宗門資料載入：修復了讀取進度時宗門資料未被正確載入的問題。"
+            ],
+            "zh-CN": [
+                "【修复】跨网页存档：修复了从其他网页复制存档代码粘贴后，轮回次数、天赋等级与建筑等级没有正确继承的问题。",
+                "【修复】宗门数据加载：修复了读取进度时宗门数据未被正确加载的问题。"
+            ],
+            "en": [
+                "[Fix] Cross-Page Save Import: Fixed an issue where reincarnation count, talent levels, and building levels were not correctly preserved when importing save codes from another page.",
+                "[Fix] Sect Data Loading: Fixed an issue where sect data was not properly loaded when importing save codes."
+            ],
+            "ja": [
+                "【修正】クロスページセーブ：他のページからセーブコードを貼り付けた際、輪廻回数、天賦レベル、建築レベルが正しく引き継がれない問題を修正しました。",
+                "【修正】宗門データ読込：セーブコード読込時に宗門データが正しく読み込まれない問題を修正しました。"
+            ]
+        }
+    },
+    {
         version: "v0.281",
         date: "2026-01-15",
         notes: {
@@ -26,6 +48,7 @@ export const ReleaseNotes = [
             ]
         }
     },
+
     {
         version: "v0.28",
         date: "2026-01-15",
