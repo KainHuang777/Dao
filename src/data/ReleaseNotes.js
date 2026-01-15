@@ -1,6 +1,28 @@
 
 export const ReleaseNotes = [
     {
+        version: "v0.283",
+        date: "2026-01-15",
+        notes: {
+            "zh-TW": [
+                "【穩定】記憶體管理優化：修復了 Pixi.js 動態背景與特效可能導致的記憶體洩漏問題（事件監聽器殘留、粒子未銷毀）。",
+                "【優化】長時間運行穩定性：改進了特效系統的資源回收機制，降低長時間掛機時的效能損耗。"
+            ],
+            "zh-CN": [
+                "【稳定】内存管理优化：修复了 Pixi.js 动态背景与特效可能导致的内存泄漏问题（事件监听器残留、粒子未销毁）。",
+                "【优化】长时间运行稳定性：改进了特效系统的资源回收机制，降低长时间挂机时的效能损耗。"
+            ],
+            "en": [
+                "[Stability] Memory Leak Fix: Resolved memory leak issues in Pixi.js dynamic backgrounds and effects (lingering event listeners, undestroyed particles).",
+                "[Optimization] Long-run Stability: Improved resource garbage collection for the effect system to reduce performance degradation during long sessions."
+            ],
+            "ja": [
+                "【安定性】メモリリーク修正：Pixi.jsの動的背景とエフェクトによるメモリリーク問題を修正（イベントリスナーの残留、粒子の未破棄）。",
+                "【最適化】長時間動作の安定性：エフェクトシステムのガベージコレクションを改善し、長時間放置時のパフォーマンス低下を軽減しました。"
+            ]
+        }
+    },
+    {
         version: "v0.282",
         date: "2026-01-15",
         notes: {

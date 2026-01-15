@@ -12,6 +12,12 @@ export default class PixiApp extends IRenderer {
         this.effectsContainer = null;
         this.isInitialized = false;
         this.buttonEffects = new Map();
+
+        // 記憶體管理：追蹤事件監聽器和計時器
+        this._boundOnResize = null;
+        this._boundOnPointerDown = null;
+        this._activeTimeouts = new Set();
+        this._backgroundParticles = [];
     }
 
     /**
@@ -66,17 +72,19 @@ export default class PixiApp extends IRenderer {
         this.app.stage.addChild(this.effectsContainer);
         this.app.stage.addChild(this.uiEffectsContainer);
 
-        // 監聽視窗大小變化
-        window.addEventListener('resize', () => this.onResize());
+        // 監聽視窗大小變化（保存參考以便移除）
+        this._boundOnResize = () => this.onResize();
+        window.addEventListener('resize', this._boundOnResize);
 
-        // 全域點擊波紋 (監聽 window)
-        window.addEventListener('pointerdown', (e) => {
+        // 全域點擊波紋 (監聽 window)（保存參考以便移除）
+        this._boundOnPointerDown = (e) => {
             // 轉換座標
             const rect = this.app.canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
             this.playClickRipple(x, y);
-        });
+        };
+        window.addEventListener('pointerdown', this._boundOnPointerDown);
 
         // 註冊 Update Loop
         this.app.ticker.add((ticker) => {
@@ -135,7 +143,8 @@ export default class PixiApp extends IRenderer {
         if (!this.isInitialized) return;
         this.currentEraId = eraId;
 
-        // 清除舊背景
+        // 清除舊背景（正確銷毀粒子物件）
+        this._destroyBackgroundParticles();
         this.backgroundContainer.removeChildren();
         if (this.activeBackgroundEffect) {
             this.app.ticker.remove(this.activeBackgroundEffect);
@@ -218,6 +227,9 @@ export default class PixiApp extends IRenderer {
             particles.push(p);
         }
 
+        // 追蹤粒子以便銷毀
+        this._backgroundParticles = particles;
+
         const updateFn = (ticker) => {
             particles.forEach(p => {
                 p.x += p.vx;
@@ -255,6 +267,9 @@ export default class PixiApp extends IRenderer {
             this.backgroundContainer.addChild(line);
             lines.push(line);
         }
+
+        // 追蹤粒子以便銷毀
+        this._backgroundParticles = lines;
 
         const updateFn = () => {
             lines.forEach(line => {
@@ -295,6 +310,9 @@ export default class PixiApp extends IRenderer {
             this.backgroundContainer.addChild(star);
             stars.push(star);
         }
+
+        // 追蹤粒子以便銷毀
+        this._backgroundParticles = stars;
 
         const updateFn = () => {
             stars.forEach(star => {
@@ -776,11 +794,11 @@ export default class PixiApp extends IRenderer {
             };
 
             // 延遲啟動以創造波浪效果
-            setTimeout(() => requestAnimationFrame(animate), i * 20);
+            this._trackTimeout(() => requestAnimationFrame(animate), i * 20);
         }
 
         // 最後的光爆
-        setTimeout(() => {
+        this._trackTimeout(() => {
             this.playRingEffect(centerX, centerY, 0xFFFFFF, 5);
             this.playScreenFlash(0xFFFFFF, 0.5);
         }, 2500);
@@ -791,7 +809,9 @@ export default class PixiApp extends IRenderer {
      */
     playRingEffect(x, y, color, count = 1) {
         for (let r = 0; r < count; r++) {
-            setTimeout(() => {
+            this._trackTimeout(() => {
+                if (!this.isInitialized || !this.effectsContainer) return; // 防禦性檢查
+
                 const ring = new PIXI.Graphics();
                 ring.stroke({ width: 3, color: color });
                 ring.circle(0, 0, 10);
@@ -805,6 +825,10 @@ export default class PixiApp extends IRenderer {
                 const duration = 800;
 
                 const animate = () => {
+                    if (!this.isInitialized) {
+                        ring.destroy();
+                        return;
+                    }
                     const elapsed = performance.now() - startTime;
                     const progress = Math.min(elapsed / duration, 1);
 
@@ -877,6 +901,43 @@ export default class PixiApp extends IRenderer {
     }
 
     /**
+     * 銷毀背景粒子（記憶體清理輔助方法）
+     */
+    _destroyBackgroundParticles() {
+        if (this._backgroundParticles && this._backgroundParticles.length > 0) {
+            this._backgroundParticles.forEach(p => {
+                if (p && !p.destroyed) {
+                    p.destroy();
+                }
+            });
+            this._backgroundParticles = [];
+        }
+    }
+
+    /**
+     * 追蹤 setTimeout 以便清理（記憶體管理輔助方法）
+     * @param {Function} callback - 回調函數
+     * @param {number} delay - 延遲毫秒
+     * @returns {number} timeout ID
+     */
+    _trackTimeout(callback, delay) {
+        const id = setTimeout(() => {
+            this._activeTimeouts.delete(id);
+            callback();
+        }, delay);
+        this._activeTimeouts.add(id);
+        return id;
+    }
+
+    /**
+     * 清除所有追蹤的 setTimeout
+     */
+    _clearAllTimeouts() {
+        this._activeTimeouts.forEach(id => clearTimeout(id));
+        this._activeTimeouts.clear();
+    }
+
+    /**
      * 格式化數字
      */
     formatNumber(num) {
@@ -886,13 +947,49 @@ export default class PixiApp extends IRenderer {
     }
 
     /**
-     * 銷毀 Pixi.js 應用程式
+     * 銷毀 Pixi.js 應用程式（完整清理）
      */
     destroy() {
+        // 移除事件監聽器
+        if (this._boundOnResize) {
+            window.removeEventListener('resize', this._boundOnResize);
+            this._boundOnResize = null;
+        }
+        if (this._boundOnPointerDown) {
+            window.removeEventListener('pointerdown', this._boundOnPointerDown);
+            this._boundOnPointerDown = null;
+        }
+
+        // 清除所有計時器
+        this._clearAllTimeouts();
+
+        // 銷毀背景粒子
+        this._destroyBackgroundParticles();
+
+        // 移除背景 ticker
+        if (this.activeBackgroundEffect && this.app) {
+            this.app.ticker.remove(this.activeBackgroundEffect);
+            this.activeBackgroundEffect = null;
+        }
+
+        // 清理按鈕特效
+        if (this.buttonEffects) {
+            this.buttonEffects.forEach((container, element) => {
+                if (container.updateFn && this.app) {
+                    this.app.ticker.remove(container.updateFn);
+                }
+                container.destroy({ children: true });
+            });
+            this.buttonEffects.clear();
+        }
+
+        // 銷毀 Pixi 應用程式
         if (this.app) {
             this.app.destroy(true, { children: true, texture: true });
             this.app = null;
         }
+
         this.isInitialized = false;
+        console.log('🧹 PixiApp 已完整銷毀並清理記憶體');
     }
 }

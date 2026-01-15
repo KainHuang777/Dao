@@ -1,3 +1,14 @@
+[2026-01-15] Release v0.283
+1. [Stability] Released memory leak fixes for Pixi.js effects and dynamic backgrounds.
+2. [Optimization] Improved resource management for long-running sessions.
+
+
+1. Event Listeners: Saved references to `resize` and `pointerdown` listeners for proper removal in destroy().
+2. Background Particles: Added `_destroyBackgroundParticles()` helper to properly destroy PIXI.Graphics objects when switching Era backgrounds.
+3. setTimeout Tracking: Added `_trackTimeout()` and `_clearAllTimeouts()` helpers to track and clear setTimeout calls in effects.
+4. Destroy Method: Enhanced `destroy()` to remove event listeners, clear timeouts, destroy particles, remove ticker functions, and clear button effects Map.
+5. Defensive Checks: Added isInitialized checks in animation callbacks to prevent errors when effects run after destroy.
+
 [2026-01-15] Fix: Save/Load Cross-Page Issue
 1. Bug: When importing save code from another page, rebirthCount and building levels were not correctly preserved.
 2. Root Cause: ResourceManager.loadData() and BuildingManager.loadData() only update in-memory state but do NOT write to localStorage.
